@@ -30,8 +30,6 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.*;
-import javax.telephony.callcontrol.events.CallCtlTermConnEv;
 /**
  * An Observer-style Callcontrol TermConnEv base class.
  * "dispatch()" is not overridden since listeners are not yet supported in callcontrol

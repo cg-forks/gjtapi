@@ -1,7 +1,5 @@
 package net.sourceforge.gjtapi.media;
 
-import java.net.URL;
-import java.util.*;
 import javax.telephony.*;
 import javax.telephony.media.*;
 /*
@@ -293,14 +291,14 @@ protected void toTalking(int cause) {
  * We code this as "<Microphone>".
  */
 public void useDefaultMicrophone() {
-	this.recorderUrl = this.MICROPHONE;
+	this.recorderUrl = FreeMediaTerminalConnection.MICROPHONE;
 }
 /**
  * Try to set the Speaker as the output to the record command.
  * We code this as "<Speaker>".
  */
 public void useDefaultSpeaker() {
-	this.playerUrl = this.SPEAKER;
+	this.playerUrl = FreeMediaTerminalConnection.SPEAKER;
 }
 /**
  * Set the URL that defines which resource to play.

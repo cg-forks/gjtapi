@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi.test;
 */
 import java.io.*;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Simple test script for the emulator raw provider

@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.raw.remote;
 	of the copyright holder.
 */
 import java.io.Serializable;
-import org.omg.CORBA.portable.ObjectImpl;
 import net.sourceforge.gjtapi.*;
 import javax.telephony.media.Symbol;
 /**

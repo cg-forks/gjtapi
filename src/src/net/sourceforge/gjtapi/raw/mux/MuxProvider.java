@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.raw.mux;
 import javax.telephony.*;
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.media.*;
 import net.sourceforge.gjtapi.capabilities.*;
 import net.sourceforge.gjtapi.raw.*;
 import java.util.*;
@@ -233,9 +232,9 @@ public String[] getAddresses() throws ResourceUnavailableException {
 	Map addMap = this.getAddToMap();
 
 		// test if we need to flush the addresses in
-	if (this.addrFlag == this.UNFLUSHED) {
+	if (this.addrFlag == MuxProvider.UNFLUSHED) {
 		synchronized (this) {
-			if (this.addrFlag == this.UNFLUSHED) {	// double check
+			if (this.addrFlag == MuxProvider.UNFLUSHED) {	// double check
 					// ask each sub-provider
 				Iterator it = this.getSubProviders().iterator();
 				while (it.hasNext()) {
@@ -244,7 +243,7 @@ public String[] getAddresses() throws ResourceUnavailableException {
 					try {
 						subAddrs = sub.getAddresses();
 					} catch (ResourceUnavailableException rue) {
-						this.addrFlag = this.TOOBIG;	// mark as not all available
+						this.addrFlag = MuxProvider.TOOBIG;	// mark as not all available
 						break;
 					}
 					int size = subAddrs.length;
@@ -252,13 +251,13 @@ public String[] getAddresses() throws ResourceUnavailableException {
 						addMap.put(subAddrs[i], sub);
 					}
 				}
-				if (this.addrFlag == this.UNFLUSHED)
+				if (this.addrFlag == MuxProvider.UNFLUSHED)
 					this.addrFlag = FLUSHED;
 			}
 		}
 	}
 	// now test for too big
-	if (this.addrFlag == this.TOOBIG) {
+	if (this.addrFlag == MuxProvider.TOOBIG) {
 		throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN,
 			"Some Sub-TelephonyProviders cannot return all addresses");
 	}
@@ -583,9 +582,9 @@ public TermData[] getTerminals() throws ResourceUnavailableException {
 	HashSet tdSet = this.termData;
 
 		// test if we need to flush the addresses in
-	if (this.termFlag == this.UNFLUSHED) {
+	if (this.termFlag == MuxProvider.UNFLUSHED) {
 		synchronized (tdSet) {
-			if (this.termFlag == this.UNFLUSHED) {	// double check
+			if (this.termFlag == MuxProvider.UNFLUSHED) {	// double check
 					// ask each sub-provider
 				Iterator it = this.getSubProviders().iterator();
 				while (it.hasNext()) {
@@ -594,7 +593,7 @@ public TermData[] getTerminals() throws ResourceUnavailableException {
 					try {
 						subTerms = sub.getTerminals();
 					} catch (ResourceUnavailableException rue) {
-						this.termFlag = this.TOOBIG;	// mark as not all available
+						this.termFlag = MuxProvider.TOOBIG;	// mark as not all available
 						tdSet.clear();			// might as well clear the TermData holder
 						this.termData = null;
 						break;
@@ -606,13 +605,13 @@ public TermData[] getTerminals() throws ResourceUnavailableException {
 						termMap.put(td.terminal, sub);
 					}
 				}
-				if (this.termFlag == this.UNFLUSHED)
+				if (this.termFlag == MuxProvider.UNFLUSHED)
 					this.termFlag = FLUSHED;
 			}
 		}
 	}
 	// now test for too big
-	if (this.termFlag == this.TOOBIG) {
+	if (this.termFlag == MuxProvider.TOOBIG) {
 		throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN,
 			"Some Sub-TelephonyProviders cannot return all addresses");
 	}
@@ -702,7 +701,7 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	if (replace)
 		m = props;
 	else {
-		m = this.loadResources(this.RESOURCE_NAME);
+		m = this.loadResources(MuxProvider.RESOURCE_NAME);
 		if (props != null)
 			m.putAll(props);
 	}
@@ -715,10 +714,10 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	Iterator it = m.keySet().iterator();
 	while (it.hasNext()) {
 		String key = (String)it.next();
-		if (key.startsWith(this.PROVIDER_PREFIX)) {
+		if (key.startsWith(MuxProvider.PROVIDER_PREFIX)) {
 			String em = (String)m.get(key);
-			String cn = (String)m.get(this.CLASS_PREFIX+em);
-			String propfile = (String)m.get(this.PROPS_PREFIX+em);
+			String cn = (String)m.get(MuxProvider.CLASS_PREFIX+em);
+			String propfile = (String)m.get(MuxProvider.PROPS_PREFIX+em);
 
 			// load the sub-provider
 			TelephonyProvider rp = null;

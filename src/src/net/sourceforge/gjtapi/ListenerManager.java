@@ -30,9 +30,7 @@ package net.sourceforge.gjtapi;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.events.CallCtlCallEv;
 import javax.telephony.callcontrol.CallControlCallObserver;
-import javax.telephony.events.*;
 import net.sourceforge.gjtapi.events.*;
 import javax.telephony.*;
 import java.util.*;

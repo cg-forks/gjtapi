@@ -66,7 +66,7 @@ public boolean allocateMedia(String terminal, int type, java.util.Dictionary res
 		resSpec[1] = ResourceSpec.basicRecorder;
 		resSpec[2] = ResourceSpec.basicSignalDetector;
 		resSpec[4] = ResourceSpec.basicSignalGenerator;
-		ConfigSpec spec = new ConfigSpec(resSpec, this.BIND_TIMEOUT, null, resourceArgs, null);
+		ConfigSpec spec = new ConfigSpec(resSpec, NewMediaProvider.BIND_TIMEOUT, null, resourceArgs, null);
 		try {
 			ms.bindToTerminal(spec, prov.getTerminal(terminal));
 		} catch (MediaBindException mbe) {

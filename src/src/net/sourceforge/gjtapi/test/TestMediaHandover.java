@@ -32,9 +32,6 @@ package net.sourceforge.gjtapi.test;
 */
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.GenericMediaService;
-import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Test class for trying out the media call handover from one media service to another.

@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.events;
 import javax.telephony.*;
 import javax.telephony.events.*;
 import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.events.*;
 /**
  * This is a morphable event for a Terminal
  * Creation date: (2000-02-15 11:01:12)

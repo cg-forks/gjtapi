@@ -31,8 +31,6 @@ package net.sourceforge.gjtapi.raw.remote;
 	of the copyright holder.
 */
 import javax.telephony.*;
-import java.rmi.*;
-import net.sourceforge.gjtapi.TelephonyProvider;
 /**
  * This is a type of RemoteProvider that assumes that only one client will be using it.
  * Therefore Call monitoring stop events are not eaten.

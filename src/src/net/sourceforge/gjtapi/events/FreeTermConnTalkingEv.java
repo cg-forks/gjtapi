@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.*;
 import javax.telephony.callcontrol.events.CallCtlTermConnTalkingEv;
 /**
  * An Observer-style TermConnEv subclass.

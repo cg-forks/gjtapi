@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.csapi.cc.jcc.JccProvider;
 import javax.telephony.Call;
 import java.util.*;
 import net.sourceforge.gjtapi.util.*;

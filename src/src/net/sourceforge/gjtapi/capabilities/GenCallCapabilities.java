@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.capabilities;
 import net.sourceforge.gjtapi.FreeCall;
 import javax.telephony.*;
 import javax.telephony.callcontrol.capabilities.*;
-import javax.telephony.capabilities.*;
 /**
  * This is a capabilities holder that manages both core and call control call capabilities.
  * This may be extended to other call capabilities packages in the future.

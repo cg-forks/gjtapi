@@ -29,7 +29,6 @@
     of the copyright holder.
 */
 package net.sourceforge.gjtapi.raw.dialogic;
-import java.util.*;
 
 import net.sourceforge.gjtapi.CallId;
 

@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.raw;
 import java.util.Dictionary;
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
-import net.sourceforge.gjtapi.media.GenericSignalDetectorEvent;
 /**
  * These are the methods required by TelephonyProviders that support media for JTAPI
  * Creation date: (2000-10-04 13:46:43)

@@ -34,7 +34,6 @@ package net.sourceforge.gjtapi.events;
 import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 import javax.telephony.events.*;
-import net.sourceforge.gjtapi.events.*;
 
 public abstract class FreeCallEvent extends FreeEv implements CallEv, CallEvent, Dispatchable {
 	private FreeCall call;

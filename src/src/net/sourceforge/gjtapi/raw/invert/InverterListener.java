@@ -36,7 +36,6 @@ import javax.telephony.*;
 import javax.telephony.callcontrol.*;
 import javax.telephony.callcontrol.events.*;
 import javax.telephony.media.*;
-import java.util.*;
 /**
  * This is a listener that is hooked to JTAPI objects and translates their events into
  * TelephonyListener events.

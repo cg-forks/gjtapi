@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.events;
 */
 import javax.telephony.events.*;
 import javax.telephony.Event;
-import net.sourceforge.gjtapi.*;
 /**
  * A base abstract class for all the Generic JTAPI events.
  */

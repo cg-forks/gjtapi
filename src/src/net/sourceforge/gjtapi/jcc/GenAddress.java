@@ -182,7 +182,7 @@ public String toString() {
 	 * @see javax.jcat.JcatAddress#getDisplayAllowed()
 	 */
 	public boolean getDisplayAllowed() {
-		// TODO Auto-generated method stub
+		// TODO This appears to be an error in the specification -- should go in Terminal
 		return false;
 	}
 
@@ -190,7 +190,7 @@ public String toString() {
 	 * @see javax.jcat.JcatAddress#getDisplayText()
 	 */
 	public String getDisplayText() {
-		// TODO Auto-generated method stub
+		// TODO This appears to be an error in the specification -- should go in Terminal
 		return null;
 	}
 
@@ -245,7 +245,7 @@ public String toString() {
 	 */
 	public void setDisplayText(String text, boolean displayAllowed)
 		throws InvalidArgumentException {
-		// TODO Auto-generated method stub
+		// TODO This appears to be an error in the specification -- should go in Terminal
 
 	}
 

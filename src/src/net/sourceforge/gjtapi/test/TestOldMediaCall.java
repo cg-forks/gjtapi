@@ -34,8 +34,6 @@ import javax.telephony.*;
 import javax.telephony.events.*;
 import javax.telephony.media.*;
 import javax.telephony.media.events.*;
-import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.media.*;
 /**
  * Test class for trying out the 1.2 media commands
  * Creation date: (2000-03-31 16:03:44)

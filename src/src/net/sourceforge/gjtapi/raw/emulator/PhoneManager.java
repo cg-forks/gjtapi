@@ -38,7 +38,6 @@ import javax.telephony.*;
  */
 import java.util.*;
 import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.events.*;
 
 public class PhoneManager {
 	private Hashtable phones = new Hashtable();	// map addresses to phones 1:1

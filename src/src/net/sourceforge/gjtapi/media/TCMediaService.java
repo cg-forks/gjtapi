@@ -31,10 +31,11 @@ package net.sourceforge.gjtapi.media;
 	of the copyright holder.
 */
 import javax.telephony.InvalidStateException;
-import java.net.URL;
 import javax.telephony.ResourceUnavailableException;
 import javax.telephony.Terminal;
 import javax.telephony.media.*;
+import javax.telephony.media.events.MediaTermConnStateEv;
+
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.events.FreeCallEvent;
 import java.util.*;
@@ -198,7 +199,7 @@ class TCMediaService implements MediaServiceHolder {
 	}
 
 		// define state media event
-	class StateEv extends BaseMediaEv implements javax.telephony.media.events.MediaTermConnStateEv {
+	class StateEv extends BaseMediaEv implements MediaTermConnStateEv {
 		StateEv(FreeMediaTerminalConnection tc) {
 			super(tc);
 		}
@@ -286,7 +287,7 @@ private void addMediaState(int newState) {
  * @author: Richard Deadman
  */
 private void allocate() {
-	if (this.getAllocateState() != this.ALLOCATED) {
+	if (this.getAllocateState() != TCMediaService.ALLOCATED) {
 		this.allocate(null, false);
 	}
 }
@@ -304,7 +305,7 @@ private void allocate(java.util.Dictionary dict, boolean force) {
 		prov.getRaw().allocateMedia(this.getTerminalName(), TelephonyProvider.MEDIA_RES_ALL, dict);
 	}
 
-	this.setAllocateState(this.ALLOCATED);
+	this.setAllocateState(TCMediaService.ALLOCATED);
 }
 /**
  * Forward a String of digits off to a DTMF signal generator.

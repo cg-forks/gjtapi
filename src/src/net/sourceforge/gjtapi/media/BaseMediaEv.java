@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.media;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.FreeTerminalConnection;
 import net.sourceforge.gjtapi.events.FreeTerminalConnectionEvent;
 import javax.telephony.events.Ev;
 import javax.telephony.media.events.MediaEv;

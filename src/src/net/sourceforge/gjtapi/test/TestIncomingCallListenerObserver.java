@@ -31,10 +31,7 @@ package net.sourceforge.gjtapi.test;
     of the copyright holder.
 */
 import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.events.*;
-
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Simple test script for the emulator raw provider that tests if Address.addCallObserver() and

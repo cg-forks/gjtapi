@@ -726,6 +726,7 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
+		// TODO how do we do this?
 		throw new MethodNotSupportedException("Park not currently supported by GJTAPI");
 	}
 
@@ -740,6 +741,7 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
+			// TODO how do we do this?
 				throw new MethodNotSupportedException("Connection Suspend/Reconnect not supported by GJTAPI");
 
 	}
@@ -753,6 +755,7 @@ public String toString() {
 			InvalidStateException,
 			MethodNotSupportedException,
 			ResourceUnavailableException {
+		// TODO Need to add raw support for this
 		throw new MethodNotSupportedException("Connection Suspend not supported by GJTAPI");
 
 	}

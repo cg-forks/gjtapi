@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
-import javax.telephony.*;
 import javax.telephony.events.TermConnRingingEv;
 /**
  * An Observer-style TermConnEv subclass

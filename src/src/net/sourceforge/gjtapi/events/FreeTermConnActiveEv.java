@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import javax.telephony.*;
 import javax.telephony.events.TermConnActiveEv;
 /**
  * An Observer-style TermConnEv subclass

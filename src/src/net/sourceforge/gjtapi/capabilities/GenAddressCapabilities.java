@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi.capabilities;
 */
 import javax.telephony.*;
 import javax.telephony.callcontrol.capabilities.*;
-import javax.telephony.capabilities.*;
 /**
  * This is a capabilities holder that manages both core and call control address capabilities.
  * This may be extended to other address capabilities packages in the future.

@@ -34,11 +34,6 @@ import javax.telephony.privatedata.events.PrivateTermEv;
 import javax.telephony.privatedata.PrivateData;
 import javax.telephony.privatedata.capabilities.PrivateDataCapabilities;
 import javax.telephony.capabilities.TerminalCapabilities;
-import javax.telephony.media.*;
-import net.sourceforge.gjtapi.media.*;
-import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Test class for trying out the media commands

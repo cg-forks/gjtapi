@@ -31,8 +31,6 @@ package net.sourceforge.gjtapi;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.raw.*;
-import javax.telephony.*;
-/* Copyright UForce Inc. (for now) */
 /**
  * This is the pluggable interface that low-level protocol
  * or vendor providers can implement, often known as a Service Provider Interface or SPI.

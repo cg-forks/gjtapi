@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi;
 */
 import java.io.Serializable;
 import javax.telephony.media.Symbol;
-import net.sourceforge.gjtapi.events.*;
 /**
  * A listener for events from the raw provider.
  **/

@@ -578,8 +578,22 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Connection conn = this.getFrameCall().transfer(dialledDigits);
+			return new GenConnection(this.getPrivateProvider(), conn);
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			throw new PrivilegeViolationException(pve.getType());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		} catch (javax.telephony.InvalidPartyException ipe) {
+			throw new InvalidPartyException(ipe.getType(), ipe.getMessage());
+		}
 	}
 
 	/**
@@ -701,15 +715,18 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
+		// we can only do this if we have a conference controller
 		try {
-			// TODO How do we map this?
-			this.getFrameCall().conference(((GenCall)otherCall).getFrameCall());
+			// First we conference the calls together, and then the transfer controller drops of the call
+			this.getFrameCall().transfer(((GenCall)otherCall).getFrameCall());
 		} catch (javax.telephony.PrivilegeViolationException pve) {
 			throw new PrivilegeViolationException(pve.getType());
 		} catch (javax.telephony.InvalidArgumentException iae) {
 			throw new InvalidArgumentException(iae.getMessage());
 		} catch (javax.telephony.InvalidStateException ise) {
 			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.InvalidPartyException ipe) {
+			throw new InvalidPartyException(ipe.getType(), ipe.getMessage());
 		} catch (javax.telephony.MethodNotSupportedException mnse) {
 			throw new MethodNotSupportedException(mnse.getMessage());
 		} catch (javax.telephony.ResourceUnavailableException rue) {

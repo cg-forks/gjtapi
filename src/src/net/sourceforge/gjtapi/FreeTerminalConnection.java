@@ -36,7 +36,6 @@ import javax.telephony.*;
 import javax.telephony.capabilities.*;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.*;
-import javax.telephony.privatedata.PrivateData;
 import net.sourceforge.gjtapi.media.*;
 import net.sourceforge.gjtapi.events.*;
 /**
