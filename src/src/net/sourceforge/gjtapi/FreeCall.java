@@ -1183,7 +1183,8 @@ private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSup
 			default:
 				sb.append("Invalid");
 		}
-		sb.append(" call with ").append(this.getConnections().length)
+		Connection[] conns = this.getConnections();
+		sb.append(" call with ").append(conns == null ? 0 : conns.length)
 			.append(" connections.");
 		return sb.toString();
 	}
