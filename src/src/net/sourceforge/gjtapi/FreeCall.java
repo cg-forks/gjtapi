@@ -295,8 +295,9 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 	this.getGenProvider().getCallMgr().register(this);
 
 	// create two connections - they add themselves back to me
-	new FreeConnection(this, (FreeAddress) origaddr);
-	new FreeConnection(this, dialedDigits);
+	Connection[] connSet = new Connection[2];
+	connSet[0] = new FreeConnection(this, (FreeAddress) origaddr);
+	connSet[1] = new FreeConnection(this, dialedDigits);
 
 	// tell the service provider to hook up the connections
 	try {
@@ -307,7 +308,9 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 
 	// change the call state - do we need this?
 	//this.setState(Call.ACTIVE, Event.CAUSE_NEW_CALL);
-	return getConnections();
+
+	//return getConnections();	// this method does not guarantee that they will be in the right order
+	return connSet;
 }
 /**
  * This creates a connection on a consultation call in an initiated state.  To use this, the
