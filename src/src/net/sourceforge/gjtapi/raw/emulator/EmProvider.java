@@ -125,7 +125,7 @@ public CallId createCall(CallId id, String address, String term, String dest) th
 				javax.telephony.InvalidStateException.CALL_OBJECT,
 				javax.telephony.TerminalConnection.UNKNOWN);
 	}
-	phone.dial(dest);
+	((TestPhone)phone).getModel().dial(dest);
 	return id;
 }
 /**

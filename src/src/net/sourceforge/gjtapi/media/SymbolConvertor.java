@@ -45,6 +45,18 @@ public class SymbolConvertor implements SignalConstants {
  * @return The string-encoding of the DTMF
  */
 public static String convert(Symbol[] syms) {
+	return convert(syms, "");
+}
+
+/**
+ * Convert a set of Symbols to a string of DTMF signals.  Unknown characters are replaced
+ * with the placeholder string.
+ * Creation date: (2000-03-14 8:06:08)
+ * @author: Richard Deadman
+ * @param syms The DTMF Signals to convert to a string.
+ * @return The string-encoding of the DTMF
+ */
+public static String convert(Symbol[] syms, String placeholder) {
 	StringBuffer msg = new StringBuffer();
 	for (int i = 0; i < syms.length; i++) {
 		if (syms[i].equals(SignalConstants.v_DTMF0))
@@ -71,6 +83,16 @@ public static String convert(Symbol[] syms) {
 			msg.append('*');
 		else if (syms[i].equals(SignalConstants.v_DTMFHash))
 			msg.append('#');
+		else if (syms[i].equals(SignalConstants.v_DTMFA))
+			msg.append('A');
+		else if (syms[i].equals(SignalConstants.v_DTMFB))
+			msg.append('B');
+		else if (syms[i].equals(SignalConstants.v_DTMFC))
+			msg.append('C');
+		else if (syms[i].equals(SignalConstants.v_DTMFD))
+			msg.append('D');
+		else
+			msg.append(placeholder);
 	}
 	return msg.toString();
 }

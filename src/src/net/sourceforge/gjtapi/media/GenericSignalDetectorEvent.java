@@ -97,16 +97,12 @@ public Symbol[] getSignalBuffer() {
 	return null;
 }
 /**
- * getSignalString method comment.
+ * Turn the set of signals into a string
  */
 public String getSignalString() {
 	Symbol[] sigs = this.getSignalBuffer();
 	if (sigs != null) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < sigs.length; i++) {
-			sb.append(sigs[i]);
-		}
-		return sb.toString();
+		return SymbolConvertor.convert(sigs, "?");
 	}
 	return null;
 }
