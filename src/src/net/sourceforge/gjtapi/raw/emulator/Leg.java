@@ -62,10 +62,12 @@ public class Leg {
 public Leg(RawCall c, Leg oldLeg, TelephonyListener listener) {
 	super();
 	
-	this.init(c, oldLeg.getPhone(), listener, oldLeg.getState());
+	this.init(c, oldLeg.getPhone(), listener);
 
 	phone.swap(oldLeg, this);
 
+	// finally, after everything is set up, set ourt state, which notifies observers
+	this.setState(oldLeg.getState());
 }
 /**
  * Create a leg between a phone and a call.
@@ -79,10 +81,12 @@ public Leg(RawCall c, Leg oldLeg, TelephonyListener listener) {
 public Leg(RawCall c, RawPhone p, TelephonyListener listener, int state) {
 	super();
 	
-	this.init(c, p, listener, state);
+	this.init(c, p, listener);
 
 	phone.add(this);
 
+	// finally, after everything is set up, set ourt state, which notifies observers
+	this.setState(state);
 }
 /**
  * Tell the phone I'm associated with to start ringing.
@@ -226,9 +230,8 @@ public int hashCode() {
  * @param newCall The call the leg is attached to.
  * @param newPhone The phone the leg it on.
  * @param sink The event receiver.
- * @param newState The new state
  */
-private void init(RawCall newCall, RawPhone newPhone, TelephonyListener sink, int newState) {
+private void init(RawCall newCall, RawPhone newPhone, TelephonyListener sink) {
 	// 1. Set the phone
 	if (newPhone instanceof TestPhone)
 		phone = ((TestPhone)newPhone).getModel();
@@ -240,9 +243,6 @@ private void init(RawCall newCall, RawPhone newPhone, TelephonyListener sink, in
 
 	// now the call
 	call = newCall;
-
-	// set the state and notify observer (sink) (requires phone, call and sink)
-	this.setState(newState);
 
 	// finally add the leg to the call (phone and state must be set)
 	call.addLeg(this);
