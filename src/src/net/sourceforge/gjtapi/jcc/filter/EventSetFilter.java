@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * This filter takes two arrays of
 eventID integers (values returned from event.getID()). For event IDs in the blockEvents array, the filter returns

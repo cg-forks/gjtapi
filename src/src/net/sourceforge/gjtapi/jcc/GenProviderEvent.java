@@ -30,12 +30,10 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
-import javax.jain.services.jcc.JccProviderEvent;
-import javax.jain.services.jcp.JcpProviderEvent;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
- * Wrapper for a JTPAI Provider event that morphs it into a JcpProviderEvent
+ * Wrapper for a JTPAI Provider event that morphs it into a JccProviderEvent
  * Creation date: (2000-10-30 13:23:05)
  * @author: Richard Deadman
  */
@@ -71,39 +69,39 @@ public boolean equals(Object obj) {
 public int getCause() {
 	int jCause = this.getRealEvent().getCause();
 	switch (jCause) {
-			// Note that we must return JcpProviderEvent constants due to a Jcc 1.0b error
+			// Note that we must return JccProviderEvent constants due to a Jcc 1.0b error
 		case ProviderEvent.CAUSE_CALL_CANCELLED: {
-			return JcpProviderEvent.CAUSE_CALL_CANCELLED;
+			return JccProviderEvent.CAUSE_CALL_CANCELLED;
 		} 
 		case ProviderEvent.CAUSE_DEST_NOT_OBTAINABLE: {
-			return JcpProviderEvent.CAUSE_DEST_NOT_OBTAINABLE;
+			return JccProviderEvent.CAUSE_DEST_NOT_OBTAINABLE;
 		} 
 		case ProviderEvent.CAUSE_INCOMPATIBLE_DESTINATION: {
-			return JcpProviderEvent.CAUSE_INCOMPATIBLE_DESTINATION;
+			return JccProviderEvent.CAUSE_INCOMPATIBLE_DESTINATION;
 		} 
 		case ProviderEvent.CAUSE_LOCKOUT: {
-			return JcpProviderEvent.CAUSE_LOCKOUT;
+			return JccProviderEvent.CAUSE_LOCKOUT;
 		} 
 		case ProviderEvent.CAUSE_NETWORK_CONGESTION: {
-			return JcpProviderEvent.CAUSE_NETWORK_CONGESTION;
+			return JccProviderEvent.CAUSE_NETWORK_CONGESTION;
 		} 
 		case ProviderEvent.CAUSE_NETWORK_NOT_OBTAINABLE: {
-			return JcpProviderEvent.CAUSE_NETWORK_NOT_OBTAINABLE;
+			return JccProviderEvent.CAUSE_NETWORK_NOT_OBTAINABLE;
 		} 
 		case ProviderEvent.CAUSE_NEW_CALL: {
-			return JcpProviderEvent.CAUSE_NEW_CALL;
+			return JccProviderEvent.CAUSE_NEW_CALL;
 		} 
 		case ProviderEvent.CAUSE_NORMAL: {
-			return JcpProviderEvent.CAUSE_NORMAL;
+			return JccProviderEvent.CAUSE_NORMAL;
 		} 
 		case ProviderEvent.CAUSE_RESOURCES_NOT_AVAILABLE: {
-			return JcpProviderEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
+			return JccProviderEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
 		} 
 		case ProviderEvent.CAUSE_SNAPSHOT: {
-			return JcpProviderEvent.CAUSE_SNAPSHOT;
+			return JccProviderEvent.CAUSE_SNAPSHOT;
 		} 
 		default: {
-			return JcpProviderEvent.CAUSE_UNKNOWN;
+			return JccProviderEvent.CAUSE_UNKNOWN;
 		}
 	}
 }

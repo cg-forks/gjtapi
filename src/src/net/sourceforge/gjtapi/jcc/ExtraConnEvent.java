@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * Special purpose event for a Connection created event that is not reflected in JTAPI.
  * Creation date: (2000-11-15 14:34:09)

@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
     For all events that require filtering by this {@link EventFilter}, apply the following:
     <ul>

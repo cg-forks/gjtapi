@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * A Jain Jcc address adapter for a Generic JTAPI Address object.
  * Creation date: (2000-10-10 14:17:06)

@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.test;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * Simple test script for running a Jcc program against the emulator raw provider
  * Creation date: (2000-11-16 15:40:58)
@@ -119,7 +119,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		
 		out.print("3.3: Attempting to release a call...");
 			// had to use the Jcp constant due to an error in Jcc 1.0b
-		c.release(javax.jain.services.jcp.JcpCallEvent.CAUSE_NORMAL);
+		c.release(JccCallEvent.CAUSE_NORMAL);
 		out.println(" success.");
 
 	} catch (Exception e) {

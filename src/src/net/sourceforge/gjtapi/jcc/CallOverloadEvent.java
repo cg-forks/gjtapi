@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * Insert the type's description here.
  * Creation date: (2000-11-14 16:13:16)

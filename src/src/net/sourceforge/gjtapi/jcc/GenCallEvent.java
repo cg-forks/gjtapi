@@ -31,8 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
-import javax.jain.services.jcc.*;
-import javax.jain.services.jcp.JcpCallEvent;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
  * This is a wrapper event that makes a JTAPI CallEvent appear as a JccCallEvent.
@@ -86,40 +85,40 @@ public int getCause() {
 	switch (jCause) {
 			// must use JcpCallEvent constants due to error in Jcc 1.0b
 		case CallEvent.CAUSE_CALL_CANCELLED: {
-			return JcpCallEvent.CAUSE_CALL_CANCELLED;
+			return JccCallEvent.CAUSE_CALL_CANCELLED;
 		} 
 		case CallEvent.CAUSE_DEST_NOT_OBTAINABLE: {
-			return JcpCallEvent.CAUSE_DEST_NOT_OBTAINABLE;
+			return JccCallEvent.CAUSE_DEST_NOT_OBTAINABLE;
 		} 
 		case CallEvent.CAUSE_INCOMPATIBLE_DESTINATION: {
-			return JcpCallEvent.CAUSE_INCOMPATIBLE_DESTINATION;
+			return JccCallEvent.CAUSE_INCOMPATIBLE_DESTINATION;
 		} 
 		case CallEvent.CAUSE_LOCKOUT: {
-			return JcpCallEvent.CAUSE_LOCKOUT;
+			return JccCallEvent.CAUSE_LOCKOUT;
 		} 
 		case CallEvent.CAUSE_NETWORK_CONGESTION: {
-			return JcpCallEvent.CAUSE_NETWORK_CONGESTION;
+			return JccCallEvent.CAUSE_NETWORK_CONGESTION;
 		} 
 		case CallEvent.CAUSE_NETWORK_NOT_OBTAINABLE: {
-			return JcpCallEvent.CAUSE_NETWORK_NOT_OBTAINABLE;
+			return JccCallEvent.CAUSE_NETWORK_NOT_OBTAINABLE;
 		} 
 		case CallEvent.CAUSE_NEW_CALL: {
-			return JcpCallEvent.CAUSE_NEW_CALL;
+			return JccCallEvent.CAUSE_NEW_CALL;
 		} 
 		case CallEvent.CAUSE_NORMAL: {
-			return JcpCallEvent.CAUSE_NORMAL;
+			return JccCallEvent.CAUSE_NORMAL;
 		} 
 		case CallEvent.CAUSE_RESOURCES_NOT_AVAILABLE: {
-			return JcpCallEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
+			return JccCallEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
 		} 
 		case CallEvent.CAUSE_SNAPSHOT: {
-			return JcpCallEvent.CAUSE_SNAPSHOT;
+			return JccCallEvent.CAUSE_SNAPSHOT;
 		} 
 		case CallEvent.CAUSE_UNKNOWN: {
-			return JcpCallEvent.CAUSE_UNKNOWN;
+			return JccCallEvent.CAUSE_UNKNOWN;
 		} 
 		default: {
-			return JcpCallEvent.CAUSE_UNKNOWN;
+			return JccCallEvent.CAUSE_UNKNOWN;
 		}
 	}
 }

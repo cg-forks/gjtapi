@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * This requires a complete ordering of values in JCPAddress. The ordering is arranged by defining the order to be by JCPAddress.getName()'s string order.
 For each address in the call obtained by event.getCall(), apply the following. Obtain a string using address.getName(). If

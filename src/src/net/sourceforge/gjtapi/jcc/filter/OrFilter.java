@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * This filter takes as input an array of EventFilters. For a given event, it applies the
  * filters in order. If a filter returns nomatchDisposition, then the next filter is

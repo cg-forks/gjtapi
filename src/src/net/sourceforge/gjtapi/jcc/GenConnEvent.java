@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeConnection;
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
  * This is a wrapper that adapts a JTAPI Connection event into a JccConnectionEvent.

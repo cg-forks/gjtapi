@@ -32,8 +32,7 @@ package net.sourceforge.gjtapi.jcc;
 */
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.jcc.filter.*;
-import javax.jain.services.jcc.*;
-import javax.jain.services.jcp.JcpProviderListener;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 import java.util.*;
 import java.lang.ref.WeakReference;
@@ -111,7 +110,7 @@ public Provider(GenericProvider prov) {
 /**
  * addCallListener method comment.
  */
-public void addCallListener(JccCallListener cl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public void addCallListener(JccCallListener cl) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	Map listMap = this.getCallListeners();
 	
 		// first see if we already have the listener registered.
@@ -131,13 +130,13 @@ public void addCallListener(JccCallListener cl) throws javax.jain.services.jcc.M
 /**
  * addCallLoadControlListener method comment.
  */
-/*public void addCallLoadControlListener(CallLoadControlListener clcl, EventFilter filter) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+/*public void addCallLoadControlListener(CallLoadControlListener clcl, EventFilter filter) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	this.getLoadListeners().put(clcl, filter);
 }*/
 /**
  * Add a CallLoadControlListener with no filter
  */
-public void addCallLoadControlListener(CallLoadControlListener clcl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public void addCallLoadControlListener(CallLoadControlListener clcl) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	this.getLoadListeners().put(clcl, null);
 }
 /**
@@ -159,25 +158,19 @@ public void addConnectionListener(JccConnectionListener cl, EventFilter filter) 
 			((ConnListenerAdapter)cla).setFilter(filter);
 	}
 }
-/**
- * addProviderListener method comment.
- */
-public void addProviderListener(JccProviderListener pl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
-	this.addProviderListener((JcpProviderListener)pl);
-}
 
 /**
  * addProviderListener method comment.
  */
-public void addProviderListener(JcpProviderListener pl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public void addProviderListener(JccProviderListener pl) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	try {
 		this.getGenProv().addProviderListener(new ProviderListenerAdapter(
 			this,
 			pl));
 	} catch (javax.telephony.ResourceUnavailableException rue) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(rue.getType());
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(rue.getType());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.csapi.cc.jcc.MethodNotSupportedException(mnse.getMessage());
 	}
 }
 /**
@@ -223,21 +216,21 @@ public void callOverloadEncountered(FreeAddress addr) {
 /**
  * createCall method comment.
  */
-public JccCall createCall() throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public JccCall createCall() throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	GenCall call = null;
 	try {
 		call = this.findCall((FreeCall)this.getGenProv().createCall());
 	} catch (javax.telephony.InvalidStateException ise) {
-		throw new javax.jain.services.jcc.InvalidStateException(ise.getObject(),
+		throw new javax.csapi.cc.jcc.InvalidStateException(ise.getObject(),
 								ise.getObjectType(),
 								ise.getState(),
 								ise.getMessage());
 	} catch (javax.telephony.PrivilegeViolationException pve) {
-		throw new javax.jain.services.jcc.PrivilegeViolationException(pve.getType(), pve.getMessage());
+		throw new javax.csapi.cc.jcc.PrivilegeViolationException(pve.getType(), pve.getMessage());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.csapi.cc.jcc.MethodNotSupportedException(mnse.getMessage());
 	} catch (javax.telephony.ResourceUnavailableException rue) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(rue.getType());
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(rue.getType());
 	}
 
 		// now add any listeners
@@ -259,11 +252,11 @@ public JccCall createCall() throws javax.jain.services.jcc.InvalidStateException
 /**
  * createEventFilterAddressRange method comment.
  */
-public EventFilter createEventFilterAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
+public EventFilter createEventFilterAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.csapi.cc.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.AddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.csapi.cc.jcc.InvalidPartyException iae) {
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(javax.csapi.cc.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
@@ -281,11 +274,11 @@ public EventFilter createEventFilterAnd(EventFilter[] filters, int nomatchDispos
 /**
  * createEventFilterAddressRange method comment.
  */
-public EventFilter createEventFilterDestAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
+public EventFilter createEventFilterDestAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.csapi.cc.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.DestAddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.csapi.cc.jcc.InvalidPartyException iae) {
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(javax.csapi.cc.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
@@ -309,11 +302,11 @@ public EventFilter createEventFilterOr(EventFilter[] filters, int nomatchDisposi
 /**
  * createEventFilterAddressRange method comment.
  */
-public EventFilter createEventFilterOrigAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
+public EventFilter createEventFilterOrigAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.csapi.cc.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.OrigAddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcp.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.csapi.cc.jcc.InvalidPartyException iae) {
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(javax.csapi.cc.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
@@ -404,12 +397,12 @@ GenConnection findConnection(FreeConnection jtapiConn) {
 /**
  * getAddress method comment.
  */
-public JccAddress getAddress(String number) throws javax.jain.services.jcc.InvalidPartyException {
+public JccAddress getAddress(String number) throws javax.csapi.cc.jcc.InvalidPartyException {
 	try {
 		return this.findAddress((FreeAddress)this.getGenProv().getAddress(number));
 	} catch (javax.telephony.InvalidArgumentException iae) {
-		throw new javax.jain.services.jcc.InvalidPartyException(
-			javax.jain.services.jcc.InvalidPartyException.UNKNOWN_PARTY,
+		throw new javax.csapi.cc.jcc.InvalidPartyException(
+			javax.csapi.cc.jcc.InvalidPartyException.UNKNOWN_PARTY,
 			iae.getMessage());
 	}
 }
@@ -520,12 +513,6 @@ public void removeConnectionListener(JccConnectionListener cl) {
  * removeProviderListener method comment.
  */
 public void removeProviderListener(JccProviderListener listener) {
-	this.removeProviderListener((JcpProviderListener)listener);
-}
-/**
- * removeProviderListener method comment.
- */
-public void removeProviderListener(JcpProviderListener listener) {
 	this.getGenProv().removeProviderListener(new ProviderListenerAdapter(
 		this,
 		listener));
@@ -533,7 +520,7 @@ public void removeProviderListener(JcpProviderListener listener) {
 /**
  * setCallLoadControl method comment.
  */
-public void setCallLoadControl(JccAddress[] a1, double dur, double[] mech, int[] treat) throws javax.jain.services.jcc.MethodNotSupportedException {
+public void setCallLoadControl(JccAddress[] a1, double dur, double[] mech, int[] treat) throws javax.csapi.cc.jcc.MethodNotSupportedException {
 	String low = null;
 	String high = null;
 	double adRate = 0;
@@ -558,7 +545,7 @@ public void setCallLoadControl(JccAddress[] a1, double dur, double[] mech, int[]
 			interval,
 			treat);
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.csapi.cc.jcc.MethodNotSupportedException(mnse.getMessage());
 	}
 }
 /**
@@ -606,9 +593,9 @@ public void shutdown() {
 	@since 1.0b
 	*/
 	public EventFilter createEventFilterMidCallEvent(int midCallType, String midCallValue, int matchDisposition, int nomatchDisposition) throws
-	javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidArgumentException {
+	javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.InvalidArgumentException {
 		//return new MidCallEventFilter(midCallType, midCallValue, matchDisposition, nomatchDisposition);
-		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.UNKNOWN);
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(javax.csapi.cc.jcc.ResourceUnavailableException.UNKNOWN);
 	}
 
     /**
@@ -640,7 +627,7 @@ public void shutdown() {
     @since 1.0b
     */
     public EventFilter createEventFilterMinimunCollectedAddressLength(int minimumAddressLength, int matchDisposition, int nomatchDisposition) throws
-    javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidArgumentException {
+    javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.InvalidArgumentException {
     	return new MinimumCollectedAddressLengthFilter(minimumAddressLength, matchDisposition, nomatchDisposition);
     }
 

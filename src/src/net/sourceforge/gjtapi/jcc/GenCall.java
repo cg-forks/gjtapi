@@ -32,9 +32,7 @@ package net.sourceforge.gjtapi.jcc;
 */
 import javax.telephony.Address;
 import net.sourceforge.gjtapi.*;
-import javax.jain.services.jcc.*;
-import javax.jain.services.jcp.JcpCallEvent;
-import javax.jain.services.jcp.JcpCallListener;
+import javax.csapi.cc.jcc.*;
 import java.util.*;
 /**
  * Wrapper for a Generic JTAPI Framework Call object to make it Jain Jcc compliant.
@@ -122,7 +120,7 @@ public class GenCall implements JccCall {
 
 		public int getCause() {
 				// must use JcpCallEvent constant to avoid Jcc 1.0b error
-			return JcpCallEvent.CAUSE_NORMAL;
+			return JccCallEvent.CAUSE_NORMAL;
 		}
 	}
 	private Provider provider;
@@ -141,19 +139,12 @@ public GenCall(Provider prov, FreeCall call) {
 /**
  * addCallListener method comment.
  */
-public void addCallListener(JccCallListener cl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
-	this.addCallListener((JcpCallListener)cl);
-}
-/**
- * addCallListener method comment.
- */
-public void addCallListener(JcpCallListener listener) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public void addCallListener(JccCallListener listener) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	this.getFrameCall().addCallListener(new CallListenerAdapter((Provider)this.getProvider(), listener));
-}
-/**
+}/**
  * addConnectionListener method comment.
  */
-public void addConnectionListener(JccConnectionListener cl, EventFilter fl) throws javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.MethodNotSupportedException {
+public void addConnectionListener(JccConnectionListener cl, EventFilter fl) throws javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.MethodNotSupportedException {
 	this.getFrameCall().addCallListener(new ConnListenerAdapter((Provider)this.getProvider(), cl, fl));
 }
 /**
@@ -167,7 +158,7 @@ private void addPendingConn(GenConnection conn) {
 /**
  * Here we return the single connection that is created from the originating address.
  */
-public JccConnection createConnection(String targetAddress, String originatingAddress, String originalCalledAddress, String redirectingAddress) throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+public JccConnection createConnection(String targetAddress, String originatingAddress, String originalCalledAddress, String redirectingAddress) throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	Provider prov = this.getPrivateProvider();
 	JccAddress target = null;
 	GenAddress origAddr = null;
@@ -252,16 +243,16 @@ public JccConnection createConnection(String targetAddress, String originatingAd
 		@since 1.0a
 	*/
 	public JccConnection[] connect(JccAddress origaddr, String dialedDigits) throws 
-	javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.InvalidPartyException, 
-	javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.MethodNotSupportedException {
+	javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.InvalidPartyException, 
+	javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.MethodNotSupportedException {
 		
 		Provider prov = this.getPrivateProvider();
 		JccAddress target = null;
 		try {
 			target = (JccAddress)prov.getAddress(dialedDigits);
-		} catch (javax.jain.services.jcc.InvalidPartyException iae) {
-			throw new javax.jain.services.jcc.ResourceUnavailableException(
-				javax.jain.services.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+		} catch (javax.csapi.cc.jcc.InvalidPartyException iae) {
+			throw new javax.csapi.cc.jcc.ResourceUnavailableException(
+				javax.csapi.cc.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 		}
 		GenConnection conn1 = new GenConnection(prov, this, origaddr, (GenAddress)origaddr, null, null);
 		GenConnection conn2 = new GenConnection(prov, this, target, (GenAddress)origaddr, null, null);
@@ -271,13 +262,13 @@ public JccConnection createConnection(String targetAddress, String originatingAd
 		// now complete the routing
 		try {
 			conn1.routeConnection(true);
-		} catch (javax.jain.services.jcc.InvalidArgumentException iae) {	// is this a spec. bug?
-			throw new javax.jain.services.jcc.InvalidStateException(conn1, javax.jain.services.jcc.InvalidStateException.CONNECTION_OBJECT, conn1.getState(), "trying to route connection");
+		} catch (javax.csapi.cc.jcc.InvalidArgumentException iae) {	// is this a spec. bug?
+			throw new javax.csapi.cc.jcc.InvalidStateException(conn1, javax.csapi.cc.jcc.InvalidStateException.CONNECTION_OBJECT, conn1.getState(), "trying to route connection");
 		}
 		try {
 			conn2.routeConnection(true);
-		} catch (javax.jain.services.jcc.InvalidArgumentException iae) {	// is this a spec. bug?
-			throw new javax.jain.services.jcc.InvalidStateException(conn2, javax.jain.services.jcc.InvalidStateException.CONNECTION_OBJECT, conn2.getState(), "trying to route connection");
+		} catch (javax.csapi.cc.jcc.InvalidArgumentException iae) {	// is this a spec. bug?
+			throw new javax.csapi.cc.jcc.InvalidStateException(conn2, javax.csapi.cc.jcc.InvalidStateException.CONNECTION_OBJECT, conn2.getState(), "trying to route connection");
 		}
 		
 		JccConnection jc[] = new JccConnection[2];
@@ -405,21 +396,21 @@ public int hashCode() {
 /**
  * release method comment.
  */
-public void release() throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.ResourceUnavailableException {
+public void release() throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	
 	try {
 		this.getFrameCall().drop();
 	} catch (javax.telephony.InvalidStateException ise) {
-		throw new javax.jain.services.jcc.InvalidStateException(ise.getObject(),
+		throw new javax.csapi.cc.jcc.InvalidStateException(ise.getObject(),
 								ise.getObjectType(),
 								ise.getState(),
 								ise.getMessage());
 	} catch (javax.telephony.PrivilegeViolationException pve) {
-		throw new javax.jain.services.jcc.PrivilegeViolationException(pve.getType(), pve.getMessage());
+		throw new javax.csapi.cc.jcc.PrivilegeViolationException(pve.getType(), pve.getMessage());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
 		throw new RuntimeException("Framework doesn't support drop but yet declares it does!");
 	} catch (javax.telephony.ResourceUnavailableException rue) {
-		throw new javax.jain.services.jcc.ResourceUnavailableException(rue.getType());
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(rue.getType());
 	}
 }
     /**
@@ -464,8 +455,8 @@ public void release() throws javax.jain.services.jcc.InvalidStateException, java
 		@throws InvalidArgumentException The given release cause code is invalid. 
 		@since 1.0a
     */
-    public void release(int causeCode) throws javax.jain.services.jcc.PrivilegeViolationException, 
-    javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.InvalidArgumentException {
+    public void release(int causeCode) throws javax.csapi.cc.jcc.PrivilegeViolationException, 
+    javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.InvalidArgumentException {
     	this.release();
     }
     
@@ -473,12 +464,6 @@ public void release() throws javax.jain.services.jcc.InvalidStateException, java
  * removeCallListener method comment.
  */
 public void removeCallListener(JccCallListener listener) {
-	this.removeCallListener((JcpCallListener)listener);
-}
-/**
- * removeCallListener method comment.
- */
-public void removeCallListener(JcpCallListener listener) {
 	this.getFrameCall().removeCallListener(new CallListenerAdapter(this.getPrivateProvider(), listener));
 }
 /**
@@ -498,7 +483,7 @@ void removePendingConn(GenConnection conn) {
 /**
  * routeCall method comment.
  */
-public JccConnection routeCall(String targetAddress, String originatingAddress, String originalDestinationAddress, String redirectingAddress) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidPartyException, javax.jain.services.jcc.InvalidArgumentException, javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException {
+public JccConnection routeCall(String targetAddress, String originatingAddress, String originalDestinationAddress, String redirectingAddress) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException, javax.csapi.cc.jcc.InvalidPartyException, javax.csapi.cc.jcc.InvalidArgumentException, javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException {
 	JccConnection conn = (JccConnection)this.createConnection(targetAddress, originatingAddress, originalDestinationAddress, redirectingAddress);
 
 	conn.routeConnection(true);
@@ -524,9 +509,9 @@ private void setProvider(Provider prov) {
 /**
  * superviseCall method comment.
  */
-public void superviseCall(JccCallListener cl, double time, int treatment, double bytes) throws javax.jain.services.jcc.MethodNotSupportedException {
+public void superviseCall(JccCallListener cl, double time, int treatment, double bytes) throws javax.csapi.cc.jcc.MethodNotSupportedException {
 	if (time == 0) {
-		throw new javax.jain.services.jcc.MethodNotSupportedException("Volume based supervision not supported");
+		throw new javax.csapi.cc.jcc.MethodNotSupportedException("Volume based supervision not supported");
 	}
 
 	Supervisor supervisor = new Supervisor(this, cl, time, treatment);
@@ -546,8 +531,8 @@ public void superviseCall(JccCallListener cl, double time, int treatment, double
 			if (initialSize == 0)
 				try {
 					this.addCallListener(new SuperviseInstaller());
-				} catch (javax.jain.services.jcc.ResourceUnavailableException rue) {
-					throw new javax.jain.services.jcc.MethodNotSupportedException("Could not listen for active event: " + rue);
+				} catch (javax.csapi.cc.jcc.ResourceUnavailableException rue) {
+					throw new javax.csapi.cc.jcc.MethodNotSupportedException("Could not listen for active event: " + rue);
 				}
 		}
 	}
@@ -555,7 +540,7 @@ public void superviseCall(JccCallListener cl, double time, int treatment, double
 /**
  * Suppervise a call based on time
  */
-public void superviseCall(JccCallListener cl, double time, int treatment) throws javax.jain.services.jcc.MethodNotSupportedException {
+public void superviseCall(JccCallListener cl, double time, int treatment) throws javax.csapi.cc.jcc.MethodNotSupportedException {
 	this.superviseCall(cl, time, treatment, 0);
 }
 

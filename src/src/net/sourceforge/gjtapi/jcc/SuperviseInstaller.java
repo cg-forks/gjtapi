@@ -32,7 +32,7 @@ package net.sourceforge.gjtapi.jcc;
 */
 import java.util.Set;
 import java.util.Iterator;
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * This is a simple call listener that listens for idle -> active transitions on a call
  * and installs any supervisors pending for the call.
@@ -62,7 +62,7 @@ public void callActive(JccCallEvent event) {
 /**
  * callcreated method comment.
  */
-public void callCreated(javax.jain.services.jcc.JccCallEvent event) {}
+public void callCreated(JccCallEvent event) {}
 /**
  * callEventTransmissionEnded method comment.
  */

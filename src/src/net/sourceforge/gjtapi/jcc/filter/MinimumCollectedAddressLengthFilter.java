@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * This method returns a standard EventFilter which is implemented by the JCC platform.
     For all events that require filtering by this {@link EventFilter}, apply the following:

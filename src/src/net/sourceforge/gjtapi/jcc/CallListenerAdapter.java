@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
-import javax.jain.services.jcp.JcpCallListener;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 import javax.telephony.callcontrol.*;
 /**
@@ -42,12 +41,12 @@ import javax.telephony.callcontrol.*;
  */
 public class CallListenerAdapter implements CallListener {
 	private Provider prov = null;
-	private JcpCallListener realCallListener = null;
+	private JccCallListener realCallListener = null;
 /**
  * EventConnectionAdapter constructor comment.
  */
 public CallListenerAdapter(Provider prov,
-			JcpCallListener listener) {
+			JccCallListener listener) {
 	super();
 
 	this.setProv(prov);
@@ -109,7 +108,7 @@ Provider getProv() {
  * Creation date: (2000-10-30 10:27:59)
  * @return jain.application.services.jcc.JccCallListener
  */
-private JcpCallListener getRealCallListener() {
+private JccCallListener getRealCallListener() {
 	return realCallListener;
 }
 /**
@@ -151,7 +150,7 @@ private void setProv(Provider newProv) {
  * Creation date: (2000-10-30 10:27:59)
  * @param newRealCallListener jain.application.services.jcc.JccCallListener
  */
-private void setRealCallListener(JcpCallListener newRealCallListener) {
+private void setRealCallListener(JccCallListener newRealCallListener) {
 	realCallListener = newRealCallListener;
 }
 /**

@@ -33,7 +33,7 @@ package net.sourceforge.gjtapi.jcc;
 import net.sourceforge.gjtapi.media.*;
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.*;
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
  * Jain Jcc Connection adapter for a Generic JTAPI Connection.
@@ -232,17 +232,16 @@ private javax.telephony.Connection getFrameConn() {
 	return frameConn;
 }
 /**
- * getJccState method comment.
+ * This is an artifact of earlier Jcc version. Since it is no longer part of the
+ * API, but is used by another method, it is now private.
  */
-public int getJccState() {
+private int getJccState() {
 	int jtapiState = this.getFrameConn().getState();
 	switch (jtapiState) {
 		case Connection.ALERTING: {
 			return JccConnection.ALERTING;
 		} 
 		case Connection.CONNECTED: {
-			if (this.state == JccConnection.SUSPENDED)
-				return this.state;
 			return JccConnection.CONNECTED;
 		} 
 		case Connection.DISCONNECTED: {
@@ -256,18 +255,14 @@ public int getJccState() {
 		} 
 		case Connection.INPROGRESS: {
 			int jccState = this.state;
-			if ((jccState == JccConnection.ADDRESS_ANALYZE) ||
+			/* if ((jccState == JccConnection.ADDRESS_ANALYZE) ||
 				(jccState == JccConnection.ADDRESS_COLLECT) ||
 				(jccState == JccConnection.AUTHORIZE_CALL_ATTEMPT) ||
-				(jccState == JccConnection.CALL_DELIVERY))
-				return jccState;
-			return JccConnection.INPROGRESS;
-		} 
-		case Connection.UNKNOWN: {
-			return JccConnection.UNKNOWN;
+				(jccState == JccConnection.CALL_DELIVERY)) */
+			return jccState;
 		} 
 		default: {
-			return JccConnection.UNKNOWN;
+			return JccConnection.FAILED;	// should never be here -- but no UNKNOWN in Jcc anymore
 		}
 	}
 }
@@ -354,33 +349,7 @@ private java.lang.String getRouteAddress() {
  * getState method comment.
  */
 public int getState() {
-	int jtapiState = this.getFrameConn().getState();
-	switch (jtapiState) {
-		case Connection.ALERTING: {
-			return JccConnection.ALERTING;
-		} 
-		case Connection.CONNECTED: {
-			return JccConnection.CONNECTED;
-		} 
-		case Connection.DISCONNECTED: {
-			return JccConnection.DISCONNECTED;
-		} 
-		case Connection.FAILED: {
-			return JccConnection.FAILED;
-		} 
-		case Connection.IDLE: {
-			return JccConnection.IDLE;
-		} 
-		case Connection.INPROGRESS: {
-			return JccConnection.INPROGRESS;
-		} 
-		case Connection.UNKNOWN: {
-			return JccConnection.UNKNOWN;
-		} 
-		default: {
-			return JccConnection.UNKNOWN;
-		}
-	}
+	return this.getJccState();
 }
 /**
  * Combination of Provider, call and address hashcodes
@@ -399,58 +368,58 @@ public boolean isBlocked() {
 /**
  * release method comment.
  */
-public void release() throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.ResourceUnavailableException {
+public void release() throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	// unblock
 	this.continueProcessing();
 	
 	try {
 		this.getFrameConn().disconnect();
 	} catch (javax.telephony.InvalidStateException ise) {
-		throw new javax.jain.services.jcc.InvalidStateException(this.getFrameConn(),
-			javax.jain.services.jcc.InvalidStateException.CONNECTION_OBJECT,
+		throw new javax.csapi.cc.jcc.InvalidStateException(this.getFrameConn(),
+			javax.csapi.cc.jcc.InvalidStateException.CONNECTION_OBJECT,
 			this.getFrameConn().getState(),
 			ise.getMessage());
 	} catch (javax.telephony.PrivilegeViolationException pve) {
-		throw new javax.jain.services.jcc.PrivilegeViolationException(
-			javax.jain.services.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION,
+		throw new javax.csapi.cc.jcc.PrivilegeViolationException(
+			javax.csapi.cc.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION,
 			pve.getMessage());
 	} catch (javax.telephony.ResourceUnavailableException rue) {
 		int exType = rue.getType();
 		int newType;
 		switch (exType) {
 			case javax.telephony.ResourceUnavailableException.NO_DIALTONE: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.OBSERVER_LIMIT_EXCEEDED: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.OUTSTANDING_METHOD_EXCEEDED: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.UNSPECIFIED_LIMIT_EXCEEDED: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			case javax.telephony.ResourceUnavailableException.USER_RESPONSE: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
 			} 
 			default: {
-				newType = javax.jain.services.jcc.ResourceUnavailableException.UNKNOWN;
+				newType = javax.csapi.cc.jcc.ResourceUnavailableException.UNKNOWN;
 			}
 		}
-		throw new javax.jain.services.jcc.ResourceUnavailableException(newType);
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(newType);
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
 		throw new RuntimeException("Release failed due to " + mnse);
 	}
@@ -462,7 +431,7 @@ public void release() throws javax.jain.services.jcc.InvalidStateException, java
  * <P>Note: For now, the cause code is ignored since the JccTpi has no current way of passing
  * it on to the low-level implementation.
  */
-public void release(int cause) throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.ResourceUnavailableException {
+public void release(int cause) throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	this.release();
 }
 
@@ -471,12 +440,12 @@ public void release(int cause) throws javax.jain.services.jcc.InvalidStateExcept
  */
 public void routeConnection(boolean attachMedia)
 	throws 
-		javax.jain.services.jcc.MethodNotSupportedException, 
-		javax.jain.services.jcc.ResourceUnavailableException, 
-		javax.jain.services.jcc.InvalidPartyException, 
-		javax.jain.services.jcc.InvalidArgumentException, 
-		javax.jain.services.jcc.InvalidStateException, 
-		javax.jain.services.jcc.PrivilegeViolationException {
+		javax.csapi.cc.jcc.MethodNotSupportedException, 
+		javax.csapi.cc.jcc.ResourceUnavailableException, 
+		javax.csapi.cc.jcc.InvalidPartyException, 
+		javax.csapi.cc.jcc.InvalidArgumentException, 
+		javax.csapi.cc.jcc.InvalidStateException, 
+		javax.csapi.cc.jcc.PrivilegeViolationException {
 	// unblock
 	this.continueProcessing();
 
@@ -506,7 +475,7 @@ public void routeConnection(boolean attachMedia)
 			call.removePendingConn(this);
 		}
 	} catch (javax.telephony.InvalidStateException ise) {
-		throw new javax.jain.services.jcc.InvalidStateException(
+		throw new javax.csapi.cc.jcc.InvalidStateException(
 			fCall, 
 			ise.getObjectType(), 
 			ise.getState(), 
@@ -520,20 +489,20 @@ public void routeConnection(boolean attachMedia)
 			case javax.telephony.PrivilegeViolationException.DESTINATION_VIOLATION :
 				{
 					newType = 
-						javax.jain.services.jcc.PrivilegeViolationException.DESTINATION_VIOLATION; 
+						javax.csapi.cc.jcc.PrivilegeViolationException.DESTINATION_VIOLATION; 
 				}
 			case javax.telephony.PrivilegeViolationException.ORIGINATOR_VIOLATION :
 				{
 					newType = 
-						javax.jain.services.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION; 
+						javax.csapi.cc.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION; 
 				}
 			default :
 				{
 					newType = 
-						javax.jain.services.jcc.PrivilegeViolationException.UNKNOWN_VIOLATION; 
+						javax.csapi.cc.jcc.PrivilegeViolationException.UNKNOWN_VIOLATION; 
 				}
 		}
-		throw new javax.jain.services.jcc.PrivilegeViolationException(
+		throw new javax.csapi.cc.jcc.PrivilegeViolationException(
 			newType, 
 			pve.getMessage()); 
 	} catch (javax.telephony.ResourceUnavailableException rue) {
@@ -543,53 +512,53 @@ public void routeConnection(boolean attachMedia)
 			case javax.telephony.ResourceUnavailableException.NO_DIALTONE :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException.NO_DIALTONE; 
+						javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE; 
 				}
 			case javax.telephony.ResourceUnavailableException.OBSERVER_LIMIT_EXCEEDED :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException
+						javax.csapi.cc.jcc.ResourceUnavailableException
 							.OBSERVER_LIMIT_EXCEEDED; 
 				}
 			case javax.telephony.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException
+						javax.csapi.cc.jcc.ResourceUnavailableException
 							.ORIGINATOR_UNAVAILABLE; 
 				}
 			case javax.telephony.ResourceUnavailableException.OUTSTANDING_METHOD_EXCEEDED :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException
+						javax.csapi.cc.jcc.ResourceUnavailableException
 							.OUTSTANDING_METHOD_EXCEEDED; 
 				}
 			case javax.telephony.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED; 
+						javax.csapi.cc.jcc.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED; 
 				}
 			case javax.telephony.ResourceUnavailableException.UNSPECIFIED_LIMIT_EXCEEDED :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException
+						javax.csapi.cc.jcc.ResourceUnavailableException
 							.UNSPECIFIED_LIMIT_EXCEEDED; 
 				}
 			case javax.telephony.ResourceUnavailableException.USER_RESPONSE :
 				{
 					newType = 
-						javax.jain.services.jcc.ResourceUnavailableException.USER_RESPONSE; 
+						javax.csapi.cc.jcc.ResourceUnavailableException.USER_RESPONSE; 
 				}
 			default :
 				{
-					newType = javax.jain.services.jcc.ResourceUnavailableException.UNKNOWN;
+					newType = javax.csapi.cc.jcc.ResourceUnavailableException.UNKNOWN;
 				}
 		}
-		throw new javax.jain.services.jcc.ResourceUnavailableException(newType);
+		throw new javax.csapi.cc.jcc.ResourceUnavailableException(newType);
 	} catch (javax.telephony.InvalidArgumentException iae) {
-		throw new javax.jain.services.jcc.InvalidArgumentException(
+		throw new javax.csapi.cc.jcc.InvalidArgumentException(
 			iae.getMessage()); 
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new javax.jain.services.jcc.MethodNotSupportedException(
+		throw new javax.csapi.cc.jcc.MethodNotSupportedException(
 			mnse.getMessage()); 
 	}
 
@@ -602,8 +571,8 @@ public void routeConnection(boolean attachMedia)
 
 	// see if we failed to route the call
 	if (partyFailed == true)
-		throw new javax.jain.services.jcc.InvalidPartyException(
-			javax.jain.services.jcc.InvalidPartyException.DESTINATION_PARTY, 
+		throw new javax.csapi.cc.jcc.InvalidPartyException(
+			javax.csapi.cc.jcc.InvalidPartyException.DESTINATION_PARTY, 
 			"All selected routes failed: " + route); 
 
 	// now attach the media if necessary
@@ -613,7 +582,7 @@ public void routeConnection(boolean attachMedia)
 /**
  * selectRoute method comment.
  */
-public void selectRoute(java.lang.String address) throws javax.jain.services.jcc.MethodNotSupportedException {
+public void selectRoute(java.lang.String address) throws javax.csapi.cc.jcc.MethodNotSupportedException {
 	this.setRouteAddress(address);
 }
 /**
@@ -668,7 +637,7 @@ int setJccState(int newState) {
 /**
  * Insert the method's description here.
  * Creation date: (2000-11-09 15:20:26)
- * @param newLastAddr javax.jain.services.jcc.JcpAddress
+ * @param newLastAddr javax.csapi.cc.jcc.JccAddress
  */
 void setLastAddr(JccAddress newLastAddr) {
 	lastAddr = newLastAddr;
@@ -676,7 +645,7 @@ void setLastAddr(JccAddress newLastAddr) {
 /**
  * Insert the method's description here.
  * Creation date: (2000-11-09 15:20:26)
- * @param newOrigAddr javax.jain.services.jcc.JcpAddress
+ * @param newOrigAddr javax.csapi.cc.jcc.JccAddress
  */
 void setOrigAddr(JccAddress newOrigAddr) {
 	origAddr = newOrigAddr;
@@ -708,8 +677,8 @@ private void setRouteAddress(java.lang.String newRouteAddress) {
  * @throws MethodNotSupportedException The implementation does not support this method.
  * @return the mid call data; the service code type and service code value
  */
-public MidCallData getMidCallData() throws javax.jain.services.jcc.MethodNotSupportedException {
-	throw new javax.jain.services.jcc.MethodNotSupportedException("Not collected by GJTAPI Service Provider");
+public MidCallData getMidCallData() throws javax.csapi.cc.jcc.MethodNotSupportedException {
+	throw new javax.csapi.cc.jcc.MethodNotSupportedException("Not collected by GJTAPI Service Provider");
 }
 
 /**

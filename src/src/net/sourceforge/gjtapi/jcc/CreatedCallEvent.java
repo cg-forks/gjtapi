@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 /**
  * Special purpose event for a Call created event that is not reflected in
  * JTAPI.
@@ -64,7 +64,7 @@ public int getCause() {
  */
 public int getID() {
 		// must use JcpCallEvent constant due to Jcc 1.0b error
-	return javax.jain.services.jcp.JcpCallEvent.CAUSE_NEW_CALL;
+	return JccCallEvent.CAUSE_NEW_CALL;
 }
 /**
  * getSource method comment.

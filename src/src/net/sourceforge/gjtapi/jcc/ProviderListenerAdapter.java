@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.jain.services.jcp.JcpProviderListener;
-import javax.jain.services.jcc.*;
+import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
  * An adapter that converts JTAPI Provider events into Jcp ProviderEvents.
@@ -40,11 +39,11 @@ import javax.telephony.*;
  */
 public class ProviderListenerAdapter implements ProviderListener {
 	private Provider prov;
-	private JcpProviderListener realListener;
+	private JccProviderListener realListener;
 /**
  * ProviderListenerAdapter constructor comment.
  */
-public ProviderListenerAdapter(Provider prov, JcpProviderListener listener) {
+public ProviderListenerAdapter(Provider prov, JccProviderListener listener) {
 	super();
 
 	this.setProv(prov);
@@ -77,7 +76,7 @@ private Provider getProv() {
  * Creation date: (2000-10-30 13:40:03)
  * @return jain.application.services.jcp.JcpProviderListener
  */
-private JcpProviderListener getRealListener() {
+private JccProviderListener getRealListener() {
 	return realListener;
 }
 /**
@@ -131,7 +130,7 @@ private void setProv(Provider newProv) {
  * Creation date: (2000-10-30 13:40:03)
  * @param newRealListener jain.application.services.jcp.JcpProviderListener
  */
-private void setRealListener(JcpProviderListener newRealListener) {
+private void setRealListener(JccProviderListener newRealListener) {
 	realListener = newRealListener;
 }
 /**
