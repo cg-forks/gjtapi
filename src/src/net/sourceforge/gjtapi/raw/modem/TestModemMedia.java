@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.raw.modem;
 
 /*
-    Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+    Copyright (c) Westhawk Ltd 
 
     All rights reserved. 
 
