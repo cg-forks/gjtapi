@@ -196,10 +196,11 @@ public FreeTerminalConnection getLazyTermConn(String termName) {
 	// No terminal connection found -- create a new one
 	GenericProvider prov = this.getGenProvider();
 		// look for a cached Terminal to give us the media type
-	FreeTerminal term = prov.getDomainMgr().getCachedTerminal(termName);
+	FreeTerminal term = prov.getDomainMgr().getLazyTerminal(termName);
 	if (term != null) {	// use overloaded version to create TerminalConnection
 		tc = this.getLazyTermConn(term);
 	} else {	// must ask raw TelephonyProvider for media type
+		// we should never get here -- getLazyTerminal should create a Terminal if necessary
 		if (prov.getRaw().isMediaTerminal(termName))
 			tc = new FreeMediaTerminalConnection(this, termName);
 		else
