@@ -54,7 +54,11 @@ public void dispatch() {
 	super.dispatch();	// send to Obsersers
 
 	// now send to listeners
-	((FreeCall)this.getCall()).getListener().callInvalid(this);
+	FreeCall call = (FreeCall)this.getCall();
+	call.getListener().callInvalid(this);
+	
+	// Tell the call to clean itself up, since it is now invalid
+	call.cleanup();
 }
 /**
  * Return the observer ID for this event.

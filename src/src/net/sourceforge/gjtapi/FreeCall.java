@@ -886,22 +886,33 @@ void toInvalid(int cause) {
 	// set state
 	this.setState(Call.INVALID);
 
-	// notify any listeners right away without the GenericProvider's dispatcher
-	// so that we won't run into race conditions where the Listener set is being
-	// iterated over while removeAll() is being performed on it (throwing
-	// a ConcurrentModificationException).
-	// Thanks to Ulf Licht for finding this.
-	new FreeCallInvalidEv(cause, this).dispatch();
+	// notify any listeners, postpoing the cleanup until the event is processed
+    this.getGenProvider().dispatch(new FreeCallInvalidEv(cause, this));
+}
 
-	// unregister any remaining listeners
-	this.getListenerMgr().removeAll();
-
-	// tell the raw TelephonyProvider that it may now recycle the CallId
-	GenericProvider prov = this.getGenProvider();
-	prov.getRaw().releaseCallId(this.getCallID());
-
-	// remove from framework
-	prov.getCallMgr().removeCall(this);
+/**
+ * Cleanup the call.
+ * <P>This is called by the FreeCallInvalidEv.dispatch() method when the event
+ * has been sent to everyone. Since they are in different packages, this method
+ * must be public. It should not be called by any other objects.
+ */
+public void cleanup() {
+	CallId callId = this.getCallID();
+	// check to make sure we haven't cleaned up already.
+	if (callId != null) {
+		// unregister any remaining listeners
+		this.getListenerMgr().removeAll();
+	
+		// tell the raw TelephonyProvider that it may now recycle the CallId
+		GenericProvider prov = this.getGenProvider();
+		prov.getRaw().releaseCallId(callId);
+	
+		// remove from framework
+		prov.getCallMgr().removeCall(this);
+		
+		// ensure we don't cleanup twice
+		this.setCallID(null);
+	}
 }
 /**
  * This overloaded version of this method transfers all participants
