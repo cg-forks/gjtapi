@@ -65,8 +65,11 @@ protected FreeCall() {
  * Initially the call starts in the Idle state.
  * @author Richard Deadman
  **/
-FreeCall(CallData cd) {
+FreeCall(CallData cd, GenericProvider prov) {
 	this();
+	
+	// now set the provider
+	this.setProvider(prov);
 	
 	this.setState(cd.callState);
 	int size = cd.connections.length;

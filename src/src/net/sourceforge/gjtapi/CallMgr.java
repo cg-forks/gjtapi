@@ -150,7 +150,7 @@ private FreeCall getFaultedCall(CallId id) {
 		CallData cd = this.getRaw().getCall(id);
 		if (cd != null) {
 			// create call and its objects
-			call = new FreeCall(cd);
+			call = new FreeCall(cd, this.getProvider());
 
 			// add the call to our set
 			this.register(call);
@@ -300,7 +300,7 @@ void loadCalls(FreeAddress address) {
 	for (int i = 0; i < size; i++) {
 		// check if call already being tracked
 		if (this.getCachedCall(data[i].id) == null) {
-			this.register(new FreeCall(data[i]));
+			this.register(new FreeCall(data[i], this.getProvider()));
 		}
 	}
 }
@@ -318,7 +318,7 @@ void loadCalls(FreeTerminal terminal) {
 	for (int i = 0; i < size; i++) {
 		// check if call already being tracked
 		if (this.getCachedCall(data[i].id) == null) {
-			this.register(new FreeCall(data[i]));
+			this.register(new FreeCall(data[i], this.getProvider()));
 		}
 	}
 }
