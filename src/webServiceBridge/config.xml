@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration
+    xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config">
+        <service name="GJtapiIF_Service"
+        targetNamespace="http://gjtapi.sourceforge.net/wsdl"
+        typeNamespace="http://gjtapi.sourceforge.net/types"
+        packageName="ca.deadman.gjtapi.raw.remote.webservices">
+    <interface name="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF" 
+          servantName="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceImpl"/> 
+</service>
+</configuration> 

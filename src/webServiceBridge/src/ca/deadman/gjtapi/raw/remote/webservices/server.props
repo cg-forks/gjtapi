@@ -1,0 +1,8 @@
+# The name of the Adapter to use
+ca.deadman.gjtapi.wsAdapter = ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceAdapter
+
+# The adapter requires its own parameters
+ca.deadman.gjtapi.wsTpi = net.sourceforge.gjtapi.raw.emulator.EmProvider
+
+# The the real provider is fed these properties
+display=false

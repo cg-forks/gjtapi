@@ -1,0 +1,345 @@
+<project name="Gjtapi-Ws" default="build" basedir=".">
+    <description>
+        Ant build file for the GJTAPI-WebServices project
+    </description>
+  <!-- set global properties for this build -->
+  
+  <!-- There are three entry points:
+       1) deploy-war = builds the war file for deployment
+       2) build-client = build the client WebProvider jar file
+       3) run-test = builds and tests the client test case
+  -->
+ 
+  <property name="src" location="src"/>
+  <property name="gen" location="gen"/>
+  <property name="bin" location="bin"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <property name="appname"          value="${ant.project.name}"/>
+
+	<property name="gjtapiws" value="GjtapiWS" /> 
+	<property name="path" value="/${gjtapiws}"/>
+	
+	<property name="jwsdp.home" value="/usr/local/jwsdp-1.1"/>
+
+	<!-- Configure properties to access the Manager application -->
+	<property name="url" value="http://localhost:8080/manager"/> 
+	<property file="build.properties"/>
+	<property file="${user.home}/build.properties"/>
+	
+	<property name="compile.debug" value="true" />
+
+
+  <!-- Edit this with your JavaWebServices jar locations... -->
+  <path id="classpath">	
+    <fileset dir="${jwsdphome}/common/lib">
+      <include name="*.jar"/>
+     </fileset>
+    <fileset dir="${jwsdphome}/server/lib"><!--${jwsdp.home}/server/lib"--> 
+      <include name="catalina-ant.jar"/> <!-- *.jar-->
+     </fileset>
+   </path>
+
+<!--
+<taskdef name="install"
+      classname="org.apache.catalina.ant.InstallTask">
+      <classpath>
+      <pathelement location="${jwsdp.home}/server/lib/catalina-ant.jar"/>
+    </classpath>
+</taskdef>
+<taskdef name="reload"
+      classname="org.apache.catalina.ant.ReloadTask">
+      <classpath>
+      <pathelement location="${jwsdp.home}/server/lib/catalina-ant.jar"/>
+    </classpath>
+</taskdef>
+<taskdef name="remove"
+      classname="org.apache.catalina.ant.RemoveTask">
+      <classpath>
+      <pathelement location="${jwsdp.home}/server/lib/catalina-ant.jar"/>
+    </classpath>
+</taskdef>
+-->
+
+  <path id="compile.classpath">
+    <pathelement location="${javamail.jar}"/>
+    <pathelement location="${jaf.jar}"/>
+    <pathelement location="${jaxp-api.jar}"/>
+    <pathelement location="${dom.jar}"/>
+    <pathelement location="${sax.jar}"/>
+    <pathelement location="${xalan.jar}"/>
+    <pathelement location="${xercesImpl.jar}"/>
+    <pathelement location="${jaxrpc-api.jar}"/>
+    <pathelement location="${jaxrpc-impl.jar}"/>
+    <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${saaj-api.jar}"/>
+    <pathelement location="${saaj-impl.jar}"/>
+    <pathelement location="${relaxngDatatype.jar}"/>
+    <pathelement location="${xsdlib.jar}"/>
+    <pathelement location="${jax-qname.jar}"/>
+    <pathelement location="${ant.jar}"/>
+  </path>
+  
+  <path id="jtapi.files">
+	<pathelement location="${jtapi.jar}"/>
+	<pathelement location="${gjtapi.jar}"/>
+  </path>
+
+  <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+     <classpath refid="compile.classpath"/>
+  </taskdef>
+  <taskdef name="wsdeploy" classname="com.sun.xml.rpc.tools.ant.Wsdeploy">
+     <classpath refid="compile.classpath"/>
+  </taskdef>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="build" depends="deploy-war, build-client ">
+	<echo message=" Building...."/>
+  </target>
+
+  <target name="prepare" depends="init">
+    <mkdir dir="${buildhome}"/>
+    <mkdir dir="${build}/classes"/>
+    <mkdir dir="${build}/classes/server"/>
+    <mkdir dir="${build}/classes/client"/>
+    <mkdir dir="${build}/classes/test"/>
+
+  </target>
+
+  <target name="generate-server" depends="compile-server">
+    <wscompile
+         keep="true"
+         server="true"
+         base="${build}/classes/server"
+         xPrintStackTrace="true"
+         verbose="false"
+         classpath="${compile.classpath}"
+         config="config.xml">
+         <classpath>
+            <path refid="compile.classpath"/>
+            <pathelement location="${build}/classes/server"/>
+			<path refid="jtapi.files"/>
+         </classpath>
+    </wscompile>
+  </target>
+
+  <target name="compile-server" depends="prepare" description="compile the server source" >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}/classes/server" excludes="ca/deadman/gjtapi/raw/remote/webservices/WebProvider.java">
+	<classpath refid="compile.classpath"/>
+	<classpath refid="jtapi.files"/>
+    </javac>
+
+  </target>
+
+	<!-- This packages up the server packages into a portable war file
+	     ready for deployment -->
+  <target name="create-war" depends="generate-server">
+    <war warfile="${build}/${appname}-raw.war"
+         webxml="web.xml">
+        <webinf dir="${basedir}" includes="*.wsdl,jaxrpc-ri.xml"/>
+        <webinf dir="${basedir}" includes="${webapp.jaxrpc.file}" defaultexcludes="no"/>
+        <webinf dir="${build}" includes="${model.rpcenc.file}" defaultexcludes="no"/>
+        <classes dir="${build}/classes/server" includes="**/*.class" defaultexcludes="no"/>
+        <classes dir="${src}" includes="**/server.props" defaultexcludes="yes"/>
+    </war>
+
+    <!-- <delete    dir="${build}/classes/server"/> -->
+  </target>
+
+  <target name="build-war" depends="create-war">
+    <echo message="-------- ${appname} --------"/>
+
+    <wsdeploy
+         keep="true"
+         inWarFile="${build}/${appname}-raw.war"
+         outWarFile="${build}/${appname}.war"
+         verbose="true">
+         <classpath refid="compile.classpath"/>
+		<classpath refid="jtapi.files"/>
+     </wsdeploy>
+
+  </target>
+
+  <target name="deploy-war" depends="build-war">
+     <copy file="${build}/${appname}.war" todir="${basedir}"/>
+  </target>
+
+<!-- WebProvider client code here -->
+
+  <target name="generate-client" depends="prepare">
+    <!-- client="true" -->
+    <wscompile
+         keep="true"
+         define="true"
+         base="${build}/classes/client"
+         xPrintStackTrace="true"
+         verbose="false"
+         classpath="${compile.classpath}"
+         config="config.xml">
+         <classpath>
+            <path refid="compile.classpath"/>
+            <pathelement location="${build}/classes/server"/>
+			<path refid="jtapi.files"/>
+	     </classpath>
+    </wscompile>
+  </target>
+
+  <target name="compile-client-webprovider" depends="generate-client" description="compile the Server webProvider">
+    <javac srcdir="src"
+           destdir="${build}/classes/client"
+           debug="${compile.debug}">
+      <classpath>
+        <path refid="compile.classpath"/>
+        <pathelement location="${build}/classes/client"/>
+		<path refid="jtapi.files"/>
+     </classpath>
+    </javac>
+  </target>
+
+  <!-- package up client as jar -->
+  <target description="Build the client jar file"
+	name="build-client"
+  	depends="compile-client-webprovider">
+  	<copy file="${build}/classes/server/ca/deadman/gjtapi/raw/remote/webservices/GJtapiWebServiceIF.class" todir="${build}/classes/client/ca/deadman/gjtapi/raw/remote/webservices"/>
+  	<jar destfile="${basedir}/${appname}-client.jar"
+  		basedir="${build}/classes/client">
+  		<fileset dir="${src}" includes="WebProvider.props"/>
+  	</jar>
+  </target>
+  
+<!-- Testing targets here -->
+
+  <path id="run.classpath">
+      <pathelement location="${build}/classes/client"/>
+      <pathelement location="${build}/classes/test"/>
+      <path refid="compile.classpath"/>
+      <path refid="jtapi.files"/>
+  </path>
+
+  <target name="compile-test"  depends="compile-client-webprovider, build-client">
+    <javac  srcdir="testClient"
+           destdir="${build}/classes/test"
+             debug="${compile.debug}"
+          optimize="${compile.optimize}">
+      <classpath>
+      	<path refid="run.classpath"/>
+		      <!-- for simple test -->
+        <pathelement location="${build}/classes/client"/>
+     </classpath>
+    </javac>
+  </target>
+
+	<!-- this will only work if the war file has been deployed -->
+  <target name="nocheck-run-test" >
+    <copy file="${src}/WebProvider.props" todir="${build}/classes/test"/>
+    <!-- java classname="ca.deadman.gjtapi.raw.remote.webservices.test.WebClientTest" -->
+    <java classname="ca.deadman.gjtapi.raw.remote.webservices.test.TestWebServiceCall"
+          classpathref="run.classpath"
+          fork="true">
+	      <!-- <sysproperty key="endpoint" value="${endpoint}"/> -->
+        <arg value="localhost:8080"/>
+        <arg value="21"/>
+        <arg value="22"/>
+    </java>
+  </target>
+  
+	<!-- this will only work if the war file has been deployed -->
+  <target name="nocheck-run-test-interface" >
+    <copy file="${src}/WebProvider.props" todir="${build}/classes/test"/>
+    <java classname="ca.deadman.gjtapi.raw.remote.webservices.test.WebClientTest"
+          classpathref="run.classpath"
+          fork="true">
+    </java>
+  </target>
+  
+  <target name="run-test" depends="compile-test, nocheck-run-test"
+  	description="Run a client test program to check talking to the server"/>
+
+<!-- miscelaneous -->
+  <target name="clean">
+    <delete dir="${buildhome}"/>
+    <delete dir="${build}"/>
+  </target>
+
+
+	<!-- old code here... -->
+    <!-- Compile the code into the bin directory -->
+   <target name="compileOld" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${bin}">
+	<classpath refid="classpath"/>
+    </javac>
+
+  </target>
+
+    <!-- Create the build directory used by install -->
+   <target name="buildOld" depends="compileOld"
+        description="build the java source" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/WEB-INF/classes"/>
+
+    <!-- copy the compiled code over -->
+    <copy todir="${build}/WEB-INF/classes">
+         <fileset dir="${bin}">
+            <include name="**/*.class"/>
+         </fileset>
+    </copy>
+    <!-- copy the generated code over -->
+    <copy todir="${build}/WEB-INF/classes">
+         <fileset dir="${gen}">
+            <include name="**/*.class"/>
+         </fileset>
+    </copy>
+    <!-- copy the property files over -->
+    <copy todir="${build}/WEB-INF/classes">
+         <fileset dir="${src}">
+            <exclude name="**/*.java"/>
+            <exclude name="tmpDocs"/>
+            <exclude name="**/*.html"/>
+         </fileset>
+    </copy>
+    <!-- copy the web.xml file over -->
+    <copy todir="${build}/WEB-INF">
+         <fileset dir=".">
+            <include name="web.xml"/>
+         </fileset>
+    </copy>
+
+  </target>
+
+<!--
+<target name="install" description="Install Web application"
+    depends="build">
+  <install url="${url}" username="${username}" 
+      password="${password}" path="${path}" 
+war="file:${build}"/> 
+</target>
+
+<target name="reload" description="Reload Web application"
+      depends="build">
+  <reload url="${url}" username="${username}" 
+      password="${password}" path="${path}"/>
+</target>
+
+<target name="remove" description="Remove Web application"> 
+<remove url="${url}" username="${username}" 
+      password="${password}" path="${path}"/>
+</target>
+
+  <target name="clean"
+        description="clean up" >
+    <!- Delete the ${build} and ${dist} directory trees ->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+-->
+</project>

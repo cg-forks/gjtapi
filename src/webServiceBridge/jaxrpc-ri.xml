@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webServices
+    xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/dd"
+    version="1.0"
+    targetNamespaceBase="urn:Foo"
+    typeNamespaceBase="urn:Foo"
+    urlPatternBase="/ws">
+
+    <endpoint
+        name="Gjtapi"
+        displayName="Gjtapi Bridge"
+        description="Remote Gjtapi web service bridge" 
+        interface="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF"
+        model="/WEB-INF/model.gz"
+        implementation="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceImpl"/> 
+ 
+    <endpointMapping
+        endpointName="Gjtapi"
+        urlPattern="/gjtapi"/>
+
+</webServices>
