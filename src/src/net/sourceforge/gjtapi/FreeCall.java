@@ -996,4 +996,24 @@ private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSup
 	// now drop a terminal connection off the call
 	rp.release(tcAddress, id);
 }
+
+	/**
+	 * Describe myself
+	 */
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		switch (this.getState()) {
+			case Call.IDLE:
+				sb.append("Idle");
+				break;
+			case Call.ACTIVE:
+				sb.append("Active");
+				break;
+			default:
+				sb.append("Invalid");
+		}
+		sb.append(" call with ").append(this.getConnections().length)
+			.append(" connections.");
+		return sb.toString();
+	}
 }

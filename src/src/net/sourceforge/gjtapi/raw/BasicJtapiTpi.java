@@ -78,4 +78,14 @@ TermData[] getTerminals() throws ResourceUnavailableException;
  * @throws InvalidArgumentException indicating that the address is unknown.
  */
 TermData[] getTerminals(String address) throws InvalidArgumentException;
+/**
+  * Release a connection to a call (Connection)
+  *
+  * @param address The address that we want to release
+  * @param call The call to disconnect from
+  *
+  * @exception RawException Some low-level state exception occured.
+  **/
+void release(String address, CallId call) throws PrivilegeViolationException,
+	ResourceUnavailableException, MethodNotSupportedException, RawStateException;
 }

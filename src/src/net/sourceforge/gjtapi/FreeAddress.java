@@ -587,4 +587,11 @@ private void unProtect() {
 		((GenericProvider)this.getProvider()).getDomainMgr().unProtect(this);
 	}
 }      
+
+	/**
+	 * Describe myself
+	 */
+	public String toString() {
+		return "Address: " + this.getName();
+	}
 }

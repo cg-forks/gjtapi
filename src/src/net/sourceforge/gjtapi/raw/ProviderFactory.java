@@ -342,10 +342,11 @@ public void record(String terminal, String streamId, javax.telephony.media.RTC[]
  * release method comment.
  */
 public void release(String address, CallId call) throws PrivilegeViolationException, MethodNotSupportedException, ResourceUnavailableException, RawStateException {
-	if (this.callControl != null)
-		this.callControl.release(address, call);
+	if (this.basicJtapi != null)
+		this.basicJtapi.release(address, call);
 	else
 		throw new MethodNotSupportedException();
+	
 }
 /**
  * releaseCallId method comment.

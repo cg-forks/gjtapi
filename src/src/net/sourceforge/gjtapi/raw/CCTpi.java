@@ -67,16 +67,6 @@ void hold(CallId call, String address, String terminal) throws RawStateException
 CallId join(CallId call1, CallId call2, String address, String terminal) throws RawStateException, InvalidArgumentException,
 	MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException;
 /**
-  * Release a connection to a call (Connection)
-  *
-  * @param address The address that we want to release
-  * @param call The call to disconnect from
-  *
-  * @exception RawException Some low-level state exception occured.
-  **/
-void release(String address, CallId call) throws PrivilegeViolationException,
-	ResourceUnavailableException, MethodNotSupportedException, RawStateException;
-/**
   * Take a call off hold (CallControlTerminalConnection)
   *
   * @param term The terminal that we want to take off hold
