@@ -52,4 +52,10 @@ public TermData(String termName, boolean isMedia) {
 	this.terminal = termName;
 	this.isMedia = isMedia;
 }
+
+/**
+ * No-arg constructor required for JAX-RPC serialization. */
+public TermData() {
+	super();
+}
 }

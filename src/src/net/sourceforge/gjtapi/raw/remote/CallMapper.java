@@ -113,8 +113,15 @@ private java.util.Map getsToCMap() {
  * Translate a remote integer handle back to the original CallId.
  */
 public CallId intToCall(int callRef) {
-	return this.providerId(new SerializableCallId(callRef));
+	return this.providerId(this.makeSerializableId(callRef));
 }
+
+/**
+ * Factory method, to allow subclasses to use their own subclass for the mapping. * @param id The unique integer value to assign to the CallId * @return SerializableCallId A serializable CallId with the given unique id. */
+protected SerializableCallId makeSerializableId(long id) {
+	return new SerializableCallId(id);
+}
+
 /**
  * Look up a Provider's Call Id for a Serializable call id.
  * Return null if no entry found
@@ -140,7 +147,7 @@ public synchronized SerializableCallId swapId(CallId id) {
 		try {
 			sci = (SerializableCallId)this.getFreeRefs().removeFirst();
 		} catch (NoSuchElementException nsee) {
-			sci = new SerializableCallId(this.getNextId());
+			sci = this.makeSerializableId(this.getNextId());
 		}
 
 		// add to the maps

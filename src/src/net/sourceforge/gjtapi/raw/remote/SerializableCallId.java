@@ -52,6 +52,11 @@ public SerializableCallId(long id) {
 	this.setId(id);
 }
 /**
+ * Null constructor used by subclass for XML-RPC "serialization" */
+protected SerializableCallId() {
+	super();
+}
+/**
  * Determine if I am logically equal to another object
  * Creation date: (2000-02-17 23:04:53)
  * @author: Richard Deadman
@@ -69,7 +74,7 @@ public boolean equals(Object o) {
  * @author: Richard Deadman
  * @return long
  */
-long getId() {
+protected long getId() {
 	return id;
 }
 /**
@@ -82,12 +87,12 @@ public int hashCode() {
 	return (int)this.getId();
 }
 /**
- * Insert the method's description here.
+ * Set the identifier id.
  * Creation date: (2000-02-17 22:59:17)
  * @author: 
  * @param newId long
  */
-private void setId(long newId) {
+protected void setId(long newId) {
 	id = newId;
 }
 }

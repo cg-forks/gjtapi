@@ -103,30 +103,30 @@ public RawStateException(CallId id, String address, String terminal, int type, i
 	this.initialize(id, address, terminal);
 }
 /**
- * Insert the method's description here.
+ * Return the address my object is associated with.
  * Creation date: (2000-02-21 13:27:12)
  * @author: 
  * @return java.lang.String
  */
-private java.lang.String getAddress() {
+public java.lang.String getAddress() {
 	return address;
 }
 /**
- * Insert the method's description here.
+ * Return the call my object is associated with.
  * Creation date: (2000-02-21 13:26:04)
  * @author: 
  * @return net.sourceforge.gjtapi.CallId
  */
-private CallId getCall() {
+public CallId getCall() {
 	return call;
 }
 /**
- * Insert the method's description here.
+ * Return the terminal my object is associated with.
  * Creation date: (2000-02-21 13:27:33)
  * @author: 
  * @return java.lang.String
  */
-private java.lang.String getTerminal() {
+public java.lang.String getTerminal() {
 	return terminal;
 }
 /**

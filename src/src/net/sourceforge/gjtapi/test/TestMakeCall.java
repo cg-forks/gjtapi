@@ -46,12 +46,12 @@ public class TestMakeCall {
  */
 public static void main(java.lang.String[] args) {
 	// Report error if insufficient parameters passed in
-	if (args.length < 2) {
-		System.err.println("Usage: java net.sourceforge.gtapi.test.TestMakeCall from to");
+	if (args.length < 3) {
+		System.err.println("Usage: java net.sourceforge.gtapi.test.TestMakeCall Provider from to");
 		System.exit(1);
 	}
 
-	test("Emulator", args[0], args[1]);
+	test(args[0], args[1], args[2]);
 }
 /**
  * Prompt for user input.

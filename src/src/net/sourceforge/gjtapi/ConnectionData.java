@@ -60,4 +60,9 @@ public ConnectionData(int state, String addrName, boolean local, TCData[] tcs) {
 	this.isLocal = local;
 	this.terminalConnections = tcs;
 }
+
+/**
+ * No-arg constructor required for JAX-RPC serialization. */
+public ConnectionData() {
+}
 }

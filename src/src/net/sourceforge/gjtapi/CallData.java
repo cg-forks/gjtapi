@@ -56,6 +56,12 @@ public CallData(CallId cid, int state, ConnectionData[] cd) {
 	this.callState = state;
 	this.connections = cd;
 }
+
+/**
+ * No-arg constructor required for JAX-RPC serialization. */
+public CallData() {
+	super();
+}
 /**
  * Return the array of addresses with the given "isLocal" flag.
  * Creation date: (2000-10-02 14:23:15)

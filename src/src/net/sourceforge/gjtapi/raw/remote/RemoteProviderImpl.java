@@ -190,7 +190,7 @@ public CallData getCall(CallId id) throws RemoteException  {
 		throw new RemoteException();
 }
 /**
- * Insert the method's description here.
+ * Return the Listener that handles the multiplexing of events to multiple remote clients.
  * Creation date: (2000-04-26 16:07:39)
  * @author: 
  * @return net.sourceforge.gjtapi.raw.remote.RawListenerMux
@@ -202,7 +202,12 @@ private RawListenerMux getCallbackMux() {
  * getCallsOnAddress method comment.
  */
 public net.sourceforge.gjtapi.CallData[] getCallsOnAddress(java.lang.String number) throws java.rmi.RemoteException {
-	return null;
+	TelephonyProvider rp = this.getDelegate();
+	
+	if (rp != null)
+		return rp.getCallsOnAddress(number);
+	else
+		throw new RemoteException();
 }
 /**
  * Delegate on to real TelephonyProvider.
