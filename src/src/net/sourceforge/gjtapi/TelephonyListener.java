@@ -51,7 +51,7 @@ public interface TelephonyListener {
  * Creation date: (2000-04-15 0:38:57)
  * @author: Richard Deadman
  * @param id The call identifier
- * @param cause Event cause -- CAUSE_NORMAL, CAUSE_NEW_CALL or CAUSE_SNAPSHOT
+ * @param cause Event cause -- CAUSE_NORMAL, CAUSE_NEW_CALL or CAUSE_SNAPSHOT (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void callActive(CallId id, int cause);
 /**
@@ -98,7 +98,7 @@ criteria such as network busy, abandon, route busy etc. will cause exit from thi
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionAddressAnalyse(CallId id, String address, int cause);
 /**
@@ -113,7 +113,7 @@ state.
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionAddressCollect(CallId id, String address, int cause);
 /**
@@ -122,7 +122,7 @@ void connectionAddressCollect(CallId id, String address, int cause);
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, CAUSE_NEW_CALL)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, CAUSE_NEW_CALL) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionAlerting(CallId id, String address, int cause);
 /**
@@ -137,7 +137,7 @@ JccConnection cannot be either in the ADDRESS_COLLECT or the ADDRESS_ANALYZE sta
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionAuthorizeCallAttempt(CallId id, String address, int cause);
 /**
@@ -151,7 +151,7 @@ the terminating party is being alerted or the call is accepted.
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionCallDelivery(CallId id, String address, int cause);
 /**
@@ -160,7 +160,7 @@ void connectionCallDelivery(CallId id, String address, int cause);
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionConnected(CallId id, String address, int cause);
 /**
@@ -169,7 +169,7 @@ void connectionConnected(CallId id, String address, int cause);
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, ...)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, ...) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionDisconnected(CallId id, String address, int cause);
 /**
@@ -187,7 +187,7 @@ void connectionFailed(CallId id, String address, int cause);
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionInProgress(CallId id, String address, int cause);
 /**
@@ -199,7 +199,7 @@ the incoming network connection, appropriate backward signaling takes place. Exi
  * @author: Richard Deadman
  * @param id The call of the connection
  * @param address The address the connection has
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void connectionSuspended(CallId id, String address, int cause);
 /**
@@ -276,7 +276,7 @@ void mediaSignalDetectorPatternMatched(String terminal, Symbol[] sigs, int index
  * @param id The Call of the Terminal Connection
  * @param address The address of the Terminal Connection
  * @param terminal The physical endpoint of the Terminal Connection
- * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, CAUSE_NEW_CALL)
+ * @param cause The Event cause code (CAUSE_NORMAL, CAUSE_SNAPSHOT, CAUSE_NEW_CALL) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void terminalConnectionCreated(CallId id, String address, String terminal, int cause);
 /**
@@ -296,7 +296,7 @@ void terminalConnectionDropped(CallId id, String address, String terminal, int c
  * @param id The Call of the Terminal Connection
  * @param address The address of the Terminal Connection
  * @param terminal The physical endpoint of the Terminal Connection
- * @param cause The Event cause code describing the event trigger (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code describing the event trigger (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void terminalConnectionHeld(CallId id, String address, String terminal, int cause);
 /**
@@ -306,7 +306,7 @@ void terminalConnectionHeld(CallId id, String address, String terminal, int caus
  * @param id The Call of the Terminal Connection
  * @param address The address of the Terminal Connection
  * @param terminal The physical endpoint of the Terminal Connection
- * @param cause The Event cause code descibing why the event was sent (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code descibing why the event was sent (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void terminalConnectionRinging(CallId id, String address, String terminal, int cause);
 /**
@@ -316,7 +316,7 @@ void terminalConnectionRinging(CallId id, String address, String terminal, int c
  * @param id The Call of the Terminal Connection
  * @param address The address of the Terminal Connection
  * @param terminal The physical endpoint of the Terminal Connection
- * @param cause The Event cause code descibing why the event was sent (CAUSE_NORMAL, CAUSE_SNAPSHOT)
+ * @param cause The Event cause code descibing why the event was sent (CAUSE_NORMAL, CAUSE_SNAPSHOT) (see javax.telephony.events.Ev or javax.telephony.Event)
  */
 void terminalConnectionTalking(CallId id, String address, String terminal, int cause);
 /**
