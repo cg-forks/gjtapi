@@ -10,5 +10,7 @@ Device1 = :N_dtiB1T2:P_ISDN
 Device2 = :N_dtiB1T3:P_ISDN
 Device3 = :N_dtiB1T4:P_ISDN
 Device4 = :N_dtiB1T5:P_ISDN
+SigMode = t
+Debug = 10
 # Should we throttle RawListener events?  'f' means that the RawProvider will report everything
 throttle = f
