@@ -127,7 +127,7 @@ public class ModemIO implements SerialPortEventListener{
      */
     private void fill() throws IOException{
         //Don't bother if the buffer is nearly full
-        if (this.free() > 32){
+        if (this.free() > 32 && in.available() > 0){
             do{
                 int read = in.read();
                 if (read > -1){
