@@ -112,10 +112,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		
 		/**
 		 * Ensure equality works
+		 * Note that if the callNum's are not set, we default to identity
 		 */
 		public boolean equals(Object other) {
+			int myCallId = this.getCallNum();
+			if (myCallId == -1)
+				return super.equals(other);
+
 			if (other instanceof XtapiCallId) {
-				if (this.getCallNum() == ((XtapiCallId)other).getCallNum())
+				if (myCallId == ((XtapiCallId)other).getCallNum())
 					return true;
 			}
 			return false;
@@ -124,9 +129,13 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		/**
 		 * Ensure hashing works
 		 */
+		/* Removed since the Call Num changes and this will screw up
+		 * Hash Tables.
+		 * Removed by: Steve Frare, June 9, 2002
 		public int hashCode() {
 			return this.getCallNum();
 		}
+		*/
 		
 	}
 	
@@ -324,7 +333,12 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		AddressInfo addInfo = (AddressInfo)this.addInfoMap.get(address);
 		if (addInfo == null)
 			throw new InvalidArgumentException("Address not known: " + address);
-			
+
+                //sf
+		// register the call with the line
+		this.lineToCalls.put(new Integer(addInfo.line), id);
+                //end sf
+                
 		// Get the call handle
 		int callNum = 0;
 		try {
@@ -340,9 +354,12 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		
 		// register the call with the terminal
 		this.termToCalls.put(term, id);
-		
+                
+                //sf moved up to avoid race condition.
 		// register the call with the line
-		this.lineToCalls.put(new Integer(addInfo.line), id);
+		//this.lineToCalls.put(new Integer(addInfo.line), id);
+                //end sf
+                
 		
 		return id;
 	}
@@ -419,6 +436,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	}
 
 	/**
+	 * The GJTAPI Framework is done with the Call and is releasing the CallId.
 	 * @see CoreTpi#releaseCallId(CallId)
 	 */
 	public void releaseCallId(CallId id) {
@@ -785,12 +803,22 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 
 				try{
 					// create a call
-	                AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+	                //AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+                        //sf
+					AddressInfo ai = (AddressInfo)this.addInfoMap.get("addr_" + lineKey);
+                        //end sf
 	                if (ai != null) {
 						XtapiCallId callId = new XtapiCallId();
-	                	callId.setCallNumber(dwInstance);
+	                	//callId.setCallNumber(dwInstance); // dwInstance contains the line id (NOT the line handle!)
+                                //sf
+						callId.setCallNumber(dwDevice); // dwDevice contains the call handle
+                		// register the call with the line
+		                this.lineToCalls.put(new Integer(ai.line), callId); 
+                                //end sf
+                                
 	                	// get the calling connection and notify of new connection
-	                	this.gjListener.connectionConnected(callId, "UNKNOWN", Event.CAUSE_NORMAL);
+	                	this.gjListener.connectionAlerting(callId, ai.getName(), Event.CAUSE_NORMAL);
+	                	this.gjListener.connectionAlerting(callId, "UNKNOWN", Event.CAUSE_NORMAL);
 	                	this.gjListener.terminalConnectionRinging(callId, ai.getName(), ai.terminal, Event.CAUSE_NORMAL);
 	                }
 				}catch(Exception e){
@@ -822,13 +850,20 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 try{
                 	XtapiCallId callId = (XtapiCallId)this.lineToCalls.get(lineKey);
 	                if (callId != null) {
-	                	AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+                                //sf
+	                	//AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+						AddressInfo ai = (AddressInfo)this.addInfoMap.get("addr_" + dwInstance);
+                                //end sf
 	                	if (ai != null) {
 	                		this.gjListener.connectionConnected(callId, ai.getName(), Event.CAUSE_NORMAL);
+	                		this.gjListener.connectionConnected(callId, "UNKNOWN", Event.CAUSE_NORMAL);
+                                        //sf
+							this.gjListener.terminalConnectionTalking(callId, ai.getName(), ai.terminal, Event.CAUSE_NORMAL);
+                                        //end sf
 	                	}
 	                }
                 }catch(Exception e){
-                    System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
+                    System.out.println("LINECALLSTATE_CONNECTED exception: " + e.toString());
                 }
                 break;
 
@@ -838,13 +873,22 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 try{
                 	XtapiCallId callId = (XtapiCallId)this.lineToCalls.get(lineKey);
 	                if (callId != null) {
-	                	AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+                                //sf
+	                	//AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+						AddressInfo ai = (AddressInfo)this.addInfoMap.get("addr_" + lineKey);
+                                //end sf
 	                	if (ai != null) {
 	                		this.gjListener.connectionInProgress(callId, ai.getName(), Event.CAUSE_NORMAL);
+                                        //sf
+							this.gjListener.connectionAlerting(callId, ai.getName(), Event.CAUSE_NORMAL);
+                                        //end sf
 	                	}
 	                }
                 }catch(Exception e){
-                    System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
+                    //sf
+                    //System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
+                    System.out.println("LINECALLSTATE_PROCEEDING exception: " + e.toString());
+                    //end sf
                 }
                 break;
 
@@ -864,10 +908,20 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 try{
                 	XtapiCallId callId = (XtapiCallId)this.lineToCalls.get(lineKey);
 	                if (callId != null) {
-	                	AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+                                //sf
+	                	//AddressInfo ai = (AddressInfo)this.lineToAddr.get(lineKey);
+						AddressInfo ai = (AddressInfo)this.addInfoMap.get("addr_" + dwInstance);
+                                //end sf
 	                	if (ai != null) {
 	                		this.gjListener.connectionDisconnected(callId, ai.getName(), Event.CAUSE_NORMAL);
-	                	}
+                                        //sf
+							this.gjListener.terminalConnectionDropped(callId, ai.getName(), ai.terminal, Event.CAUSE_NORMAL);
+                                        //end sf
+								// we can get the terminal, and remove the call from the term -> call map
+							this.termToCalls.remove(ai.terminal);
+							}
+							// now remove the entry from the line -> CallId map
+						this.lineToCalls.remove(lineKey);
 	                }
                 }catch(Exception e){
                     System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
@@ -892,12 +946,20 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 break;
                 
             case LINEDEVSTATE_RINGING:
+            	// this may be for subsequent rings, in which case we don't need it.
                //dwParam3 contains the ring count.
                 XtapiCallId xCallId = (XtapiCallId)this.lineToCalls.get(new Integer(dwInstance));
                 if (xCallId != null) {
-                	AddressInfo ai = (AddressInfo)this.lineToAddr.get(new Integer(dwInstance));
+                        //sf
+                	//AddressInfo ai = (AddressInfo)this.lineToAddr.get(new Integer(dwInstance));
+					AddressInfo ai = (AddressInfo)this.addInfoMap.get("addr_" + dwInstance);
+                        //end sf
                 	if (ai != null) {
                 		this.gjListener.connectionAlerting(xCallId, ai.getName(), Event.CAUSE_NEW_CALL);
+                		this.gjListener.connectionAlerting(xCallId, "UNKNOWN", Event.CAUSE_NEW_CALL);
+							//sf
+						this.gjListener.terminalConnectionRinging(xCallId, ai.getName(), ai.terminal, Event.CAUSE_NORMAL);
+							//end sf
                 	}
                 }
                 break;
