@@ -436,8 +436,9 @@ private Dictionary extract(Dictionary dict, Symbol[] keys) {
  * @author: Richard Deadman
  */
 public void finalize() {
+	// release and free the MediaGroup but don't disconnect the connection.
 	try {
-		this.release();
+		this.releaseAndFree();
 	} catch (NotBoundException nbe) {
 		// then we don't need to release
 	}
@@ -779,8 +780,43 @@ public Dictionary getUserDictionary() throws NotBoundException {
  * <p>
  */
 public void release() {
+	// should we disconnect?
+	boolean disconnect = this.getProvider().disconnectOnMediaRelease();
+	Connection conn = null;
+	
+	if (disconnect) {
+		// store the Connection
+		TerminalConnection[] tcs = this.getTerminal().getTerminalConnections();
+		if ((tcs != null) || (tcs.length >0))
+			conn = tcs[0].getConnection();
+	}
+	
+	this.releaseAndFree();
+	
+	// now, disconnect the call if the Provider thinks we should
+	if (conn != null) {
+		try {
+			conn.disconnect();
+		} catch (ResourceUnavailableException rue) {
+			// fail silently -- we tried our best
+		} catch (MethodNotSupportedException mnse) {
+			// fail silently -- we tried our best
+		} catch (InvalidStateException ise) {
+			// fail silently -- we tried our best
+		} catch (PrivilegeViolationException pve) {
+			// fail silently -- we tried our best
+		}
+	}
+}
+
+/*
+ * Private release. This is used both by the MediaService.release() and the
+ * finalize method. This means that finalize doesn't cause a line to be dropped.
+ */
+private void releaseAndFree() {
 	this.releaseGroup().free();
 }
+
 /*
  * Release the MediaGroup from a MediaService.
  * Note that the MediaGroup is still associated with a call.

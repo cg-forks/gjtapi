@@ -75,6 +75,14 @@ public class GenericProvider implements MediaProvider, javax.telephony.privateda
 			((ProviderObserver) o).providerChangedEvent((ProvEv[]) e);
 		}
 	};
+	
+	/*
+	 * Should MediaService's disconnect a Connection on release.
+	 * JTAPI spec. says they should, but this might not work for some
+	 * applications
+	 */
+	private boolean disconnectOnMediaRelease = true;
+	
 /**
  * Create a Generic constructor and hook it up to the raw provider
  **/
@@ -497,6 +505,24 @@ public void shutdown() {
 	 */
 	public MediaService getMediaService() {
 		return new GenericMediaService(this);
+	}
+
+	/**
+	 * Should a MediaService disconnect its terminal on release()?
+	 * @return boolean
+	 */
+	public boolean disconnectOnMediaRelease() {
+		return disconnectOnMediaRelease;
+	}
+
+	/**
+	 * Sets the disconnectOnMediaRelease flag that determines how MediaService.release()
+	 * operates.
+	 * @param disconnectOnMediaRelease true if we want the JTAPI specified
+	 * behaviour.
+	 */
+	public void setDisconnectOnMediaRelease(boolean disconnectOnMediaRelease) {
+		this.disconnectOnMediaRelease = disconnectOnMediaRelease;
 	}
 
 }

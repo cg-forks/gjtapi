@@ -80,6 +80,9 @@ public boolean allocateMedia(String terminal, int type, java.util.Dictionary res
 		// update the dictionary
 		ms.setParameters(resourceArgs);
 	}
+	
+	// now store the service
+	this.getServiceMap().put(terminal, ms);
 	return true;
 }
 /**
@@ -94,7 +97,9 @@ protected MediaService createService(MediaProvider prov) {
 	return new BasicMediaService(prov);
 }
 /**
- * freeMedia method comment.
+ * This will free the MediaService that is handling my media calls.
+ * Note that under the JTAPI specification, this will cause the Connection to
+ * the Terminal to be disconnected, which we may not want.
  */
 public boolean freeMedia(String terminal, int type) {
 	MediaService ms = this.getService(terminal);
@@ -102,11 +107,14 @@ public boolean freeMedia(String terminal, int type) {
 		return false;
 	else
 		if (type == TelephonyProvider.MEDIA_RES_ALL) {
-			try {
-				ms.release();
-			} catch (MediaBindException mbe) {
-				return false;
-			}
+			if (this.mediaFreeRelease())
+				try {
+					ms.release();
+				} catch (MediaBindException mbe) {
+					return false;
+				}
+			// remove from map
+			this.getServiceMap().remove(terminal);
 		} else {
 			// ignore partial resource freeing
 		}

@@ -51,10 +51,16 @@ public abstract class InverterProvider implements net.sourceforge.gjtapi.raw.Ful
 	private final static String RESOURCE_NAME = "Inverter.props";
 	private final static String PEER_KEY = "PeerClassName";
 	private final static String PROV_KEY = "ProviderString";
+	private final static String MEDIA_FREE_RELEASE = "mediaFreeRelease";
+	
 	private javax.telephony.Provider jtapiProv;
 	private Map provProps;					// temporary map holder
 	private InverterListener listener = null;	// an adapter to delegate JTAPI events to TelephonyEvents
 	private IdMapper callMap = new IdMapper();	// CallId <-> Call map.
+	
+	// do we release a MediaService when media is freed from a Terminal?
+	private boolean mediaFreeRelease = false;
+	
 /**
  * Raw constructor used by the GenericJtapiPeer factory
  * Creation date: (2000-02-10 10:28:55)
@@ -464,6 +470,11 @@ public void initialize(java.util.Map props) throws ProviderUnavailableException 
 	}
 	Provider prov = peer.getProvider((String)m.get(this.PROV_KEY));
 	this.setJtapiProv(prov);
+	
+	// set the release property
+	String releaseMedia = (String)m.get(this.MEDIA_FREE_RELEASE);
+	if ((releaseMedia != null) && (releaseMedia.length() > 0) && (releaseMedia.toLowerCase().charAt(0) == 't'))
+		this.setMediaFreeRelease(true);
 		
 	// free the map object
 	this.setProvProps(null);
@@ -941,4 +952,21 @@ public void unHold(CallId call, String address, String terminal) throws MethodNo
 		throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN, "Could not find terminal connection");
 	}
 }
+	/**
+	 * Should we release the NewMedia MediaService on freeing the media
+	 * terminal?
+	 * @return boolean
+	 */
+	public boolean mediaFreeRelease() {
+		return mediaFreeRelease;
+	}
+
+	/**
+	 * Sets the mediaFreeRelease state used by the NewMediaProvider.
+	 * @param mediaFreeRelease The mediaFreeRelease to set
+	 */
+	private void setMediaFreeRelease(boolean mediaFreeRelease) {
+		this.mediaFreeRelease = mediaFreeRelease;
+	}
+
 }

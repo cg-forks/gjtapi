@@ -48,8 +48,15 @@ public class GenericJtapiPeer implements JtapiPeer {
 	private final static String PROV_PREFIX = "PROVIDER_";
 	private final static String PROV_CLASS_KEY = "ProviderClass";
 	
+	// key for the property for disconnecting a Connection when a MediaService releases
+	private final String MEDIA_RELEASE_DISCONNECT = "mediaReleaseDisconnect";
+	
 	private Properties properties = null;
 	private Hashtable providers = new Hashtable();
+	
+	// Should we disconnect the Connection when the MediaService releases (JTAPI spec. says yes)
+	private boolean disconnectMediaOnRelease = true;
+	
 	/**
 	 * Create a version of the Peer and load the provider's Resource Bundle
 	 **/
@@ -176,7 +183,9 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	rp.initialize(provProps);
 
 	// Create the high-level provider and return it
-	return new GenericProvider(provName, rp, provProps);
+	GenericProvider gp = new GenericProvider(provName, rp, provProps);
+	gp.setDisconnectOnMediaRelease(this.disconnectMediaOnRelease);
+	return gp;
 }
 /**
  * Return the dictionary of internally known raw providers
@@ -221,6 +230,14 @@ private void loadResources() {
 			String name = key.substring(this.PROV_PREFIX.length());
 			provs.put(name, props.get(key));
 		}
+
+			// now see if we should change the MediaService.release() behaviour
+		if (key.equals(this.MEDIA_RELEASE_DISCONNECT)) {
+			String disconnect = (String)props.get(key);
+			if (disconnect != null && disconnect.length() > 0 && Character.toLowerCase(disconnect.charAt(0)) != 't')
+				this.disconnectMediaOnRelease = false;
+		}
+
 	}
 	
 }
