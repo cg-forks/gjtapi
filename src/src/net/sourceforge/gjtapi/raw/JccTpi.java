@@ -39,7 +39,7 @@ import net.sourceforge.gjtapi.*;
  * Creation date: (2000-10-04 13:59:27)
  * @author: Richard Deadman
  */
-public interface JccTpi {
+public interface JccTpi extends CoreTpi {
 /**
  * Attach or detach media streams from the logical connection.
  * Creation date: (2000-11-01 15:47:06)
