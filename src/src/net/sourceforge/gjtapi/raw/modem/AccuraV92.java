@@ -108,6 +108,9 @@ public class AccuraV92 extends AbstractModem {
     
     public boolean call(CallId id, String dest){
         boolean result = false;
+        
+        // first note that the local leg is connected
+        listener.modemConnected(id);
 
         try {
             //go to voice mode
@@ -118,6 +121,10 @@ public class AccuraV92 extends AbstractModem {
                 io.writeLine("AT+VRA=10");
                 matchState = io.match(5000, "OK", "ERROR");
             }
+            
+            // note that we are dialing
+            listener.modemDialing(id, dest);
+            
             if (matchState == ModemIO.GOOD_MATCH){
                 //dial the number
                 io.writeLine(DIAL + dest);
@@ -129,7 +136,8 @@ public class AccuraV92 extends AbstractModem {
             }
             if (matchState == ModemIO.GOOD_MATCH){
                 state = BUSY;
-                listener.modemConnected(id);
+                	// remote end now connected
+                listener.modemConnected(id, dest);
                 currId = id;
                 result = true;
             }else{

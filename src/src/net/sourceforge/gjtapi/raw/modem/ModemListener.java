@@ -26,6 +26,12 @@ public interface ModemListener {
 
     public CallId modemRinging();
     public void ringingStopped(CallId id);
+    /**
+     * Note that the modem has started dialing
+     * @param id The call we are dialing out on.
+     */
+    public void modemDialing(CallId id, String dest);
+    public void modemConnected(CallId id, String dest);
     public void modemConnected(CallId id);
     public void modemDisconnected(CallId id);
     public void modemFailed(CallId id);

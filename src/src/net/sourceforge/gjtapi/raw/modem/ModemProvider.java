@@ -18,7 +18,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
-import java.security.ProviderException;
 import java.util.*;
 import javax.telephony.*;
 import javax.telephony.media.*;
@@ -80,8 +79,8 @@ public class ModemProvider implements MediaTpi, ModemListener {
             String address = (String)addresses.get(0);
             try{
                 id = reserveCallId(address);
-                //listener.connectionAlerting(id, address,
-                //        ConnectionEvent.CAUSE_NEW_CALL);
+                listener.connectionAlerting(id, address,
+                        ConnectionEvent.CAUSE_NEW_CALL);
                 listener.terminalConnectionRinging(id, address,
                         terminal.terminal, TerminalConnectionEvent.CAUSE_NORMAL);
             }catch (InvalidArgumentException ex){
@@ -109,6 +108,7 @@ public class ModemProvider implements MediaTpi, ModemListener {
         if (listener != null){
             String address = (String)addresses.get(0);
             listener.connectionConnected(id, address, ConnectionEvent.CAUSE_NORMAL);
+            listener.terminalConnectionTalking(id, address, this.terminal.terminal, Event.CAUSE_NORMAL);
         }
     }
 
@@ -145,9 +145,9 @@ public class ModemProvider implements MediaTpi, ModemListener {
             if((obj != null) && (obj instanceof String)){
                 String portname = (String) obj;
                 // get the class name for the plugged in Modem adapter
-                String modemClassName = (String)provProps.get(this.MODEM_PROVIDER_CLASS);
+                String modemClassName = (String)provProps.get(ModemProvider.MODEM_PROVIDER_CLASS);
                 if (modemClassName == null)
-                	modemClassName = this.DEFAULT_MODEM_PROVIDER;
+                	modemClassName = ModemProvider.DEFAULT_MODEM_PROVIDER;
                 // now try to instantiate
                
                 //TODO: need to get the modem by reflection or similar
@@ -199,7 +199,7 @@ public class ModemProvider implements MediaTpi, ModemListener {
         }
 
         //Finally set up the terminal
-        terminal = new TermData((String)provProps.get(SERIAL), false);
+        terminal = new TermData((String)provProps.get(SERIAL), true);
     }
 
     /**
@@ -464,4 +464,20 @@ public class ModemProvider implements MediaTpi, ModemListener {
     public void triggerRTC(String terminal, Symbol action) {
 
     }
+	/**
+	 * Tells GJTAPI that we are starting to dial out
+	 * @see net.sourceforge.gjtapi.raw.modem.ModemListener#modemDialing(net.sourceforge.gjtapi.CallId)
+	 */
+	public void modemDialing(CallId id, String destinationAddress) {
+		if (listener != null){
+			listener.connectionAlerting(id, destinationAddress, ConnectionEvent.CAUSE_NORMAL);
+		}
+	}
+	
+	public void modemConnected(CallId id, String remoteLeg) {
+		if (listener != null){
+			listener.connectionConnected(id, remoteLeg, ConnectionEvent.CAUSE_NORMAL);
+		}
+	}
+
 }
