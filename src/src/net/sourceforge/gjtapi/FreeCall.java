@@ -72,6 +72,7 @@ FreeCall(CallData cd, GenericProvider prov) {
 	this.setProvider(prov);
 	
 	this.setState(cd.callState);
+        this.setCallID(cd.id);
 	int size = cd.connections.length;
 	for (int i = 0; i < size; i++) {
 		new FreeConnection(this, cd.connections[i], this.getGenProvider().getDomainMgr());
