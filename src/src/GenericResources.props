@@ -6,6 +6,7 @@ PROVIDER_Emulator6 = Emulator6.props
 PROVIDER_DialogicGC = DialogicGC.props
 PROVIDER_Corba = net.sourceforge.gjtapi.raw.remote.CorbaProvider
 PROVIDER_Modem = Modem.props
+PROVIDER_Tapi3 = Tapi3.props
 
 # should the MediaService disconnect the Connection on a Terminal when the MediaService
 # is released? "t" enforces JTAPI specifications
