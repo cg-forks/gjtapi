@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>GJTAPI 1.6 Release Notes</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<blockquote>
+  <div align="center">
+  <h1>GJTAPI 1.6</h1>
+  <h2>Release Notes</h2>
+Richard Deadman<br>
+March 21, 2003
+  <hr width="100%" size="2">
+  <div align="left">
+  <h2>Licencing</h2>
+  <blockquote>GJTAPI is released under an X11/BSD licence, a <a
+ href="http://gjtapi.sourceforge.net/gjtapi-licence.txt">copy of which</a>
+can be found on the <a href="http://gjtapi.sourceforge.net">GJTAPI Sourceforge
+web site</a>.<br>
+    <br>
+Exceptions include the <a href="http://xtapi.sourceforge.net">XTAPI</a> bridge
+code, which is released under LGPL to keep it in line with the GPL licencing
+of the XTAPI service providers it interfaces with. Other service providers
+may be released for GJTAPI under other licencing schemes, but the core framework
+and APIs are under the X11/BSD licence.<br>
+  </blockquote>
+  <h2>Known Limitations</h2>
+  <blockquote>
+    <ol>
+      <li>Currently, the following service providers are still in Beta mode:</li>
+      <ul>
+        <li>Dialogic - media not yet supported.</li>
+        <li>Voice Modem - modem takes too long to detect when an outgoing
+call has been answered.</li>
+      </ul>
+      <li>Not all of "callcontrol" is implemented, in particular CallControlTerminal
+is not supported.<br>
+      </li>
+    </ol>
+  </blockquote>
+  <h2>Variances</h2>
+  <blockquote>JTAPI 1.3 Media dictates that MediaService.release() should
+cause the Connection associated with the MediaService to be dropped. This
+makes sense for some automatic call routing situations, but not in others
+where an application may want to tap into an existing call. To provide more
+flexibility, GJTAPI added a new configuration parameter into version 1.6.
+If the file "GenericResources.props" contains a line:<br>
+    <blockquote>
+      <pre>mediaReleaseDisconnect = f<br></pre>
+    </blockquote>
+  </blockquote>
+  <blockquote>then the MediaService will not release the Connection bound
+to it during "release()".<br>
+  </blockquote>
+  <h2>Installation</h2>
+  <blockquote>GJTAPI consists of three jar files, that should be placed on
+an application's class path. In addition, the JTAPI jar file should be downloaded
+from Sun's site. GJTAPI also includes a 1.3 media file that supplies some
+accidently missing media class files from the JTAPI 1.3 release.<br>
+    <table cellpadding="2" cellspacing="2" border="1" width="100%">
+      <tbody>
+        <tr>
+          <td valign="top">Jar file<br>
+          </td>
+          <td valign="top">Location<br>
+          </td>
+          <td valign="top">Author<br>
+          </td>
+          <td valign="top">Comment<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">JTAPI 1.3 interface<br>
+          </td>
+          <td valign="top">http://java.sun.com/products/jtapi/download3.html<br>
+          </td>
+          <td valign="top">JTAPI Team<br>
+          </td>
+          <td valign="top"><b>Required.</b><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">JTAPI 1.3 interface - missing media files<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">JTAPI Team<br>
+          </td>
+          <td valign="top">Optional. Needed for some JTAPI 1.3 media actions.<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">GJTAPI 1.6 core<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">GJTAPI<br>
+          </td>
+          <td valign="top"><b>Required.</b> Contains the core framework and
+several service providers (see below)<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">GJTAPI 1.6 JavaDocs<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">GJTAPI<br>
+          </td>
+          <td valign="top">Optional.<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">GJTAPI Optional Media support<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">GJTAPI<br>
+          </td>
+          <td valign="top">Optional. JTAPI 1.3 provides a broken BasicMediaService,
+which this jar replaces. If this jar is not on the classpath before JTAPI
+1.3, then an application should use the proporetary "net.sourceforge.gjtapi.media.GenericmediaService"
+instead.<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">XTAPI Bridge<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">GJTAPI<br>
+          </td>
+          <td valign="top">Optional. Provides the service provider bridge
+for hooking XTAPI service providers into GJTAPI. Separated from GJTAPI core
+since it is under the LGPL licence.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+  </blockquote>
+  <h2>Service Providers</h2>
+  <br>
+                     
+  <blockquote>                    
+    <table cellpadding="2" cellspacing="2" border="1" width="100%">
+          <tbody>
+            <tr>
+              <th valign="top">Service Provider<br>
+              </th>
+              <th valign="top">Telephony "Fabric"<br>
+              </th>
+              <th valign="top">Status<br>
+              </th>
+              <th valign="top">Location<br>
+              </th>
+              <th valign="top">Comments<br>
+              </th>
+            </tr>
+            <tr>
+             <th valign="top" rowspan="1" colspan="5">Providers<br>
+             </th>
+           </tr>
+            <tr>
+              <td valign="top">Emulator<br>
+              </td>
+              <td valign="top">N/A -- visual emulator<br>
+              </td>
+              <td valign="top">Stable<br>
+              </td>
+              <td valign="top">core gjtapi jar file, net.sourceforge.gjtapi.raw.emulator.EmProvider<br>
+              </td>
+              <td valign="top">Usefull for testing JTAPI applications.<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">Dialogic<br>
+              </td>
+              <td valign="top">Dialogic GlobalCall for linux <br>
+              </td>
+              <td valign="top">Alpha<br>
+              </td>
+              <td valign="top">core gjtapi jar file,<br>
+    net.sourceforge.gjtapi.raw.dialogic.GCProvider<br>
+              </td>
+              <td valign="top">Media not yet supported.<br>
+              </td>
+            </tr>
+            <tr>
+            <td valign="top">Voice Modem<br>
+            </td>
+            <td valign="top">Currently "Hayes Accura V92 External" and Lucent
+ Venus chipset<br>
+            </td>
+            <td valign="top">Alpha<br>
+            </td>
+            <td valign="top">core gjtapi jar file,<br>
+  net.sourceforge.gjtapi.raw.modem.ModemProvider<br>
+            </td>
+            <td valign="top">                      
+          <ul>
+            <li>It takes too long for the modem to realise that an outgoing
+ call has been answered. </li>
+            <li>Only .au files are supported for playing. </li>
+            <li>Recorded files are ulaw files and must be converted to another
+ format to be useful. <br>
+              </li>
+          </ul>
+            </td>
+          </tr>
+          <tr>
+              <td valign="top">ilink </td>
+              <td valign="top">ilink TeamCall Server<br>
+              </td>
+              <td valign="top">Beta<br>
+              </td>
+              <td valign="top">Available from <a
+ href="http://www.ilink.de/home/en/cti/products/JTAPI/JTAPIDetails/">ilink.de</a><br>
+              </td>
+              <td valign="top">Media not yet supported.<br>
+    Free Demo available.<br>
+              </td>
+            </tr>
+                        <tr>
+             <th valign="top" rowspan="1" colspan="5">Connectors and Bridges<br>
+             </th>
+            </tr>
+            <tr>
+              <td valign="top">Inverter<br>
+              </td>
+              <td valign="top">"Connector"<br>
+              </td>
+              <td valign="top">Stable<br>
+              </td>
+              <td valign="top">core gjtapi jar file,<br>
+            <br>
+  Five sub-providers, tuned to the capabilities of the JTAPI implementation
+ being hooked in:<br>
+            <br>
+    net.sourceforge.gjtapi.raw.invert.InverterProvider<br>
+    net.sourceforge.gjtapi.raw.invert.NewMediaGenProvider  net.sourceforge.gjtapi.raw.invert.NewMediaProvider 
+  net.sourceforge.gjtapi.raw.invert.NonMediaProvider  net.sourceforge.gjtapi.raw.invert.OldMediaProvider<br>
+              </td>
+              <td valign="top">Allows a JTAPI implementation to be hooked 
+in  below GJTAPI. This allows, for instance, a 1.2 JTAPI implementation to 
+be  accesses as 1.3 compliant. It also can work with the "Mux" to combine 
+multiple  JTAPI implementations into one.<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">Multiplexor<br>
+              </td>
+              <td valign="top">"Connector"<br>
+              </td>
+              <td valign="top">Stable<br>
+              </td>
+              <td valign="top">core gjtapijar file,<br>
+    net.sourceforge.gjtapi.raw.mux.MuxProvider<br>
+              </td>
+              <td valign="top">Allows two or more GJTAPI service providers
+ to  be seen as a single service provider to GJTAPI, allowing for their telephony
+  space to be "merged".<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">CORBA<br>
+              </td>
+              <td valign="top">"Connector"<br>
+              </td>
+              <td valign="top">Stable<br>
+              </td>
+              <td valign="top">core gjtapi jar file,<br>
+    net.sourceforge.gjtapi.raw.remote.CorbaProvider<br>
+              </td>
+              <td valign="top">Allows a Service Provider to be accessed remotely
+  using CORBA<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">RMI<br>
+              </td>
+              <td valign="top">"Connector"<br>
+              </td>
+              <td valign="top">Stable<br>
+              </td>
+              <td valign="top">core gjtapi jar file,<br>
+    net.sourceforge.gjtapi.raw.remote.RemoteProvider<br>
+              </td>
+              <td valign="top">Allows a Service Provider to be accessed remotely
+  using RMI<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">XTAPI Bridge<br>
+              </td>
+              <td valign="top">"Connector"<br>
+              </td>
+              <td valign="top">First Release<br>
+              </td>
+              <td valign="top">supplementary <a
+ href="http://prdownloads.sourceforge.net/gjtapi/gjtapi-1.6-xtapiBridge.jar?download">gjtapi-1.6-xtapiBridge.jar</a>
+  ,<br>
+    net.sourceforge.gjtapi.raw.xtapi.XtapiProvider<br>
+              </td>
+              <td valign="top">Supports XTAPI's service providers:<br>
+                                               
+          <ul>
+            <li>MS TAPI</li>
+            <li>Serial Modems</li>
+            <li>H.323</li>
+            <li>Dialogic D4J</li>
+          </ul>
+    This is in its own jar since XTAPI is GPL code.<br>
+              </td>
+            </tr>
+                               
+      </tbody>                    
+    </table>
+        <br>
+      </blockquote>
+               
+  <h2>Application Usage</h2>
+  <blockquote>An application must first get a handle on a JTAPI or Jcc Peer
+and must then ask that peer for a provider. To get the Peer, you use a peer
+factory and either explicity name the Peer you want or use a default peer.
+Jtapi looks for default peers by looking for classes with a specific name
+(i.e. DefaultJtapiPeer). GJTAPI includes these in the core GJTAPI jar file,
+so if GJTAPI is the first JTAPI implementation listed on your classpath<a
+ href="#Footnote1"><sup>1</sup></a>, your application may use the default
+method:<br>
+    <h3>JTAPI</h3>
+    <blockquote>
+      <h4>Named</h4>
+      <blockquote>
+        <pre>JtapiPeer peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");</pre>
+      </blockquote>
+      <h4>Default</h4>
+      <blockquote>
+        <pre>JtapiPeer peer = JtapiPeerFactory.getJtapiPeer();
+        </pre>
+      </blockquote>
+    </blockquote>
+    <h3>JCC</h3>
+    <blockquote>   
+      <h4>Named</h4>
+   
+      <blockquote>     
+        <pre>JccPeer peer = JccPeerFactory.getJccPeer("net.sourceforge.gjtapi.jcc.Peer");</pre>
+   </blockquote>
+   
+      <h4>Default</h4>
+   
+      <blockquote>     
+        <pre>JccPeer peer = JccPeerFactory.getJccPeer();<br></pre>
+   </blockquote>
+ </blockquote>
+One a handle if had to the Peer, it may be used as a factory to create a
+provider. This may be done in one of four ways. For simplicity, we show the
+code for the JTAPI Provider; Jcc is analogous:<br>
+    <h3>Default Provider</h3>
+    <blockquote>
+      <pre>Provider prov = peer.getProvider();</pre>
+This causes the GJTAPI Peer to look in its "GenericResources.props" file
+for a property "DefaultProvider", which is then looked up using the following
+algorithm.</blockquote>
+    <h3>Named Provider</h3>
+    <blockquote>
+      <pre>Provider prov = peer.getProvider("Emulator");<br></pre>
+    </blockquote>
+    <blockquote>If there is an entry in "GenericResources.props" called "PROVIDER_Emulator",
+the value of this property is extracted and used in the following two tests.
+In the above case, this is resolved to "net.sourceforge.gjtapi.raw.emulator.EmProvider",
+which is a service provider class. The value "Emulator6", however, points
+to a property file that indirectly links to the same service provider class,
+but with a different configuration.<br>
+    </blockquote>
+    <blockquote>Note that peer.getProviders() will return the set of Provider
+names listed in the "GenericResources.props" file. GJTAPI allows any service
+provider to be hooked up, but will not list them unless they are listed in
+the "GenericResources.props" file.<br>
+    </blockquote>
+    <h3>Props file name</h3>
+    <blockquote>
+      <pre>Provider prov = peer.getProvider("Emulator6.props");<br></pre>
+    </blockquote>
+    <blockquote>
+      <blockquote>   </blockquote>
+  If the provider name points to a property file instead of a class, then
+this file is read to get properties for the provider, including the property
+"ProviderClass", which is used to find the real service provider class.<br>
+    </blockquote>
+    <h3>Class name</h3>
+    <blockquote>   
+      <pre>Provider prov = peer.getProvider("net.sourceforge.gjtapi.raw.emulator.EmProvider");</pre>
+ Here we explicitly define the service provider class to hook into GJTAPI.<br>
+    </blockquote>
+    <br>
+  </blockquote>
+  <hr width="100%" size="2"><sup><a name="Footnote1"></a>1</sup> Why would
+you want more than one JTAPI implementation on you class path? Using the
+GJTAPI invertor, this allows GJTAPI to make a JTAPI 1.2 implementation look
+like a JTAPI 1.3 implementation. It also enables two or more JTAPI implementations
+to be combined together into one virtual telephony space using the GJTAPI
+multiplexor adapter.<br>
+  </div>
+  </div>
+</blockquote>
+</body>
+</html>
