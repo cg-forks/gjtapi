@@ -12,6 +12,7 @@ import javax.telephony.Connection;
 import javax.telephony.Event;
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
+import javax.telephony.InvalidStateException;
 import javax.telephony.MethodNotSupportedException;
 import javax.telephony.PrivilegeViolationException;
 import javax.telephony.ProviderUnavailableException;
@@ -300,7 +301,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			ResourceUnavailableException,
 			MethodNotSupportedException,
 			RawStateException {
-		this.realProvider.XTAnswerCall(((XtapiCallId)call).getCallNum());
+		try {
+			this.realProvider.XTAnswerCall(((XtapiCallId)call).getCallNum());
+		} catch (InvalidStateException ise) {
+			throw new RawStateException(call, ise.getState());
+		}
 	}
 
 	/**
@@ -320,9 +325,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			throw new InvalidArgumentException("Address not known: " + address);
 			
 		// Get the call handle
-		int callNum = this.realProvider.XTConnectCall(addInfo.line,
+		int callNum = 0;
+		try {
+			callNum = this.realProvider.XTConnectCall(addInfo.line,
 											dest,
 											addInfo.rawHandle);
+		} catch (InvalidStateException ise) {
+			throw new RawStateException(id, ise.getState());
+		}
+
 		// update the call structure
 		((XtapiCallId)id).setCallNumber(callNum);
 		
@@ -380,16 +391,22 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		for (int i = 0; i < numLines; i++) {
 			// Get Address information for each line
 			StringBuffer termName = new StringBuffer();
-			int handle = realProvider.XTOpenLine(i, termName);
+			try {
+				int handle = realProvider.XTOpenLine(i, termName);
 			
-			// populate the Address and Terminal information
-			String term = termName.toString();
-			AddressInfo addInfo = new AddressInfo(i, term, handle);
-			this.addInfoMap.put(ADDR_PREFIX + i, addInfo);
-			
-			this.termToAddr.put(term, addInfo);
-			
-			this.lineToAddr.put(new Integer(handle), addInfo);
+				// populate the Address and Terminal information
+				String term = termName.toString();
+				AddressInfo addInfo = new AddressInfo(i, term, handle);
+				this.addInfoMap.put(ADDR_PREFIX + i, addInfo);
+				
+				this.termToAddr.put(term, addInfo);
+				
+				this.lineToAddr.put(new Integer(handle), addInfo);
+			} catch (InvalidStateException ise) {
+				// try the next line
+			} catch (ResourceUnavailableException rue) {
+				// try the next line
+			}
 		}
 	}
 
@@ -397,7 +414,13 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	 * @see CoreTpi#releaseCallId(CallId)
 	 */
 	public void releaseCallId(CallId id) {
-		this.realProvider.XTDropCall(((XtapiCallId)id).getCallNum());
+		try {
+			this.realProvider.XTDropCall(((XtapiCallId)id).getCallNum());
+		} catch (ResourceUnavailableException rue) {
+			// ignore
+		} catch (InvalidStateException ise) {
+			// ignore
+		}
 	}
 
 	/**
@@ -422,7 +445,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	 * @see CoreTpi#shutdown()
 	 */
 	public void shutdown() {
-		this.realProvider.XTShutdown();
+		try {
+			this.realProvider.XTShutdown();
+		} catch (InvalidStateException ise) {
+			// ignore
+		}
 	}
 
 	// Media calls
@@ -471,9 +498,17 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			int id = this.getLineId(terminal);
 			int size = streamIds.length;
 			
-			// play each id on the found line
-			for (int i = 0; i < size; i++)
-				this.realProvider.XTPlaySound(streamIds[i], id);
+			try {
+				// play each id on the found line
+				for (int i = 0; i < size; i++)
+					this.realProvider.XTPlaySound(streamIds[i], id);
+			} catch (InvalidStateException ise) {
+				throw new MediaResourceException(ise.toString());
+			} catch (MethodNotSupportedException mnse) {
+				throw new MediaResourceException(mnse.toString());
+			} catch (ResourceUnavailableException rue) {
+				throw new MediaResourceException(rue.toString());
+			} 
 	}
 
 	/**
@@ -485,9 +520,17 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		RTC[] rtcs,
 		Dictionary optArgs)
 		throws MediaResourceException {
-			// look up the id for the terminal
-			int id = this.getLineId(terminal);
-			this.realProvider.XTRecordSound(streamId, id);
+			try {
+				// look up the id for the terminal
+				int id = this.getLineId(terminal);
+				this.realProvider.XTRecordSound(streamId, id);
+			} catch (InvalidStateException ise) {
+				throw new MediaResourceException(ise.toString());
+			} catch (MethodNotSupportedException mnse) {
+				throw new MediaResourceException(mnse.toString());
+			} catch (ResourceUnavailableException rue) {
+				throw new MediaResourceException(rue.toString());
+			}
 	}
 
 	/**
@@ -502,7 +545,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		throws MediaResourceException {
 			// look up the id for the terminal
 			int id = this.getCallId(terminal);
-			this.realProvider.XTMonitorDigits(id, true);
+			try {
+				this.realProvider.XTMonitorDigits(id, true);
+			} catch (InvalidStateException ise) {
+				throw new MediaResourceException(ise.toString());
+			} catch (MethodNotSupportedException mnse) {
+				throw new MediaResourceException(mnse.toString());
+			} catch (ResourceUnavailableException rue) {
+				throw new MediaResourceException(rue.toString());
+			}
 			// wait for signals to come inXXXX
 			return new RawSigDetectEvent();
 	}
@@ -519,7 +570,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		throws MediaResourceException {
 			// look up the id for the terminal
 			int id = this.getCallId(terminal);
-			this.realProvider.XTSendDigits(id, SymbolConvertor.convert(syms));			
+			try {
+				this.realProvider.XTSendDigits(id, SymbolConvertor.convert(syms));
+			} catch (InvalidStateException ise) {
+				throw new MediaResourceException(ise.toString());
+			} catch (MethodNotSupportedException mnse) {
+				throw new MediaResourceException(mnse.toString());
+			} catch (ResourceUnavailableException rue) {
+				throw new MediaResourceException(rue.toString());
+			}
 	}
 
 	/**
@@ -532,7 +591,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		this.realProvider.XTStopRecording(id);
 		
 		int callId = this.getCallId(terminal);
-		this.realProvider.XTMonitorDigits(callId, false);
+		try {
+			this.realProvider.XTMonitorDigits(callId, false);
+		} catch (InvalidStateException ise) {
+			// ignore
+		} catch (MethodNotSupportedException mnse) {
+			// ignore
+		} catch (ResourceUnavailableException rue) {
+			// ignore
+		}
 	}
 
 	/**
@@ -551,7 +618,15 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			
 		if (action.equals(SignalDetectorConstants.rtca_Stop)) {
 			int callId = this.getCallId(terminal);
-			this.realProvider.XTMonitorDigits(callId, false);
+			try {
+				this.realProvider.XTMonitorDigits(callId, false);
+			} catch (InvalidStateException ise) {
+				// we tried to stop it...
+			} catch (MethodNotSupportedException mnse) {
+			// ignore
+			} catch (ResourceUnavailableException rue) {
+			// ignore
+			}
 		}
 	}
 
