@@ -1,33 +1,33 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 8x8 Inc. (www.8x8.com)
 
-	All rights reserved. 
+	All rights reserved.
 
-	Permission is hereby granted, free of charge, to any person obtaining a 
-	copy of this software and associated documentation files (the 
-	"Software"), to deal in the Software without restriction, including 
-	without limitation the rights to use, copy, modify, merge, publish, 
-	distribute, and/or sell copies of the Software, and to permit persons 
-	to whom the Software is furnished to do so, provided that the above 
-	copyright notice(s) and this permission notice appear in all copies of 
-	the Software and that both the above copyright notice(s) and this 
-	permission notice appear in supporting documentation. 
+	Permission is hereby granted, free of charge, to any person obtaining a
+	copy of this software and associated documentation files (the
+	"Software"), to deal in the Software without restriction, including
+	without limitation the rights to use, copy, modify, merge, publish,
+	distribute, and/or sell copies of the Software, and to permit persons
+	to whom the Software is furnished to do so, provided that the above
+	copyright notice(s) and this permission notice appear in all copies of
+	the Software and that both the above copyright notice(s) and this
+	permission notice appear in supporting documentation.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
-	OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
-	HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL 
-	INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING 
-	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
-	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
-	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+	OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+	HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL
+	INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING
+	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-	Except as contained in this notice, the name of a copyright holder 
-	shall not be used in advertising or otherwise to promote the sale, use 
-	or other dealings in this Software without prior written authorization 
+	Except as contained in this notice, the name of a copyright holder
+	shall not be used in advertising or otherwise to promote the sale, use
+	or other dealings in this Software without prior written authorization
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.media.*;
@@ -37,10 +37,10 @@ import javax.csapi.cc.jcc.*;
 import javax.telephony.*;
 /**
  * Jain Jcc Connection adapter for a Generic JTAPI Connection.
- * 
+ *
  * <P>Note that current implementations of release(int) and getRedirectedAddress() are
  * not properly implemented due to an insufficient service provider SPI not providing sufficient information.
- * 
+ *
  * Creation date: (2000-10-10 13:48:56)
  * @author: Richard Deadman
  */
@@ -93,7 +93,7 @@ public class GenConnection implements JccConnection {
 	 * when trying to route a call.
 	 **/
 	private String routeAddress = null;
-	
+
 	private int state = 0;
 /**
  * This is created by a Call.createConnection, and leaves the Connection ready to be routed.
@@ -127,8 +127,8 @@ public GenConnection(Provider prov, Connection conn) {
 public void answer() {
 	// unblock
 	this.continueProcessing();
-	
-	FreeTerminalConnection[] tcs = (FreeTerminalConnection[])this.getFrameConn().getTerminalConnections();
+
+	TerminalConnection[] tcs = (TerminalConnection[])this.getFrameConn().getTerminalConnections();
 	if (tcs.length > 0)
 		try {
 			tcs[0].answer();
@@ -142,7 +142,7 @@ public void answer() {
 public void attachMedia() {
 	// unblock
 	this.continueProcessing();
-	
+
 	this.attachMedia(true);
 }
 /**
@@ -165,7 +165,7 @@ public void continueProcessing() {
 public void detachMedia() {
 	// unblock
 	this.continueProcessing();
-	
+
 	this.attachMedia(false);
 }
 /**
@@ -240,19 +240,19 @@ private int getJccState() {
 	switch (jtapiState) {
 		case Connection.ALERTING: {
 			return JccConnection.ALERTING;
-		} 
+		}
 		case Connection.CONNECTED: {
 			return JccConnection.CONNECTED;
-		} 
+		}
 		case Connection.DISCONNECTED: {
 			return JccConnection.DISCONNECTED;
-		} 
+		}
 		case Connection.FAILED: {
 			return JccConnection.FAILED;
-		} 
+		}
 		case Connection.IDLE: {
 			return JccConnection.IDLE;
-		} 
+		}
 		case Connection.INPROGRESS: {
 			int jccState = this.state;
 			/* if ((jccState == JccConnection.ADDRESS_ANALYZE) ||
@@ -260,7 +260,7 @@ private int getJccState() {
 				(jccState == JccConnection.AUTHORIZE_CALL_ATTEMPT) ||
 				(jccState == JccConnection.CALL_DELIVERY)) */
 			return jccState;
-		} 
+		}
 		default: {
 			return JccConnection.FAILED;	// should never be here -- but no UNKNOWN in Jcc anymore
 		}
@@ -301,26 +301,26 @@ public JccAddress getOriginatingAddress() {
 }
 
 /**
-		Returns the redirected address. 
-		Only after the event with id. {@link JcpConnectionEvent#CONNECTION_DISCONNECTED 
-		CONNECTION_DISCONNECTED} with cause code {@link JccCallEvent#CAUSE_REDIRECTED 
-		CAUSE_REDIRECTED} occured and the connection returned by 
-		{@link JcpConnectionEvent#getConnection()} is <code>this</code> and it is a 
-		terminating connection, this method will return the address of the party to 
-		which this connection is redirected.  In all other cases this method returns 
+		Returns the redirected address.
+		Only after the event with id. {@link JcpConnectionEvent#CONNECTION_DISCONNECTED
+		CONNECTION_DISCONNECTED} with cause code {@link JccCallEvent#CAUSE_REDIRECTED
+		CAUSE_REDIRECTED} occured and the connection returned by
+		{@link JcpConnectionEvent#getConnection()} is <code>this</code> and it is a
+		terminating connection, this method will return the address of the party to
+		which this connection is redirected.  In all other cases this method returns
 		<code>null</code>.
-		
+
 		<P>Note: Currently the TelephonyListener does not receive redirecting information
 		for connection disconnects, and so this information is not available.
-		
-		@return the address to which the call is redirected or <code>null</code> if 
-		the call is not redirected. 
+
+		@return the address to which the call is redirected or <code>null</code> if
+		the call is not redirected.
 		@since 1.0a
     */
     public String getRedirectedAddress() {
     	return null;
     }
-    
+
 /**
  * Internal accessor for the Call I am a part of
  * Creation date: (2000-11-09 15:32:29)
@@ -371,7 +371,7 @@ public boolean isBlocked() {
 public void release() throws javax.csapi.cc.jcc.InvalidStateException, javax.csapi.cc.jcc.PrivilegeViolationException, javax.csapi.cc.jcc.ResourceUnavailableException {
 	// unblock
 	this.continueProcessing();
-	
+
 	try {
 		this.getFrameConn().disconnect();
 	} catch (javax.telephony.InvalidStateException ise) {
@@ -390,31 +390,31 @@ public void release() throws javax.csapi.cc.jcc.InvalidStateException, javax.csa
 			case javax.telephony.ResourceUnavailableException.NO_DIALTONE: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.OBSERVER_LIMIT_EXCEEDED: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.OUTSTANDING_METHOD_EXCEEDED: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.UNSPECIFIED_LIMIT_EXCEEDED: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			case javax.telephony.ResourceUnavailableException.USER_RESPONSE: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				break;
-			} 
+			}
 			default: {
 				newType = javax.csapi.cc.jcc.ResourceUnavailableException.UNKNOWN;
 			}
@@ -427,7 +427,7 @@ public void release() throws javax.csapi.cc.jcc.InvalidStateException, javax.csa
 
 /**
  * release the connection with a cause code.
- * 
+ *
  * <P>Note: For now, the cause code is ignored since the JccTpi has no current way of passing
  * it on to the low-level implementation.
  */
@@ -439,12 +439,12 @@ public void release(int cause) throws javax.csapi.cc.jcc.InvalidStateException, 
  * routeConnection method comment.
  */
 public void routeConnection(boolean attachMedia)
-	throws 
-		javax.csapi.cc.jcc.MethodNotSupportedException, 
-		javax.csapi.cc.jcc.ResourceUnavailableException, 
-		javax.csapi.cc.jcc.InvalidPartyException, 
-		javax.csapi.cc.jcc.InvalidArgumentException, 
-		javax.csapi.cc.jcc.InvalidStateException, 
+	throws
+		javax.csapi.cc.jcc.MethodNotSupportedException,
+		javax.csapi.cc.jcc.ResourceUnavailableException,
+		javax.csapi.cc.jcc.InvalidPartyException,
+		javax.csapi.cc.jcc.InvalidArgumentException,
+		javax.csapi.cc.jcc.InvalidStateException,
 		javax.csapi.cc.jcc.PrivilegeViolationException {
 	// unblock
 	this.continueProcessing();
@@ -476,10 +476,10 @@ public void routeConnection(boolean attachMedia)
 		}
 	} catch (javax.telephony.InvalidStateException ise) {
 		throw new javax.csapi.cc.jcc.InvalidStateException(
-			fCall, 
-			ise.getObjectType(), 
-			ise.getState(), 
-			ise.getMessage()); 
+			fCall,
+			ise.getObjectType(),
+			ise.getState(),
+			ise.getMessage());
 	} catch (javax.telephony.InvalidPartyException ise) {
 		partyFailed = true;
 	} catch (javax.telephony.PrivilegeViolationException pve) {
@@ -488,65 +488,65 @@ public void routeConnection(boolean attachMedia)
 		switch (type) {
 			case javax.telephony.PrivilegeViolationException.DESTINATION_VIOLATION :
 				{
-					newType = 
-						javax.csapi.cc.jcc.PrivilegeViolationException.DESTINATION_VIOLATION; 
+					newType =
+						javax.csapi.cc.jcc.PrivilegeViolationException.DESTINATION_VIOLATION;
 				}
 			case javax.telephony.PrivilegeViolationException.ORIGINATOR_VIOLATION :
 				{
-					newType = 
-						javax.csapi.cc.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION; 
+					newType =
+						javax.csapi.cc.jcc.PrivilegeViolationException.ORIGINATOR_VIOLATION;
 				}
 			default :
 				{
-					newType = 
-						javax.csapi.cc.jcc.PrivilegeViolationException.UNKNOWN_VIOLATION; 
+					newType =
+						javax.csapi.cc.jcc.PrivilegeViolationException.UNKNOWN_VIOLATION;
 				}
 		}
 		throw new javax.csapi.cc.jcc.PrivilegeViolationException(
-			newType, 
-			pve.getMessage()); 
+			newType,
+			pve.getMessage());
 	} catch (javax.telephony.ResourceUnavailableException rue) {
 		int type = rue.getType();
 		int newType;
 		switch (type) {
 			case javax.telephony.ResourceUnavailableException.NO_DIALTONE :
 				{
-					newType = 
-						javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE; 
+					newType =
+						javax.csapi.cc.jcc.ResourceUnavailableException.NO_DIALTONE;
 				}
 			case javax.telephony.ResourceUnavailableException.OBSERVER_LIMIT_EXCEEDED :
 				{
-					newType = 
+					newType =
 						javax.csapi.cc.jcc.ResourceUnavailableException
-							.OBSERVER_LIMIT_EXCEEDED; 
+							.OBSERVER_LIMIT_EXCEEDED;
 				}
 			case javax.telephony.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE :
 				{
-					newType = 
+					newType =
 						javax.csapi.cc.jcc.ResourceUnavailableException
-							.ORIGINATOR_UNAVAILABLE; 
+							.ORIGINATOR_UNAVAILABLE;
 				}
 			case javax.telephony.ResourceUnavailableException.OUTSTANDING_METHOD_EXCEEDED :
 				{
-					newType = 
+					newType =
 						javax.csapi.cc.jcc.ResourceUnavailableException
-							.OUTSTANDING_METHOD_EXCEEDED; 
+							.OUTSTANDING_METHOD_EXCEEDED;
 				}
 			case javax.telephony.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED :
 				{
-					newType = 
-						javax.csapi.cc.jcc.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED; 
+					newType =
+						javax.csapi.cc.jcc.ResourceUnavailableException.TRUNK_LIMIT_EXCEEDED;
 				}
 			case javax.telephony.ResourceUnavailableException.UNSPECIFIED_LIMIT_EXCEEDED :
 				{
-					newType = 
+					newType =
 						javax.csapi.cc.jcc.ResourceUnavailableException
-							.UNSPECIFIED_LIMIT_EXCEEDED; 
+							.UNSPECIFIED_LIMIT_EXCEEDED;
 				}
 			case javax.telephony.ResourceUnavailableException.USER_RESPONSE :
 				{
-					newType = 
-						javax.csapi.cc.jcc.ResourceUnavailableException.USER_RESPONSE; 
+					newType =
+						javax.csapi.cc.jcc.ResourceUnavailableException.USER_RESPONSE;
 				}
 			default :
 				{
@@ -556,10 +556,10 @@ public void routeConnection(boolean attachMedia)
 		throw new javax.csapi.cc.jcc.ResourceUnavailableException(newType);
 	} catch (javax.telephony.InvalidArgumentException iae) {
 		throw new javax.csapi.cc.jcc.InvalidArgumentException(
-			iae.getMessage()); 
+			iae.getMessage());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
 		throw new javax.csapi.cc.jcc.MethodNotSupportedException(
-			mnse.getMessage()); 
+			mnse.getMessage());
 	}
 
 	// now see which connection is our new connection
@@ -572,8 +572,8 @@ public void routeConnection(boolean attachMedia)
 	// see if we failed to route the call
 	if (partyFailed == true)
 		throw new javax.csapi.cc.jcc.InvalidPartyException(
-			javax.csapi.cc.jcc.InvalidPartyException.DESTINATION_PARTY, 
-			"All selected routes failed: " + route); 
+			javax.csapi.cc.jcc.InvalidPartyException.DESTINATION_PARTY,
+			"All selected routes failed: " + route);
 
 	// now attach the media if necessary
 	if (attachMedia)
@@ -670,10 +670,10 @@ private void setRouteAddress(java.lang.String newRouteAddress) {
 /**
  * Get the MidCall Data
  * Not supported by GJTAPI yet.
- * @throws InvalidStateException Some object required by this method is not 
+ * @throws InvalidStateException Some object required by this method is not
  * in a valid state as designated by the pre-conditions for this method.
  * @throws ResourceUnavailableException An internal resource for completing this
- * call is unavailable, e.g. no mid call data is available at this time. 
+ * call is unavailable, e.g. no mid call data is available at this time.
  * @throws MethodNotSupportedException The implementation does not support this method.
  * @return the mid call data; the service code type and service code value
  */
