@@ -51,7 +51,9 @@ public class FreeCall implements CallControlCall, PrivateData {
 	private boolean stoppedReporting = false;		// ensure we do it only once.
 
 	private FreeTerminalConnection confController = null;
+	private boolean confEnabled = true;
 	private FreeTerminalConnection transController = null;
+	private boolean transEnabled = true;
 /**
  * Protected constructor for a Call.
  * Initially the call starts in the Idle state.
@@ -223,11 +225,11 @@ public javax.telephony.Connection addParty(java.lang.String newParty) throws jav
 
 		// conference the call
 		this.setConferenceController(conf);
-		this.conference(consult);
+		this.privateConference(consult);
 
 		// reset conference controller to null if not previously set
 		if (!controllerSet)
-			this.setConferenceController(null);
+			this.clearConferenceController();
 	} catch (InvalidArgumentException iae) {
 		throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN,
 				"Error conferencing the call");
@@ -246,9 +248,35 @@ public javax.telephony.Connection addParty(java.lang.String newParty) throws jav
 
 }
 /**
- * conference method comment.
+ * Merges two Calls together, resulting in the union of the
+ * participants of both Calls being placed on a single Call.
+ * This method takes a Call as an argument, referred to
+ * hereafter as the "second" Call. All of the participants
+ * from the second call are moved to the Call on which this
+ * method is invoked.
+ * 
+ * See CallControlCall for pre and post conditions.
  */
-public void conference(javax.telephony.Call otherCall) throws javax.telephony.InvalidStateException, javax.telephony.MethodNotSupportedException, javax.telephony.PrivilegeViolationException, javax.telephony.ResourceUnavailableException, javax.telephony.InvalidArgumentException {
+public void conference(javax.telephony.Call otherCall) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException, InvalidArgumentException {
+	// first check if conference is enabled
+	if (this.getConferenceEnable() == false) {
+		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "ConferenceEnabled is set to false");
+	}
+	
+	this.privateConference(otherCall);
+}
+
+/**
+ * Private version of conference, ommitting the conferenceEnabled check.
+ * 
+ * @param otherCall
+ * @throws javax.telephony.InvalidStateException
+ * @throws javax.telephony.MethodNotSupportedException
+ * @throws javax.telephony.PrivilegeViolationException
+ * @throws javax.telephony.ResourceUnavailableException
+ * @throws javax.telephony.InvalidArgumentException
+ */
+private void privateConference(javax.telephony.Call otherCall) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException, InvalidArgumentException {
 	TerminalConnection tc = this.getConferenceController();
 	if (tc == null) {
 		if ((tc = this.findCommonTC(otherCall)) == null) {
@@ -287,9 +315,9 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 		throw new InvalidArgumentException();
 
 	// check the states
-	if (this.getState() != this.IDLE)
+	if (this.getState() != FreeCall.IDLE)
 		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState());
-	if (gp.getState() != gp.IN_SERVICE)
+	if (gp.getState() != GenericProvider.IN_SERVICE)
 		throw new InvalidStateException(gp, InvalidStateException.PROVIDER_OBJECT, gp.getState());
 
 	// create a call id
@@ -496,8 +524,11 @@ public javax.telephony.TerminalConnection getConferenceController() {
  * getConferenceEnable method comment.
  */
 public boolean getConferenceEnable() {
-	return true;
+	return this.confEnabled;
 }
+/**
+ * Get the set of Connections associated with the call.
+ */
   public Connection[] getConnections() {
 	Connection[] ret = null;
 	synchronized (connections) {
@@ -563,12 +594,12 @@ public TerminalConnection getTransferController() {
  * We may want to hook this into the capabilities?
  */
 public boolean getTransferEnable() {
-	return true;
+	return this.transEnabled;
 }
 /**
- * offHook method comment.
+ * We don't currently support the offHook() command.
  */
-public javax.telephony.Connection offHook(Address origaddress, Terminal origterminal) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException {
+public Connection offHook(Address origaddress, Terminal origterminal) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException {
 	throw new MethodNotSupportedException();
 }
 /**
@@ -816,18 +847,69 @@ public void sendToObservers(FreeCallEvent ev) {
 		callID = newCallID;
 	}
 /**
- * setConferenceController method comment.
+ * Sets the TerminalConnection which acts as the conference
+ * controller for the Call. The conference controller
+ * represents the participant in the Call around which a
+ * conference takes place.
+ * 
+ * Typically, when two Calls are conferenced together, a
+ * single participant is part of both Calls. This participant
+ * is represented by a TerminalConnection on each Call, each
+ * of which shares the same Terminal.
+ * 
+ * If the designated TerminalConnection is not part of this
+ * Call, an exception is thrown. If the TerminalConnection
+ * leaves the Call in the future, the implementation resets
+ * the conference controller to null.
+ * 
+ * See CallControlCalll.setConferenceController() for pre and
+ * post conditions.
  */
 public void setConferenceController(TerminalConnection tc) throws InvalidStateException, MethodNotSupportedException, ResourceUnavailableException, InvalidArgumentException {
-	if (tc instanceof FreeTerminalConnection)
-		confController = (FreeTerminalConnection)tc;
-	else
-		throw new InvalidArgumentException();
+	if (this.getState() != Call.ACTIVE)
+		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "Call must be active to set the ConferenceController");
+	if (tc instanceof FreeTerminalConnection) {
+		// check if the ConferenceController is part of the call
+		boolean member = false;
+		Connection conns[] = this.getConnections();
+		int connSize = conns.length;
+		for (int i = 0; (i < connSize) && (!member); i++) {
+			TerminalConnection tcs[] = conns[i].getTerminalConnections();
+			int tcSize = tcs.length;
+			for (int j = 0; j < tcSize; j++) {
+				if (tcs[j].equals(tc)) {
+					member = true;
+					break;
+				}
+			}
+		}
+		if (member) {
+			this.confController = (FreeTerminalConnection)tc;
+			return;
+		}
+	}
+	throw new InvalidArgumentException("TerminalConnection is not part of the call");
 }
 /**
- * setConferenceEnable method comment.
+ * Clears the conference contoller. Used internally by addParty()
+ * since sending null to setConferenceController causes a
+ * InvalidArgumentException to be thrown.
+ * 
+ * @author Richard Deadman and Doug Currie
+ *
  */
-public void setConferenceEnable(boolean enable) throws javax.telephony.InvalidStateException, javax.telephony.MethodNotSupportedException, javax.telephony.PrivilegeViolationException, javax.telephony.InvalidArgumentException {}
+private void clearConferenceController() {
+	this.confController = null;
+}
+/**
+ * Not currently supported. In future we should keep track of 
+ */
+public void setConferenceEnable(boolean enable) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, InvalidArgumentException {
+	if (this.getState() != IDLE) {
+		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "Call must be in IDLE state to set ConferenceEnable");
+	}
+	this.confEnabled = enable;
+}
 /**
  * Set PrivateData to be used in the next low-level command.
  */
@@ -856,9 +938,15 @@ public void setTransferController(TerminalConnection tc) throws InvalidStateExce
 		throw new InvalidArgumentException();
 }
 /**
- * setTransferEnable method comment.
+ * Turn on or off transfer -- must be done while call is IDLE.
  */
-public void setTransferEnable(boolean enable) throws javax.telephony.InvalidStateException, javax.telephony.MethodNotSupportedException, javax.telephony.PrivilegeViolationException, javax.telephony.InvalidArgumentException {}
+public void setTransferEnable(boolean enable) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, InvalidArgumentException {
+	if (this.getState() != IDLE) {
+		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "Call must be in IDLE state to set TransferEnable");
+	}
+	this.transEnabled = enable;
+}
+
 /**
  * Tell the raw TelephonyProvider to stop reporting events on me.
  * <P>Don't bother synchronizing -- its unlikely that the gabage collector and an invalid
@@ -1002,6 +1090,10 @@ public void transfer(Call otherCall) throws MethodNotSupportedException, Resourc
  * Note that this will drop the whole Connection off the call, and not just the TerminalConnection.
  */
 private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSupportedException, ResourceUnavailableException, InvalidArgumentException, InvalidPartyException, InvalidStateException, PrivilegeViolationException {
+	// first check if transfer is enabled
+	if (this.getTransferEnable() == false) {
+		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "TransferEnabled is set to false");
+	}
 	
 	// join the calls - don't use my conference method, since it uses the conference controller
 	TelephonyProvider rp = ((GenericProvider)this.getProvider()).getRaw();
