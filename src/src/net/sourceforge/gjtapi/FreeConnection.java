@@ -366,6 +366,9 @@ void toAlerting(int cause) {
 		oldState == Connection.IDLE) {
 		this.setState(Connection.ALERTING);
 		
+		// Unless otherwise set, this is the called address for the call
+		this.call.setCalledAddress(this.getAddress(), false);
+		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnAlertingEv(cause, this));
 	}
@@ -454,6 +457,9 @@ void toInProgress(int cause) {
 	int oldState = this.getState();
 	if (oldState == Connection.IDLE || oldState == Connection.UNKNOWN) {
 		this.setState(Connection.INPROGRESS);
+		
+		// Unless otherwise set, this is the calling address for the call
+		this.call.setCallingAddress(this.getAddress(), false);
 		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnInProgressEv(cause, this));

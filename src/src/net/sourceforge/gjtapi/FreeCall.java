@@ -54,6 +54,9 @@ public class FreeCall implements CallControlCall, PrivateData {
 	private boolean confEnabled = true;
 	private FreeTerminalConnection transController = null;
 	private boolean transEnabled = true;
+	private Address calledAddress = null;
+	private Address callingAddress = null;
+	private Terminal callingTerminal = null;
 /**
  * Protected constructor for a Call.
  * Initially the call starts in the Idle state.
@@ -350,6 +353,11 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 	// Now ensure the destination Connection is in the INPROGRESS state (no TerminalConnections yet)
 	destConn.toInProgress(Event.CAUSE_NEW_CALL);
 
+	// set the called and calling address
+	this.callingAddress = origaddr;
+	this.callingTerminal = origterm;
+	this.calledAddress = destConn.getAddress();
+	
 	//return getConnections();	// this method does not guarantee that they will be in the right order
 	return connSet;
 }
@@ -472,8 +480,29 @@ public FreeConnection getCachedConnection(String addrName) {
  * getCalledAddress method comment.
  */
 public javax.telephony.Address getCalledAddress() {
-	return null;
+	return this.calledAddress;
 }
+/**
+ * Set the CalledAddress for the Call. If knownAddress is
+ * false, then we are guessing that this is the CalledAddress. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCalledAddress
+ * @param knowAddress
+ */
+protected void setCalledAddress(Address theCalledAddress, boolean knownAddress)
+{
+	if ((this.calledAddress == null) || knownAddress)
+	{
+		this.calledAddress = theCalledAddress;
+	}
+}
+
+/**
+ * Returns the GJTAPI call handle provided by the Provider
+ * that uniquely identifies the call. This is used in calls
+ * into the provider.
+ * @return
+ */
 	public CallId getCallID() {
 		return callID;
 	}
@@ -481,13 +510,42 @@ public javax.telephony.Address getCalledAddress() {
  * getCallingAddress method comment.
  */
 public javax.telephony.Address getCallingAddress() {
-	return null;
+	return this.callingAddress;
+}
+
+/**
+ * Set the CallingAddress for the Call. If knownAddress is
+ * false, then we are guessing that this is the CallingAddress. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCallingAddress
+ * @param knowAddress
+ */
+protected void setCallingAddress(Address theCallingAddress, boolean knownAddress)
+{
+	if ((this.callingAddress == null) || knownAddress)
+	{
+		this.callingAddress = theCallingAddress;
+	}
 }
 /**
  * getCallingTerminal method comment.
  */
 public javax.telephony.Terminal getCallingTerminal() {
-	return null;
+	return this.callingTerminal;
+}
+/**
+ * Set the CallingTerminal for the Call. If knownTerminal is
+ * false, then we are guessing that this is the CallingTerminal. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCallingTerminal
+ * @param knowAddress
+ */
+protected void setCallingTerminal(Terminal theCallingTerminal, boolean knownTerminal)
+{
+	if ((this.callingTerminal == null) || knownTerminal)
+	{
+		this.callingTerminal = theCallingTerminal;
+	}
 }
 /**
  * Return a copy of the set of currently registered CallListeners.

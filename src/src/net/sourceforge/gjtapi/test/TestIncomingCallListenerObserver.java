@@ -31,6 +31,8 @@ package net.sourceforge.gjtapi.test;
     of the copyright holder.
 */
 import java.io.*;
+
+import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.events.*;
 import javax.telephony.*;
 /**
@@ -326,6 +328,9 @@ public void connectionAlerting(javax.telephony.ConnectionEvent event) {
  */
 public void connectionConnected(javax.telephony.ConnectionEvent event) {
     System.out.println("5.3.4: Connection Connected event with cause: " + this.causeToString(event.getCause()));
+    CallControlCall call = (CallControlCall)event.getCall();
+    System.out.println("CallingAddress: " + call.getCallingAddress().getName());
+    System.out.println("CalledAddress: " + call.getCalledAddress().getName());
 }
 
 /**
