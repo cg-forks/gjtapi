@@ -253,24 +253,36 @@ String getTerminalName() {
  * play method comment.
  */
 public PlayerEvent play(String[] streamIDs, int offset, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
-	// test if the streamIds mix fax and non-fax URL
-	String prefix = "fax:";
-	boolean firstType = streamIDs[0].startsWith(prefix);	// Error if we have no stream Ids
 	int len = streamIDs.length;
-	for (int i = 1; i < len; i++) {
-		if (streamIDs[i].toLowerCase().startsWith(prefix) != firstType)
-			throw new MediaResourceException("Mixed Fax and non-Fax streamId URLs");
-	}
-
-	try {
-		this.getProv().getRaw().play(this.getTerminalName(), streamIDs, offset, rtc, optargs);
-	} catch (MediaResourceException mre) {
-			// morph and rethrow the event
-		ResourceEvent re = mre.getResourceEvent();
-		if (re != null && re instanceof GenericResourceEvent) {
-			((GenericResourceEvent)re).morph(this.getProv());
+	// test for no stream ids
+	if (len != 0) {
+		// test if the streamIds mix fax and non-fax URL
+		String prefix = "fax:";
+		boolean fax = false;
+		boolean nonFax = false;
+		for (int i = 0; i < len; i++) {
+			String id = streamIDs[i];
+			if (id != null) {
+				if (id.toLowerCase().startsWith(prefix)) {
+					fax = true;
+				} else {
+					nonFax = true;
+				}
+				if (fax && nonFax)
+					throw new MediaResourceException("Mixed Fax and non-Fax streamId URLs");
+			}
 		}
-		throw mre;
+	
+		try {
+			this.getProv().getRaw().play(this.getTerminalName(), streamIDs, offset, rtc, optargs);
+		} catch (MediaResourceException mre) {
+				// morph and rethrow the event
+			ResourceEvent re = mre.getResourceEvent();
+			if (re != null && re instanceof GenericResourceEvent) {
+				((GenericResourceEvent)re).morph(this.getProv());
+			}
+			throw mre;
+		}
 	}
 	return new GenericPlayerEvent(PlayerConstants.ev_Play,
 						this.getMediaService(),
