@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2003 Richard Deadman (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -29,9 +29,9 @@
 	of the copyright holder.
 */
 /**
- * A Default Jain JcpPeer to allow for automatic loading
- * Creation date: (2000-10-01 10:46:42)
+ * A Default Jain JccPeer to allow for automatic loading
+ * Creation date: (2003-03-21 10:46:42)
  * @author: Richard Deadman
  */
-public class DefaultJcpPeer extends net.sourceforge.gjtapi.jcc.Peer {
+public class DefaultJccPeer extends net.sourceforge.gjtapi.jcc.Peer {
 }
