@@ -1,0 +1,43 @@
+This is an _alpha_ version of a GJTAPI TPI which supports
+Dialogic (an Intel company)'s GlobalCall API.
+
+What you need to have to use it:
+    1) A working Dialogic configuration. There is no point in
+trying to use it if the Dialogic GlobalCall demos don't work.
+    2) JTAPI/JAIN/GJTAPI 
+    3) This code
+    4) Java 1.41
+    5) gcc (etc) to build the shared library
+
+I've updated the net.sourceforge.gjtapi.test.TestCallListener so
+that it takes a provider as an argument. It also waits 'till
+the user hits return so as to allow the call to go through all
+its phases.
+
+
+I've only used it on RedHat 7.2 with DNA 5.1
+
+Caveats:
+   1) it doesn't do media -yet- I need a week or two to get that
+implemented - when I'll find it I have no clue.
+   2) it is untested I've played with it, but nothing more - we 
+felt it was better to let it out early and let people play with it.
+   3) I have only used it on a D/300, so I may have made some ISDN
+assumption.
+   4) Allmost all the failure modes are un-caught, and just result in
+text to stdout - we need to make that smarter.
+   5) My ISDN supplier doesn't bind telephone numbers to channels,
+so the provider reports all numbers on all terminals (and vica versa)
+
+How to use it:
+   Compile the lot.
+   edit the DialogicGC.props file to describe the Dialogic
+devices you have, and the telephone numbers you have.
+   In net/sourceforge/gjtapi/raw/dialogic/native:
+      Edit the makefile to reflect your paths
+      Make the .so
+      edit the testjtcall script to reflect your numbers
+      run it.
+
+tpanton@sourceforge.net
+   
