@@ -31,14 +31,63 @@
 package net.sourceforge.gjtapi.raw.tapi3.logging;
 
 public interface Logger {
+    /**
+     * Log a DEBUG message
+     * @param message - the message object to log
+     */
     public void debug(Object message);
+
+    /**
+     * Log a DEBUG message including the stack trace of the Throwable parameter
+     * @param message - the message object to log
+     */
     public void debug(Object message, Throwable t);
+
+    /**
+     * Log an INFO message
+     * @param message - the message object to log
+     */
     public void info(Object message);
+
+    /**
+     * Log an INFO message including the stack trace of the Throwable parameter
+     * @param message - the message object to log
+     */
     public void info(Object message, Throwable t);
+
+    /**
+     * Log a WARN message
+     * @param message - the message object to log
+     */
     public void warn(Object message);
+
+    /**
+     * Log a WARN message including the stack trace of the Throwable parameter
+     * @param message - the message object to log
+     */
     public void warn(Object message, Throwable t);
+
+    /**
+     * Log an ERROR message
+     * @param message - the message object to log
+     */
     public void error(Object message);
+
+    /**
+     * Log an ERROR message including the stack trace of the Throwable parameter
+     * @param message - the message object to log
+     */
     public void error(Object message, Throwable t);
+
+    /**
+     * Log a FATAL message
+     * @param message - the message object to log
+     */
     public void fatal(Object message);
+
+    /**
+     * Log a FATAL message including the stack trace of the Throwable parameter
+     * @param message - the message object to log
+     */
     public void fatal(Object message, Throwable t);
 }

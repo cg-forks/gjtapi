@@ -32,6 +32,9 @@ package net.sourceforge.gjtapi.raw.tapi3.logging;
 
 import java.io.PrintStream;
 
+/**
+ * An implementation of the {@link Logger} interface that logs events to a PrintStream
+ */
 public class PrintStreamLogger implements Logger {
     private final PrintStream logStream;
     

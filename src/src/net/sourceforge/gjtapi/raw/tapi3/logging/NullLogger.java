@@ -30,6 +30,9 @@
 */
 package net.sourceforge.gjtapi.raw.tapi3.logging;
 
+/**
+ * An implementation of the {@link Logger} interface that simply discards all log messages
+ */
 public class NullLogger implements Logger {
 
     /* (non-Javadoc)
