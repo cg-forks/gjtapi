@@ -68,7 +68,9 @@ import net.sourceforge.gjtapi.*;
  */
 public interface ThrottleTpi {
 /**
- * 
+ * Return the CallData object that describes the current state of a Call.
+ * <P>This is useful for faulting in Calls that have previously been garbage-collected by the GJTAPI
+ * framework.
  * @return net.sourceforge.gjtapi.CallData
  * @param id net.sourceforge.gjtapi.CallId
  */

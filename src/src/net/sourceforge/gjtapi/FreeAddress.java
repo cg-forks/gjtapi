@@ -176,17 +176,13 @@ FreeAddress(String num, Provider prov, boolean local){
 	CallListener []cl = getCallListeners();
 	if (cl != null){
 		for(int i =0; i<cl.length; i++) {
-			try { ((FreeCall)call).addCallListener(cl[i], this); } catch (Exception x){
-				System.err.println(x);
-			}
+			((FreeCall)call).addCallListener(cl[i], this);
 		}
 	}
 	CallObserver [] cobs = getCallObservers();
 	if (cobs != null) {
 		for (int i=0; i<cobs.length; i++) {
-			try { ((FreeCall)call).addCallObserver(cobs[i], this);} catch (Exception x){
-				System.err.println(x);
-			}
+			 ((FreeCall)call).addCallObserver(cobs[i], this);
 		}
 	}
 	connections.addElement(new ConnectionHolder(con));

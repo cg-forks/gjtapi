@@ -50,7 +50,7 @@ public interface JccTpi extends CoreTpi {
  */
 boolean attachMedia(CallId call, String address, boolean onFlag);
 /**
- * 
+ * Send a warning tone that a call is no longer being supervised.
  * @param call net.sourceforge.gjtapi.CallId
  */
 void beep(net.sourceforge.gjtapi.CallId call);
