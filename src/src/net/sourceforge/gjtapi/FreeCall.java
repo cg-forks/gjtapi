@@ -211,11 +211,6 @@ public javax.telephony.Connection addParty(java.lang.String newParty) throws jav
 		throw new ResourceUnavailableException(ResourceUnavailableException.ORIGINATOR_UNAVAILABLE,
 					"Conference TerminalConnection not set and cannot be found");
 
-	// hold current call
-	if (conf instanceof CallControlTerminalConnection) {
-		((CallControlTerminalConnection)conf).hold();
-	}
-
 	try {	
 		// Create a consultation call
 		CallControlCall consult = (CallControlCall)this.getProvider().createCall();
@@ -961,11 +956,6 @@ public Connection transfer(String address) throws MethodNotSupportedException, R
 	if (trans == null)
 		throw new InvalidArgumentException("Transfer TerminalConnection not set and cannot be found");
 
-	// hold the call
-	if (trans instanceof CallControlTerminalConnection) {
-		((CallControlTerminalConnection)trans).hold();
-	}
-	
 	// Create a consultation call
 	CallControlCall consult = (CallControlCall)this.getProvider().createCall();
 	consult.consult(trans, address);
