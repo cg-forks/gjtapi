@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.raw.emulator;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -41,6 +40,9 @@ import java.awt.*;
  */
 public class TestManager extends PhoneManager {
 	private JPanel canvas = new JPanel();
+	
+	private JFrame frame = null;
+	
 /**
  * Create a TestManager that displays all the TestPhones
  */
@@ -138,7 +140,16 @@ JFrame show() {
 	frame.setContentPane(scroller);
 	frame.setSize(canvas.getSize());
 	frame.setVisible(true);
+	this.setFrame(frame);
 	return frame;
+}
+
+void close() {
+	JFrame frame = this.getFrame();
+	if (frame != null) {
+		frame.dispose();
+		this.setFrame(null);
+	}
 }
 /**
  * Returns a String that represents the value of this object.
@@ -148,5 +159,13 @@ public String toString() {
 	// Insert code to print the receiver here.
 	// This implementation forwards the message to super. You may replace or supplement this.
 	return super.toString();
+}
+
+private void setFrame(JFrame frame) {
+	this.frame = frame;
+}
+
+private JFrame getFrame() {
+	return frame;
 }
 }

@@ -595,6 +595,9 @@ private void setProvProps(Properties newProvProps) {
  * Clean up any resources
  */
 public void shutdown() {
+	// close my manager
+	this.getMgr().close();
+	
 	// throw away my manager
 	this.setMgr(null);
 
