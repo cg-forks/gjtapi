@@ -143,6 +143,7 @@ public class AccuraV92 extends AbstractModem {
             }else{
                 state = INVALID;
                 System.err.print("Modem could not call number: ");
+                listener.modemFailed(id, dest);
                 if (matchState == ModemIO.TIMEOUT){
                     System.err.println("Timeout");
                 }else{
