@@ -719,6 +719,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
             case LINE_GATHERDIGITS:
                 break;
                 
+            case LINE_GENERATE:
+             /*
+              * We have been notified that we have generated digits. But we should already know this.              */
+                break;
+                
             case LINE_MONITORDIGITS:
 /*                
                 debugString(5,"dwDevice -> " + dwDevice + " dwInstance -> " + dwInstance +
