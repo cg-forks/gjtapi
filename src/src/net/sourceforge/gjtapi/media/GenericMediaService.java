@@ -148,15 +148,15 @@ public GenericMediaService() throws JtapiPeerUnavailableException, ProviderUnava
 		    throw new MediaCallException("No media terminal for address " + origAddr);
 	    }
 
+	    	// bind to the terminal
+	    this.bindToTerminal(configSpec, term);
+
 	    	// make the call and connect it
 	    try {
 		    gp.createCall().connect(term, addr, dialDigits);
 	    } catch (Exception e) {
 		    throw new MediaCallException("Error making call: " + e.toString());
 	    }
-
-	    	// bind to the terminal
-	    this.bindToTerminal(configSpec, term);
 	}
 	/* 
 	 * Bind this MediaService to a MediaGroup connected to an existing Call.
