@@ -69,8 +69,27 @@ public void addListener(TelephonyListener rl) {
  * We don't have any real resources to manage, but we do have to see if we send detected DTMF
  */
 public boolean allocateMedia(java.lang.String terminal, int type, java.util.Dictionary resourceArgs) {
-	this.getPhone(terminal).sendDetectedDtmf(SignalDetectorConstants.ev_RetrieveSignals.equals(resourceArgs.get(SignalDetectorConstants.p_EnabledEvents)));
-	
+	if (resourceArgs == null)
+		return true;	// we don't have any events to send
+		
+	boolean generate = false;
+	// a bug in JTAPI 1.3.1 means that ESymbol cannot be instantiated since its parent interface is not in the jar file.
+	try {
+		// get the array of events symbols that indicate what needs to be sent
+		Symbol[] evsToSend = (Symbol[])resourceArgs.get(SignalDetectorConstants.p_EnabledEvents);
+		if (evsToSend == null)
+			return true;
+			
+		// now see if the array contains the RetrieveSignals symbol
+		Symbol rs = SignalDetectorConstants.ev_RetrieveSignals;
+		for (int i = 0; i < evsToSend.length; i++)
+		    if (rs.equals(evsToSend[i]))
+		    	generate = true;
+	} catch (NoClassDefFoundError cnfe) {
+		// assume we should generate signals
+		generate = true;
+	}
+	this.getPhone(terminal).sendDetectedDtmf(generate);
 	return true;
 }
 /**
