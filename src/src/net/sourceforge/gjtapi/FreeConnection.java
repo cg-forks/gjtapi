@@ -132,15 +132,17 @@ FreeConnection(FreeCall fca,FreeAddress fad){
 public void disconnect() throws InvalidStateException, PrivilegeViolationException, MethodNotSupportedException, ResourceUnavailableException {
 
 		GenericProvider gp = (GenericProvider) call.getProvider();
-		try {
-			// this should block until the connection is released.
-			gp.getRaw().release(this.getAddress().getName(), call.getCallID());
-			
-			// now update the state
-			this.toDisconnected(Event.CAUSE_NORMAL);
-		} catch (RawStateException re) {
-			throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
-		}
+		// should check if we have already been disconnected
+		if (this.getState() != Connection.DISCONNECTED)
+			try {
+				// this should block until the connection is released.
+				gp.getRaw().release(this.getAddress().getName(), call.getCallID());
+				
+				// now update the state
+				this.toDisconnected(Event.CAUSE_NORMAL);
+			} catch (RawStateException re) {
+				throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
+			}
 }
 	/**
 	 * Resurrect the Address object from the Domain manager
