@@ -6,7 +6,7 @@
    <meta name="CREATED" content="20000518;14325826">
    <meta name="CHANGEDBY" content="Richard Deadman">
    <meta name="CHANGED" content="20000518;14325826">
-   <meta name="GENERATOR" content="Mozilla/4.72 [en] (Win98; U) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (WinNT; U) [Netscape]">
    <meta name="Author" content="Richard Deadman">
    <title>JTAPI Generic Framework Architecture</title>
 </head>
@@ -21,7 +21,7 @@ Generic JTAPI Framework</h1></center>
 Architecture Document</h2></center>
 
 <center>Richard Deadman
-<br>U|Force Inc.
+<br>
 <hr WIDTH="80%"></center>
 
 <h2>
@@ -162,7 +162,7 @@ Interface" to "Telephony Provider Interface".</font></td>
 
 <tr>
 <td>
-<div align=right>0.3</div>
+<div align=right>0.4</div>
 </td>
 
 <td>
@@ -173,6 +173,20 @@ Interface" to "Telephony Provider Interface".</font></td>
 
 <td><font size=-1>Added section on weak synchronization.&nbsp; Updated
 event notification threading and dynamic address support.</font></td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.5</div>
+</td>
+
+<td>
+<center>September 25, 2002</center>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>Minor link and typo corrections.</td>
 </tr>
 </table>
 </blockquote>
@@ -185,8 +199,8 @@ and programming,&nbsp; Java and, to a lesser extend, JTAPI is expected.&nbsp;
 This document is not intended to be a requirements document, although it
 certainly covers some aspects of intent and requirements.</font>
 <p><font size=-1>Note that developers of TelephonyProviders may find the
-"<a href="http://24.114.65.197/GenericJtapi/RpiImplementorsGuide.html">Generic
-JTAPI TPI Implementor's Guide</a>" to be more useful.</font>
+"<a href="TpiImplementorsGuide.html">Generic JTAPI TPI Implementor's Guide</a>"
+to be more useful.</font>
 <h2>
 <a NAME="Notation"></a>Notation</h2>
 <font size=-1>Normal document typesetting notation is employed within this
@@ -219,7 +233,7 @@ document.&nbsp; In particular:</font>
 <blockquote>&nbsp;
 <table BORDER >
 <tr>
-<td><a href="http://24.114.65.197/GenericJtapi/TpiImplementorsGuide.html">http://24.114.65.197/GenericJtapi/TpiImplementorsGuide.html</a></td>
+<td><a href="TpiImplementorsGuide.html">TpiImplementorsGuide.html</a></td>
 
 <td>Generic JTAPI TPI Implementor's Guide</td>
 </tr>
@@ -876,7 +890,7 @@ events from a Telephony Provider are received and used to update the system
 state machine which in turn generates JTAPI events to registered applications.</font></font></li>
 
 <li>
-<font color="#000000"><font size=-1>Exception handling from low-level commands.&nbsp;
+<font color="#000000"><font size=-1>Exception handling from low-level commands.
 These may optionally be "morphed" into the object-model of the Framework
 before being reported back to the calling application.</font></font></li>
 </ul>
@@ -2118,10 +2132,7 @@ JTAPI Framework. This can be justified since usually once a remote exception
 occurs, the remote link is broken and it is impossible to easily recover.</font></font></blockquote>
 </div>
 
-<blockquote>&nbsp;
-<table BORDER CELLPADDING=10 BGCOLOR="#C0C0C0" >
-<tr>
-<td>
+<blockquote>
 <h3>
 <a NAME="Multiplexor Support"></a>7.6.B Multiplexor Support</h3>
 
@@ -2154,20 +2165,15 @@ problems arise with such a multiplexor:</font></font>
 not have overlapping address or terminal name spaces (this is a logical
 restriction).</font></font></li>
 
-<li>
-<font color="#000000"><font size=-1>If a call is made from one low-level
+<br><font color="#000000"><font size=-1>If a call is made from one low-level
 provider to a number that gets forwarded to another low-level provider
 (i.e. Through a 1-800 mapping table), the multiplexor may not be able to
 determine that the incoming call on the second low-level provider is the
 same logical call as the outgoing call on the first logical provider. Even
 if the address names can be matched up, the two low-level providers will
 be reporting different CallIds. It may be possible to detect this and create
-a wrapper id, but this will be difficult.</font></font></li>
-</ol>
+a wrapper id, but this will be difficult.</font></font></ol>
 </div>
-</td>
-</tr>
-</table>
 
 <h3>
 <a NAME="Call Transfer/Conference"></a>7.7 Call Transfer/Conference</h3>
@@ -2365,8 +2371,6 @@ use tricks involving custom classloaders.</font></font></li>
 
 <br>&nbsp;
 <p>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
 <p><font color="#000000"><font size=-1>The Generic JTAPI Framework replaces
 BasicMediaService with GenericMediaService which has the same semantics
 and interfaces but is not a subclass of NullMediaService.</font></font>
@@ -2383,8 +2387,6 @@ indicated that this will be fixed in JTAPI 2.0.</font></font></li>
 
 <br>&nbsp;
 <p>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
 <p><font color="#000000"><font size=-1>In the meantime, the Generic JTAPI
 framework provides SymbolHolder and RTCHolder utility classes that allow
 for the serialization and recreation of Symbol information.</font></font></ol>
@@ -2420,8 +2422,7 @@ and does not support "capabilities"; instead it uses design by contract
 (if it implements an interface, it can do all the interface's actions).</font></font></li>
 </ol>
 <font size=-1><font color="#000000">Since we don't know the media constraints
-of
-all possible </font>telephony<font color="#000000"> provider implementations,
+of all possible </font>telephony<font color="#000000"> provider implementations,
 we must opt for the first, more conservative, design.</font></font>
 <p><font size=-1><font color="#000000">Unlike other JTAPI packages, media
 does not use capabilities to determine what is and is not supported. With
@@ -3688,7 +3689,7 @@ the object domain.</font></blockquote>
 So, for instance, one TelephonyProvider implementation may be able to give
 a purely static set of Addresses and Terminals which is of a manageable
 size, but may not want to automatically incur the cost of reporting all
-call events on these sets.</font><font size=-1></font>
+call events on these sets.</font>
 <p><font size=-1>Thus we see that we have two dynamic "fetching" scenarios:</font>
 <ol>
 <li>
@@ -3858,10 +3859,10 @@ Shadow References</h5>
 those that are not used together frewuently, we need to provide a way of
 creating weak or shadow references that do not keep objects from being
 garbage collected but do allow for objects to be refetched (paged, lazily
-fetched) from the TelephonyProvider when needed.</font><font size=-1></font>
+fetched) from the TelephonyProvider when needed.</font>
 <p><font size=-1>Here are the references between objects and notes on how
 the references are flushed out when needed:</font>
-<br><font size=-1></font>&nbsp;
+<br>&nbsp;
 <table BORDER >
 <tr BGCOLOR="#CCCCCC">
 <th>Reference Holder
@@ -4021,7 +4022,7 @@ for the major "manager" objects at the core of the Generic JTAPI Framework:</fon
 <td>RawEventHandler</td>
 </tr>
 </table>
-<font size=-1></font>
+
 <table BORDER >
 <caption><b>CallMgr</b></caption>
 
@@ -4043,7 +4044,7 @@ for the major "manager" objects at the core of the Generic JTAPI Framework:</fon
 <td>TelephonyProvider</td>
 </tr>
 </table>
-<font size=-1></font>
+
 <table BORDER >
 <caption><b>DomainMgr</b></caption>
 
@@ -4077,7 +4078,7 @@ for the major "manager" objects at the core of the Generic JTAPI Framework:</fon
 <td>TelephonyProvider</td>
 </tr>
 </table>
-<font size=-1></font>
+
 <table BORDER >
 <caption><b>RawEventHandler</b></caption>
 
@@ -4100,7 +4101,7 @@ thread</td>
 <td>BlockManager</td>
 </tr>
 </table>
-<font size=-1></font>
+
 <table BORDER >
 <caption><b>ListenerManager</b></caption>
 
@@ -4122,7 +4123,7 @@ thread</td>
 <td></td>
 </tr>
 </table>
-<font size=-1></font>
+
 <h5>
 Ease of Implementation</h5>
 <font size=-1>The addition of dynamic state synchronization to the Generic
@@ -4277,7 +4278,13 @@ the life of the provider. This is an issue that should be raised with the
 JTAPI specification committee.</font></font></div>
 </ol>
 
-<div TYPE=FOOTER>&nbsp;</div>
+<div TYPE=FOOTER>
+<center>
+<hr WIDTH="80%">
+<br>&copy; Richard Deadman, Deadman Consulting
+<br>http://www.deadman.ca
+<br>2002</center>
+</div>
 </blockquote>
 
 </body>
