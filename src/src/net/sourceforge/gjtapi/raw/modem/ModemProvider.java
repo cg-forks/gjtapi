@@ -54,7 +54,7 @@ public class ModemProvider implements MediaTpi, ModemListener {
         // read provider details and load the resources, if available
         Properties props = new Properties();
         try {
-            props.load(this.getClass().getResourceAsStream(File.separator + RESOURCE_NAME));
+            props.load(this.getClass().getResourceAsStream('/' + RESOURCE_NAME));
         } catch (IOException ioe) {
             // ignore and hope that the initialize method sets my required properties
         }
