@@ -162,22 +162,22 @@ public RawCall getCall() {
  */
 int getConnState() {
 	switch (this.getState()) {
-		case this.ALERTING: {
+		case Leg.ALERTING: {
 			return Connection.ALERTING;
 		}
-		case this.CONNECTED: {
+		case Leg.CONNECTED: {
 			return Connection.CONNECTED;
 		}
-		case this.DISCONNECTED: {
+		case Leg.DISCONNECTED: {
 			return Connection.DISCONNECTED;
 		}
-		case this.FAILED: {
+		case Leg.FAILED: {
 			return Connection.FAILED;
 		}
-		case this.IDLE: {
+		case Leg.IDLE: {
 			return Connection.IDLE;
 		}
-		case this.INPROGRESS: {
+		case Leg.INPROGRESS: {
 			return Connection.INPROGRESS;
 		}
 	}

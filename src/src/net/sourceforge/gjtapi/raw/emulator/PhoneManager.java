@@ -76,16 +76,16 @@ RawCall createCall(RawPhone from, String to) throws RawStateException, InvalidPa
 			int state = phone.getState();
 			int jstate = TerminalConnection.UNKNOWN;
 			switch (state) {
-				case phone.ACTIVE: {
+				case RawPhone.ACTIVE: {
 					jstate = TerminalConnection.ACTIVE;
 				}
-				case phone.DIALTONE: {
+				case RawPhone.DIALTONE: {
 					jstate = TerminalConnection.ACTIVE;
 				}
-				case phone.HOLD: {
+				case RawPhone.HOLD: {
 					jstate = javax.telephony.callcontrol.CallControlTerminalConnection.HELD;
 				}
-				case phone.RINGING: {
+				case RawPhone.RINGING: {
 					jstate = TerminalConnection.RINGING;
 				}
 			}

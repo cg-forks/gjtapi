@@ -156,13 +156,13 @@ CallData getCallData() {
  */
 private int getCallState() {
 	switch (this.getState()) {
-		case this.IDLE: {
+		case RawCall.IDLE: {
 			return CallControlCall.IDLE;
 		}
-		case this.CONNECTED: {
+		case RawCall.CONNECTED: {
 			return CallControlCall.ACTIVE;
 		}
-		case this.DEAD: {
+		case RawCall.DEAD: {
 			return CallControlCall.INVALID;
 		}
 	}
@@ -311,11 +311,11 @@ private void setState(int newState) {
 	state = newState;
 
 	switch (newState) {
-		case this.CONNECTED: {
+		case RawCall.CONNECTED: {
 			this.getManager().getListener().callActive(this, Event.CAUSE_NORMAL);
 			break;
 		}
-		case DEAD: {
+		case RawCall.DEAD: {
 			this.getManager().getListener().callInvalid(this, Event.CAUSE_NORMAL);
 			break;
 		}
