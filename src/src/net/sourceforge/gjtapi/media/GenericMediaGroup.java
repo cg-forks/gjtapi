@@ -131,7 +131,7 @@ public void finalize() {
 public SignalDetectorEvent flushBuffer() throws javax.telephony.media.MediaResourceException {
 	Dictionary dict = new Hashtable();
 	dict.put(SignalDetectorConstants.p_Duration, new Integer(0));
-	return this.retrieveSignals(Integer.MAX_VALUE, null, null, dict);;
+	return this.retrieveSignals(Integer.MAX_VALUE, null, null, dict);
 }
 /**
  * Tell the MediaGroup to free its resources

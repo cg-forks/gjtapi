@@ -164,7 +164,6 @@ public java.lang.String[] getAddresses(String terminal) throws InvalidArgumentEx
 		return this.basicJtapi.getAddresses(terminal);
 	else
 		return null;
-;
 }
 /**
  * getAddressType method comment.
