@@ -433,4 +433,9 @@ public void unhold() throws InvalidStateException, MethodNotSupportedException, 
 		throw re.morph((FreeTerminal)this.getTerminal());
 	}
 }
+
+/** Describes myself */
+public String toString() {
+    return "FreeTerminalConnection from Terminal '" + this.getTerminal().getName() + "' to Call '" + ((FreeCall)this.getConnection().getCall()).getCallID() + "'";
+}
 }
