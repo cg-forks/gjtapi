@@ -42,6 +42,7 @@ import net.sourceforge.gjtapi.RawSigDetectEvent;
 import net.sourceforge.gjtapi.RawStateException;
 import net.sourceforge.gjtapi.TelephonyListener;
 import net.sourceforge.gjtapi.TermData;
+import net.sourceforge.gjtapi.capabilities.Capabilities;
 import net.sourceforge.gjtapi.media.FreeMediaTerminalConnection;
 import net.sourceforge.gjtapi.media.SymbolConvertor;
 import net.sourceforge.gjtapi.raw.MediaTpi;
@@ -229,7 +230,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		if (this.numLines > 0) {
 			String addresses[] = new String[numLines];
 			for (int i = 0; i < numLines; i++) {
-				addresses[numLines] = ADDR_PREFIX + i;
+				addresses[i] = ADDR_PREFIX + i;
 			}
 			return addresses;
 		} else
@@ -351,7 +352,14 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	 * @see CoreTpi#getCapabilities()
 	 */
 	public Properties getCapabilities() {
-		return null;
+		Properties caps = new Properties();
+		// mark my differences from the default
+		caps.put(Capabilities.HOLD, "f");
+		caps.put(Capabilities.JOIN, "f");
+		caps.put(Capabilities.THROTTLE, "f");
+		caps.put(Capabilities.ALLOCATE_MEDIA, "f");
+		
+		return caps;
 	}
 
 	/**
@@ -989,5 +997,24 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	public String toString() {
 		return "GJTAPI bridge to XTAPI service provider: " + realProvider.toString();
 	}
+	/**
+	 * @see BasicJtapiTpi#release(String, CallId)
+	 */
+	public void release(String address, CallId call)
+		throws
+			PrivilegeViolationException,
+			ResourceUnavailableException,
+			MethodNotSupportedException,
+			RawStateException {
+		// check if this is a local address
+		AddressInfo addInfo = (AddressInfo)this.addInfoMap.get(address);
+		if (addInfo != null)
+			try {
+				this.realProvider.XTDropCall(((XtapiCallId)call).getCallNum());
+			} catch (InvalidStateException ise) {
+				throw new RawStateException(call, ise.getState());
+			}
+	}
+
 }
 
