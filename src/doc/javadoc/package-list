@@ -1,0 +1,16 @@
+net.sourceforge.gjtapi
+net.sourceforge.gjtapi.capabilities
+net.sourceforge.gjtapi.events
+net.sourceforge.gjtapi.jcc
+net.sourceforge.gjtapi.jcc.filter
+net.sourceforge.gjtapi.jcc.test
+net.sourceforge.gjtapi.media
+net.sourceforge.gjtapi.raw
+net.sourceforge.gjtapi.raw.emulator
+net.sourceforge.gjtapi.raw.invert
+net.sourceforge.gjtapi.raw.mux
+net.sourceforge.gjtapi.raw.mux.test
+net.sourceforge.gjtapi.raw.remote
+net.sourceforge.gjtapi.raw.remote.corba
+net.sourceforge.gjtapi.test
+net.sourceforge.gjtapi.util

@@ -1,0 +1,2229 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (Win98; U) [Netscape]">
+   <meta name="AUTHOR" content="Richard Deadman">
+   <meta name="CREATED" content="20000616;10203953">
+   <meta name="CHANGEDBY" content="Richard Deadman">
+   <meta name="CHANGED" content="20000616;10243615">
+   <title>RPI Implementors Guide</title>
+</head>
+<body>
+
+<center>
+<h1>
+Generic JTAPI TPI Implementors Guide</h1></center>
+
+<center>
+<h1>
+Richard Deadman, U|Force Inc.</h1></center>
+
+<center>June 2000</center>
+
+<hr WIDTH=531 ALIGN=CENTER>
+<h2>
+<a NAME="Overview"></a>Overview</h2>
+
+<blockquote>This document is intended to act as a guide for developers
+of TelephonyProvider implementations.&nbsp; As such, it briefly introduces
+the architecture of the Generic JTAPI system and defines the major components
+of the TPI implementation and what they must support.</blockquote>
+
+<blockquote>The Generic JTAPI framework is a JTAPI implementation that
+allows for telephony board and VOIP implementations to be plugged-in at
+a lower level through the implementation of a relatively simple (as compared
+to JTAPI) "Service Provider Interface", known here as the Telephony Provider
+Interface (TPI).&nbsp; In this regard it shares some architectural similarities
+with TAPI.</blockquote>
+
+<h2>
+<a NAME="Table of Contents"></a>Table of Contents</h2>
+
+<blockquote><a href="#Overview">Overview</a>
+<br><a href="#Table of Contents">Table of Contents</a>
+<br><a href="#Version">Version</a>
+<br><a href="#Background">Background</a>
+<br><a href="#Goals">Goals</a>
+<br><a href="#Architecture">Architecture</a></blockquote>
+
+<blockquote><a href="#API">API Categorization</a>
+<br><a href="#RawProvider">TelephonyProvider Categorization</a>
+<br><a href="#Matrix">Implementation Matrix</a>
+<br><a href="#Mapping">Object Mapping</a></blockquote>
+
+<blockquote><a href="#Components">Components</a></blockquote>
+
+<blockquote><a href="#Initialization">Initialization</a>
+<br><a href="#Capabilities">Capabilities</a>
+<br><a href="#Basic">Basic Call Control</a>
+<br><a href="#Exceptions">Exceptions</a>
+<br><a href="#Events">Events</a>
+<br><a href="#Media">Media</a>
+<br><a href="#Fax">Fax</a></blockquote>
+
+<blockquote><a href="#Summary">Summary</a></blockquote>
+
+<h2>
+<a NAME="Version"></a>Version</h2>
+
+<blockquote>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#CCCCCC">
+<th>Version</th>
+
+<th>Author</th>
+
+<th>Date</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.1</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>March 17, 2000</td>
+
+<td>Initial Draft</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.2</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>March 17, 2000</td>
+
+<td>Added Event Control Discussion</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.3</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>April 14, 2000</td>
+
+<td>New Initialization options, Media Framework, Fax</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.4</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>May 5, 2000</td>
+
+<td>New TelephonyListener interface, changed signal detector return value,
+simplified listener management, Telephony provider capabilities support.</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.5</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>May 16, 2000</td>
+
+<td>Some media comments to reflect extra requirements in order to support
+properly 1.2 deprecated media.</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.6</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>June 16, 2000</td>
+
+<td>Updated to new TelephonyProvider and TPI naming.</td>
+</tr>
+
+<tr>
+<td>
+<div align=right>0.8</div>
+</td>
+
+<td>Richard Deadman</td>
+
+<td>June 27, 2000</td>
+
+<td>Added support for weak synchronization and call state querying.</td>
+</tr>
+</table>
+</dl>
+</blockquote>
+
+<h2>
+<a NAME="Background"></a>Background</h2>
+
+<blockquote>The Generic JTAPI framework is a JTAPI implementation that
+acts to reduce the amount of work required for JTAPI support to be given
+to telephony systems (boards, PBXes and IP telephony).&nbsp; As such, it
+consists of two major pieces:</blockquote>
+
+<ul>
+<blockquote>
+<li>
+A generic JTAPI layer</li>
+
+<li>
+Vendor or protocol-specific low-level adapter layers</li>
+</blockquote>
+</ul>
+
+<blockquote>The architecture may be viewed as:
+<br><img SRC="JtapiGenericFramework_Framework_nda.gif" NAME="Graphic1" BORDER=0 height=283 width=547>
+<br>where the blue lines represent a common interface between system modules.&nbsp;
+With such an architecture, complex object modelling and event handling
+that not dependent on vendors or protocols</blockquote>
+
+<h2>
+<a NAME="Goals"></a>Goals</h2>
+
+<blockquote>The goals of the TPI are fairly simple:</blockquote>
+
+<ol>
+<blockquote>
+<li>
+Provide an interface that is an order-of-magnitude easier to implement
+that a full-blown JTAPI implementation.</li>
+
+<li>
+Support a key sub-set of JTAPI functionality:</li>
+
+<ul>
+<li>
+Core</li>
+
+<li>
+Call Control -- hold, conference, transfer, drop</li>
+
+<li>
+Media</li>
+</ul>
+
+<li>
+Decouple the SPI implementation from the Generic JTAPI layer.&nbsp; Interactions
+between the two should occur on as thin and interior-object-free of an
+interface as possible.</li>
+
+<li>
+Allow for TPI implementations to be plugged into the framework on the fly</li>
+
+<li>
+Allow for proxy bridges to be optionally injected between the JTAPI layer
+and the SPI implementor.&nbsp; One example might be to insert a remote
+TPI proxy that allows an TPI to transparently exist on a remote machine.</li>
+
+<li>
+To move all complexity out of the TPI implementor's domain.&nbsp; For instance,
+proper event queuing and dispatching should be handled by the framework;
+the TPI implementation should not have to worry that sending an event to
+the framework may block or take excessive time.</li>
+</blockquote>
+</ol>
+
+<h2>
+<a NAME="Architecture"></a>Architecture</h2>
+
+<blockquote>
+<h3>
+<a NAME="API"></a>API Categorization</h3>
+</blockquote>
+
+<blockquote>
+<blockquote>The TPI consists of 18 classes and interfaces, only one of
+which must be implemented by the TPI creator.&nbsp; These can be broken
+down into the following groups:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#999999">
+<th>Package</th>
+
+<th>Class</th>
+
+<th>Type</th>
+
+<th>Group</th>
+
+<th>Comment</th>
+
+<th>Use/Implement</th>
+</tr>
+
+<tr>
+<td>com.uforce.jtapi.generic</td>
+
+<td>TelephonyProvider</td>
+
+<td>Interface</td>
+
+<td><b>Core</b> - These are the interfaces that the TPI implementor is
+required to implement</td>
+
+<td>Main Interface to implement</td>
+
+<td>Implement</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>CallId</td>
+
+<td>Interface</td>
+
+<td><b>Core</b></td>
+
+<td>Marker interface to provide call identity.</td>
+
+<td>Implement</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>RawSigDetectEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td>These encapsulate complex return values needed by the signal detector
+retreiveSignals method.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>RawStateException</td>
+
+<td>Class</td>
+
+<td><b>Exception</b></td>
+
+<td>This is an exception object that can be morphed in the framework into
+one pointing at appropriate framework classes.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>TelephonyListener</td>
+
+<td>Interface</td>
+
+<td><b>Callback</b></td>
+
+<td>This is a callback object that registers for events</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>CallData</td>
+
+<td>Class</td>
+
+<td><b>Data Wrapper</b></td>
+
+<td>This is a composite object that allows the return of call data.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>ConnectionData</td>
+
+<td>Class</td>
+
+<td><b>Data Wrapper</b></td>
+
+<td>This is a composite object that allows the return of connection data.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>TCData</td>
+
+<td>Class</td>
+
+<td><b>Data Wrapper</b></td>
+
+<td>This is a composite object that allows the return of terminal connection
+data.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>TermData</td>
+
+<td>Class</td>
+
+<td><b>Data Wrapper</b></td>
+
+<td>This is a composite object that allows the return of terminal data.</td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td>com.uforce.jtapi.generic.media</td>
+
+<td>GenericMediaEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td>The following six are needed in order to allow a MediaResourceException
+to be thrown from various synchronous Media methods.</td>
+
+<td>Abstract parent</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>GenericResourceEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td><i>See GenericMediaEvent</i></td>
+
+<td>Abstract parent</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>GenericPlayerEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td><i>See GenericMediaEvent</i></td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>GenericRecorderEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td><i>See GenericMediaEvent</i></td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>GenericSignalDetectorEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td><i>See GenericMediaEvent</i></td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>GenericSignalGeneratorEvent</td>
+
+<td>Class</td>
+
+<td><b>Media Events</b></td>
+
+<td><i>See GenericMediaEvent</i></td>
+
+<td>Use</td>
+</tr>
+
+<tr>
+<td>com.uforce.jtapi.generic.raw</td>
+
+<td>AbstractRawProvider</td>
+
+<td>Abstract Class</td>
+
+<td><b>Helper Template</b></td>
+
+<td>This is an abstract implementation of TelephonyProvider that can be
+extended by TPI implementors to speed up implementation.</td>
+
+<td>Optional</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>RawListenerMux</td>
+
+<td>Class</td>
+
+<td><b>Helper</b></td>
+
+<td>This is a helper class that can be used by TelephonyProviders to multiplex
+multiple TelephonyListeners into one.</td>
+
+<td>Optional</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>RawListenerPool</td>
+
+<td>Class</td>
+
+<td><b>Helper</b></td>
+
+<td>This is an asynchronous event delivery helper that allows a remote
+TelephonyProvider, for instance, to hand of responsibility for sending
+update events so that it does not suffer network latency.</td>
+
+<td>Optional</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>As we can, of the 18 classes and interfaces, only two must
+be implemented and three are optional helper templates or classes.&nbsp;
+As well, four media events may be required to be created by a TelephonyProvider
+for the proper throwing of MediaResourceException on media calls (see below).</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>This may be a little too simplistic, however, since the TPI
+also requires the usage of JTAPI media objects and exceptions not listed
+in the TPI explicitly:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#999999">
+<th>Class</th>
+
+<th>Category</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<th COLSPAN="3">Exceptions</th>
+</tr>
+
+<tr>
+<td>PriviledgeViolationException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>All JTAPI methods can call this to indicate that the user does not
+have sufficient privilege to execute the operation.</td>
+</tr>
+
+<tr>
+<td>ResourceUnavailableException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>All JTAPI methods can call this to indicate that the operation failed
+for resource contention reasons.</td>
+</tr>
+
+<tr>
+<td>MethodNotSupportedException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>Generally indicates that the SPI does not support that operation.&nbsp;
+This should also be noted in the capabilities for the SPI.</td>
+</tr>
+
+<tr>
+<td>InvalidPartyException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>Indicates that a party was not valid for a call.</td>
+</tr>
+
+<tr>
+<td>InvalidArgumentException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>Indicates that an argument was not valid for a call.</td>
+</tr>
+
+<tr>
+<td>ProviderUnavailableException</td>
+
+<td><b>Exceptions</b></td>
+
+<td>Indicates that the SPI could not be properly initialized.</td>
+</tr>
+
+<tr>
+<td>MediaResourceException</td>
+
+<td><b>Media Exception</b></td>
+
+<td>A wrapper for a Media Event that describes what went wrong.</td>
+</tr>
+
+<tr>
+<th COLSPAN="3">Media</th>
+</tr>
+
+<tr>
+<td>RTC</td>
+
+<td><b>Media</b></td>
+
+<td>This is a collection of a event signal and an action symbol that indicates
+that when the event occurs the action should be taken.</td>
+</tr>
+
+<tr>
+<td>Symbol</td>
+
+<td><b>Media</b></td>
+
+<td>These are abstract ids for media events and actions.</td>
+</tr>
+</table>
+
+<h3>
+TelephonyProvider Categorization</h3>
+
+<dl>Here we list the methods in the TelephonyProvider interface object
+and categorize the purpose of each method:</dl>
+</dl>
+</dl>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#999999">
+<th>Method</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">Initialization</th>
+</tr>
+
+<tr>
+<td>initialize()</td>
+
+<td>Called after creation to pass in any initialization parameters</td>
+</tr>
+
+<tr>
+<td>getCapabilities()</td>
+
+<td>Can also be though of as part of a <b>Capabilities</b> category.&nbsp;
+Returns basic call control capability information, as well as any tuning
+of TelephonyProvider calls.&nbsp; See TelephonyProvider tuning in Capabilities
+section.&nbsp;</td>
+</tr>
+
+<tr>
+<td>getAddresses()</td>
+
+<td>Gets the static address set that is managed.</td>
+</tr>
+
+<tr>
+<td>getTerminals()</td>
+
+<td>Gets the terminals associated with an address.</td>
+</tr>
+
+<tr>
+<td><i>isMediaTerminal()</i></td>
+
+<td><i>See <b>Media</b></i></td>
+</tr>
+
+<tr>
+<td>shutdown()</td>
+
+<td>Tells the TPI it can release its resources.</td>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">Low-level State Querying (Weak Synchronization)</th>
+</tr>
+
+<tr>
+<td>getAddresses()</td>
+
+<td><i>See <b>Initialization</b></i></td>
+</tr>
+
+<tr>
+<td>getAddresses(String term)</td>
+
+<td>Determine if a Terminal named term exists and return its Address names.</td>
+</tr>
+
+<tr>
+<td>getTerminals()</td>
+
+<td><i>See <b>Initialization</b></i></td>
+</tr>
+
+<tr>
+<td>getTerminals(String addr)</td>
+
+<td>Determine if an Address named addr exists and return its Terminal names.</td>
+</tr>
+
+<tr>
+<td>getCall()</td>
+
+<td>Query the low-level TelephonyProvider for the state of an untracked
+call.</td>
+</tr>
+
+<tr>
+<td>getCallsOnAddress()</td>
+
+<td>Return a snapshot of all Calls currently at an Address.</td>
+</tr>
+
+<tr>
+<td>getCallsOnTerminal()</td>
+
+<td>Return a snapshot of all Calls currently at a Terminal.</td>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">Basic Call Control</th>
+</tr>
+
+<tr>
+<td>answerCall()</td>
+
+<td>Answer a call at a particular terminal on a particular address.</td>
+</tr>
+
+<tr>
+<td>createCall()</td>
+
+<td>Create a call from an address/terminal pair to a destination string</td>
+</tr>
+
+<tr>
+<td>hold()</td>
+
+<td>hold a call at an address/terminal pair</td>
+</tr>
+
+<tr>
+<td>unHold()</td>
+
+<td>unhold a call at an address/terminal pair</td>
+</tr>
+
+<tr>
+<td>join()</td>
+
+<td>merge a second call into the first one.</td>
+</tr>
+
+<tr>
+<td>release()</td>
+
+<td>release a call leg at an address/terminal pair.</td>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">CallId Management</th>
+</tr>
+
+<tr>
+<td>reserveCallId()</td>
+
+<td>Reserve a call id for subsequent use.&nbsp; This takes care of events
+arriving for unregistered CallIds during a createCall()</td>
+</tr>
+
+<tr>
+<td>releaseCallId()</td>
+
+<td>Tell the system it may now safely dispose of a CallId since the framework
+no longer tracks it.</td>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">Event Control</th>
+</tr>
+
+<tr>
+<td>addListener()</td>
+
+<td>Add an listener for call and media events.&nbsp; Only one will ever
+be registered, so the TelephonyProvider implementation does not need to
+manage a set of these.</td>
+</tr>
+
+<tr>
+<td>removeListener()</td>
+
+<td>Remove an event observer.&nbsp; This can usually be ignored.</td>
+</tr>
+
+<tr>
+<td>reportCallsOnAddress()</td>
+
+<td>Report events on calls that visit an address.&nbsp; See reportCall().&nbsp;
+This may never be called depending on the TelephonyProvider capabilities
+tuning.</td>
+</tr>
+
+<tr>
+<td>reportCallsOnTerminal()</td>
+
+<td>Report events on calls that visit a terminal.&nbsp; See reportCall().&nbsp;
+This may never be called depending on the TelephonyProvider capabilities
+tuning.</td>
+</tr>
+
+<tr>
+<td>stopReportingCall()</td>
+
+<td>Tell the TelephonyProvider that it no longer needs to report call events
+for a call.</td>
+</tr>
+
+<tr>
+<th COLSPAN="2" BGCOLOR="#66FFFF">Media</th>
+</tr>
+
+<tr>
+<td>allocateMedia()</td>
+
+<td>Allocate appropriate media resources to a terminal.&nbsp; This may
+never be called depending on the TelephonyProvider capabilities tuning.</td>
+</tr>
+
+<tr>
+<td>freeMedia()</td>
+
+<td>Free media resources allocated to a terminal.&nbsp; This may never
+be called depending on the TelephonyProvider capabilities tuning.</td>
+</tr>
+
+<tr>
+<td>isMediaTerminal()</td>
+
+<td>Determine is a terminal supports media resources (This may also be
+considered part of <b>Initialization</b>).&nbsp; This may never be called
+depending on the TelephonyProvider capabilities tuning.</td>
+</tr>
+
+<tr>
+<td>play()</td>
+
+<td>Play a media resource over a call at a terminal.</td>
+</tr>
+
+<tr>
+<td>record()</td>
+
+<td>Record the media being received at a terminal.</td>
+</tr>
+
+<tr>
+<td>retrieveSignals()</td>
+
+<td>Retrieve DTMF signals received at a terminal.&nbsp; Return values are
+created with Factory methods of the RawSigDetectEvent class.</td>
+</tr>
+
+<tr>
+<td>sendSignals()</td>
+
+<td>Send DTMF signals to an active call at a terminal.</td>
+</tr>
+
+<tr>
+<td>stop()</td>
+
+<td>Stop all current media actions on a terminal</td>
+</tr>
+
+<tr>
+<td>triggerRTC()</td>
+
+<td>Send an RTC Trigger Symbol to a terminal's media resources.</td>
+</tr>
+</table>
+
+<h3>
+<a NAME="Matrix"></a>Implementation Matrix</h3>
+
+<dl>The Generic JTAPI Framework attempts to strike a balance between ease
+of implementation and power.&nbsp; As such, the TelephonyProvider is given
+options over what sort of telephony support will be required.&nbsp; This
+support is reported during initialization through the setting of boolean
+values to certain named parameters.&nbsp; The following chart lists the
+meaning of these parameters and which methods must be implemented if the
+parameter is set:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<th>Capability key</th>
+
+<th>Meaning</th>
+
+<th>Required Methods</th>
+</tr>
+
+<tr>
+<td><i>(core)</i></td>
+
+<td>These are the core methods that all TelephonyProviders must implement</td>
+
+<td>initialize()
+<br>getCapabilities()
+<br>getAddresses()
+<br>getAddresses(String)
+<br>getTerminals()
+<br>getTerminals(String)
+<br>releaseCallId()
+<br>addListener()
+<br>removeListener()
+<br>shutdown()</td>
+</tr>
+
+<tr>
+<td>answer</td>
+
+<td>Can the TelephonyProvider answer calls?</td>
+
+<td>answerCall()</td>
+</tr>
+
+<tr>
+<td>create</td>
+
+<td>Can the TelephonyProvider create new calls?</td>
+
+<td>reserveCallId()
+<br>createCall()</td>
+</tr>
+
+<tr>
+<td>hold</td>
+
+<td>Can the TelephonyProvider hold and unHold calls?</td>
+
+<td>hold()
+<br>unHold()</td>
+</tr>
+
+<tr>
+<td>join</td>
+
+<td>Can the TelephonyProvider join two calls together?</td>
+
+<td>join()</td>
+</tr>
+
+<tr>
+<td>release</td>
+
+<td>Can the TelephohyProvider release a Connection?</td>
+
+<td>release()</td>
+</tr>
+
+<tr>
+<td>dynamicAddresses
+<br><i>or ResourceUnavailableException for getAddresses() or getTerminals()</i></td>
+
+<td>Do we allows for lazy intialization of the Address and Terminal pools?&nbsp;
+Note that the dynamicAddresses flag notes that these pools are in flux.&nbsp;
+To just indicate that they are too big to return all at once, the TelephonyProvider
+throws ResourceUnavailableException.</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>throttle</td>
+
+<td>If true, this indicates that not all call events are reported.&nbsp;
+Therefore calls will be unknown to the Framework unless queried for.&nbsp;
+The Framework ensures that a "flushed in" Call is reported on.</td>
+
+<td>getCall()
+<br>getCallsOnAddress()
+<br>getCallsOnTerminal()
+<br>reportCallsOnAddress()
+<br>reportCallsOnTermina()
+<br>stopReportingCall()</td>
+</tr>
+
+<tr>
+<td>media</td>
+
+<td>Does the TelephonyProvider support media services?</td>
+
+<td>allocateMedia()
+<br>freeedia()
+<br>play()
+<br>record()
+<br>receiveSignals()
+<br>sendSignals()
+<br>stop()
+<br>sendRTC()</td>
+</tr>
+
+<tr>
+<td>
+<blockquote>allMediaTerminals</blockquote>
+</td>
+
+<td>Are all Terminals Media capable?&nbsp; This only applies if "media"
+mapped to true.&nbsp; If false, the following method must be implemented.</td>
+
+<td>isMediaTerminal()</td>
+</tr>
+</table>
+
+<p>As we can see, a basic TelephonyProvider without throttling, dynamic
+addresses or media support needs only implement 10 of the 32 TelephonyProvider
+methods.</dl>
+
+<h3>
+<a NAME="Mapping"></a>Object Mapping</h3>
+
+<dl>JTAPI as a high-level interface provides five basic object interfaces
+that define the conceptual components of a telephony system:
+<dl>
+<li>
+Call</li>
+
+<li>
+Address - Phone Number</li>
+
+<li>
+Terminal - Physical Device</li>
+
+<li>
+Connection - association between a Call and one of its participant Addresses</li>
+
+<li>
+TerminalConnection - association between a Connection and a Terminal active
+on that Connection.</li>
+</dl>
+</dl>
+</dl>
+</dl>
+
+<blockquote>
+<ol>These are all full-fledged objects with state and behaviour associated
+with them.&nbsp; For a pluggable interface, however, it is desirable to
+abstract these objects and instead provide logical references, so that:
+<ol>
+<li>
+The interface is as loosely coupled as possible.</li>
+
+<li>
+As little implementation constraints as possible are placed on the TPI
+implementor.&nbsp; We do not want the TPI Implementor to have to implement
+Call, for instance, or corrupt their object model with JTAPI concepts.</li>
+
+<li>
+To allow for easy serialization (i.e. remote access)</li>
+</ol>
+</ol>
+</blockquote>
+
+<blockquote>
+<blockquote>For these reasons, the five JTAPI objects are never exposed
+to the TPI interface.&nbsp; Instead String references and a CallId interface
+are defined.&nbsp; It is assumed that Addresses and Terminals will both
+have unique String representations.&nbsp; For calls, the TPI implementor
+is required to support the creation of unique CallId objects that can be
+used as call handles.&nbsp; Since the CallId interface is simply a marker
+interface, its implementation is relatively trivial.&nbsp; If the TPI implementor
+has
+an object that represents calls and obeys the "equals()" and "hashCode()"
+contracts (as all objects should), it can simply be declared to implement
+CallId.&nbsp; Alternatively an TPI implementor that used long integers
+to reference calls could create a simple CallId object that wraps the "long"
+value and implements equals() and hashCode appropriately.</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr>
+<td>
+<pre>import com.uforce.jtapi.generic.CallId;</pre>
+
+<pre>public class SimpleCallId implements CallId {
+&nbsp;&nbsp;&nbsp; private long id;
+&nbsp;&nbsp;&nbsp; public SimpleCallId(long newId) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.id = newId;
+&nbsp;&nbsp;&nbsp; }</pre>
+
+<pre>&nbsp;&nbsp;&nbsp; long getId() {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return this.id;
+&nbsp;&nbsp;&nbsp; }</pre>
+
+<pre>&nbsp;&nbsp;&nbsp; public boolean equals(Object o) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (o instanceof SimpleCallId &amp;&amp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (((SimpleCallId)o).getId() == this.getId())) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;
+&nbsp;&nbsp;&nbsp; }</pre>
+
+<pre>&nbsp;&nbsp;&nbsp; public long hashCode() {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return this.getId();
+&nbsp;&nbsp;&nbsp; }
+}</pre>
+</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>Note that CallId does not have to be serializable, since this
+may place too onerous a restriction on the CallId implementation.&nbsp;
+It is the responsibility on any remote interface to map non-serializable
+CallIds to proxy CallIds that can safely be serialized.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The mapping of JTAPI objects to CallIds and address and terminal
+Strings can then be seen as:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr>
+<td></td>
+
+<td>CallID</td>
+
+<td>address String</td>
+
+<td>terminal String</td>
+</tr>
+
+<tr>
+<td>
+<center>Call</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>
+<center>Address</center>
+</td>
+
+<td></td>
+
+<td>
+<center>X</center>
+</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>
+<center>Terminal</center>
+</td>
+
+<td></td>
+
+<td></td>
+
+<td>
+<center>X</center>
+</td>
+</tr>
+
+<tr>
+<td>
+<center>Connection</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>
+<center>TerminalConnection</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+
+<td>
+<center>X</center>
+</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>This means, for instance, that a Connection object in JTAPI
+is mapped to a CallID/address String pair in the TPI.</blockquote>
+</blockquote>
+
+<h2>
+<a NAME="Components"></a>Components</h2>
+
+<blockquote>
+<h3>
+<a NAME="Initialization"></a>Initialization</h3>
+</blockquote>
+
+<blockquote>
+<ol>The generic JTAPI framework is responsible for finding and loading
+the TPI implementation.&nbsp; The GenericJtapiPeer (JtapiPeer) implementation
+is loaded in one of the normal JTAPI specified manners, supporting the
+JtapiPeerFactory, DefaultJtapiPeer and explicit peer instantiation.&nbsp;
+The selection of the correct TelephonyProvider is performed during the
+JtapiPeer.getProvider() method.&nbsp; Implementors have three options for
+hooking their TelephonyProvider interface class into the framework:
+<ol>
+<li>
+Place an entry in the "GenericResources.props" file that identifies the
+TelephonyProvider class with a lookup name.&nbsp; This lookup name can
+then be passed in as part of the ";"-separated "getProvider() parameter
+string.&nbsp; The GenericResources.props file allows for the specification
+of a default TelephonyProvider if no name is provided.</li>
+
+<li>
+If the TelephonyProvider class is not referenced in the GenericResources.props
+file, it may be explicitly defined as a fully-qualified class name as the
+first part of the "getProvider()" parameter string.</li>
+
+<li>
+Finally, the GenericJtapiPeer class can be subclassed to override "getDefaultProvider()".&nbsp;
+This allows the GenericJtapiPeer subclass to define the default provider
+that is hooked in if no TelephonyProvider name or fully-qualified class
+name is passed in to "getProvider()".&nbsp; With this option, it is possible
+to hook the Generic JTAPI Framework with a desired Provider into a JTAPI
+application without modifying the GenericResources.props file or requiring
+the application to use a non-default provider string.</li>
+</ol>
+</ol>
+</blockquote>
+
+<blockquote>
+<ol>After the implementation has been loaded, it is initialized prior to
+being used.&nbsp; This initialization take two forms:
+<ol>
+<li>
+<b>TPI initialization</b>.&nbsp; The framework will call the TPI with the
+following call: "<tt>initialize(Map props)".</tt>&nbsp; This call passes
+in a dictionary of name-value pairs that describe the TPI usage environment.&nbsp;
+The TPI is free to use these, and any that it might load itself (i.e. from
+a Resource file) to complete any initialization, such as authorization
+or address domain selection.&nbsp; The TPI will not be used until this
+call has been made.</li>
+
+<li>
+<b>Framework initialization</b>.&nbsp; After the framework has successfully
+loaded an TPI, it will perform some interrogation on that TPI to determine
+what the framework's operational constraints are.&nbsp; Specifically it
+will:</li>
+
+<ol>
+<li>
+Ask the TPI for its capabilities with "<tt>getCapabilities()</tt>".&nbsp;
+This should return a simple dictionary that lists t/f values for the base
+TPI functions: (answer, create, hold, join, release)</li>
+
+<li>
+Ask the TPI for the list of Addresses it supports with "<tt>getAddresses()</tt>".&nbsp;
+For each address, a follow-up call of "<tt>getTerminals(String address)</tt>"
+will also occur.</li>
+</ol>
+</ol>
+</ol>
+
+<h3>
+<a NAME="Capabilities"></a>Capabilities</h3>
+
+<ol>Static and Dynamic capabilities are handled within the Generic JTAPI
+Framework.&nbsp; The only responsibility that the TPI has for capabilities
+is in returning a Properties object that notes any non-default capabilities
+between the names (answer, create, hold, join, release) and "t/f" strings
+or Boolean values.&nbsp; A simple way for an TPI implementation to implement
+capabilities is for it to:
+<ol>
+<li>
+Copy the Generic JTAPI Framework capabilities file (<tt>GenericCapabilities.props</tt>)</li>
+
+<li>
+Alter its values to reflect the TPI call control implementation</li>
+
+<li>
+Load the file into a java.util.Properties object</li>
+
+<li>
+Return the Properties object from "<tt>getCapabilities()</tt>".</li>
+</ol>
+</ol>
+</blockquote>
+
+<blockquote>
+<blockquote>If framework default capabilities are supported, it is legal
+to return a null.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Note that the JTAPI transfer and conference methods are not
+directly supported in this list, since they are implemented as combinations
+of the five basic call-control functions.&nbsp; For instance, a blind transfer
+consists of placing a call on <b>hold</b>, <b>creating</b> a second call,
+<b>joining</b>
+the two calls and <b>releasing</b> the call from the transferring terminal.&nbsp;
+The Generic JTAPI framework calculates transfer and conference capabilities
+based on whether all the required base functions are supported.&nbsp; As
+well, dynamic capabilities are determined in the generic JTAPI framework
+by combining static capabilities with the current state of the the particular
+JTAPI object.
+<h4>
+TelephonyProvider Tuning</h4>
+In addition to these direct call-related capabilities, the Capabilities
+Property file also lists some tuning Capabilities that set up a contract
+between the Framework and the TelephonyProvider.&nbsp; This contract allows
+for more efficient calling of the TelephonyProvider, which may improve
+performance and, if a remote proxy is used, dramatically reduce network
+performance.&nbsp; The four properties are:</blockquote>
+</blockquote>
+
+<dl>
+<dl>
+<dl>TelephonyProvider Contract Properties
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#CCCCCC">
+<th>Property</th>
+
+<th>Meaning</th>
+</tr>
+
+<tr>
+<td>throttle</td>
+
+<td>By default, the Generic JTAPI Framework issues event throttling calls
+to tell the Telephony provider which events it is interested in receiving
+(reportCall()...).&nbsp; This reduces the number of potential resources
+the Telephony provider must allocate and reduces the amount of callback
+traffic.&nbsp;
+<p>For some providers, however, they will report all call events anyway.&nbsp;
+Setting "throttle" to "f" will eliminate the redundant issuing of ignored
+throttling calls.&nbsp;
+<p>Default value: "t"</td>
+</tr>
+
+<tr>
+<td>media</td>
+
+<td>During initialization, the Framework asks the TelephonyProvider if
+each returned terminal supports media.&nbsp; If the Telephony provider
+does not support media at all, these queries are unnecessary and may be
+suppressed by setting the "media" value to "f".&nbsp;
+<p>Default value: "t"</td>
+</tr>
+
+<tr>
+<td>allMediaTerminals</td>
+
+<td>If the TelephonyProvider does support media, it may support media for
+all Terminals.&nbsp; Setting "allMediaTerminals" to "t" turns all Terminals
+into MediaTerminals without needless Telephony provider queries.&nbsp;
+<p>Default value: "f"</td>
+</tr>
+
+<tr>
+<td>allocateMedia</td>
+
+<td>If the TelephonyProvider does support media, do we need to call allocateMedia
+if we are not passing in any dictionaries?&nbsp; In other words, are media
+by default always allocated?
+<p>Default value: "t"</td>
+</tr>
+
+<tr>
+<td>allocateMedia</td>
+
+<td>Media may require the Telephony provider to allocate resources for
+a terminal, and so the Framework by default sends explicit media resource
+allocation and free messages.&nbsp; Some Telephony providers, however,
+my ignore these suggestions since media resources are free and always attached.&nbsp;
+Setting "allocateMedia" to "f" avoids the sending of these unnecessary
+messages.&nbsp;
+<p>Default value: "t"</td>
+</tr>
+</table>
+</dl>
+
+<h3>
+<a NAME="Basic"></a>Basic Call Control</h3>
+
+<dl>Six actions are currently supported by the TPI, although they may be
+combined to create more than six "high-level" actions in the Generic JTAPI
+Framework layer.&nbsp; These call allow for the creation, answering, hold,
+unhold, join and terminal-connection release of calls.&nbsp; Join merges
+two sets of call connections into one new call, usually the first call
+on the call-set list, although it is permitted for this method to return
+a new call handle.</dl>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>As well, the TPI supports the explicit Generic JTAPI Framework
+management of CallIds.&nbsp; The Framework may request a CallId and then
+later use the CallId to create an actual call.&nbsp; For incoming calls,
+the CallId is reported through a FreeCallEvent sent to the Framework's
+CallObserver.&nbsp; CallIds must be unique in time but once the TPI receives
+a <tt>releaseCallId</tt>() call for a CallId, the Framework no longer retains
+a handle to the CallId and the CallId may be discarded or re-used.&nbsp;
+In both the creation of calls by the Framework and the death of call notification
+by FreeCallEvent, the CallId management is a two-phase process.&nbsp; This
+two-phase process is required to ensure that glares do not occur.&nbsp;
+Consider a system without these management calls:
+<ul>
+<li>
+No <tt>createCallId</tt>().&nbsp; The Framework asks for the creation of
+a new call.&nbsp; In the TPI, the call is created and started and call
+progress events are sent to the TelephonyListener Framework callback object.&nbsp;
+Then the <tt>createCall</tt>() method returns the CallId.&nbsp; Now the
+"new call" event and the return value are racing to see who can update
+the Framework first.&nbsp; If the event wins then a new Call object will
+be created that will be logically identical to the Call object that initiated
+the <tt>createCall</tt>() method.&nbsp; This is not "a good thing".</li>
+
+<li>
+No <tt>releaseCallId</tt>().&nbsp; A call is killed and the TPI sends a
+FreeCallEvent indicating the call is dead and then removes the CallId from
+its local list of known calls.&nbsp; Between the time that the event is
+sent to the Framework and the time that it is processed, an action with
+that call is initiated and causes a TPI method to be invoked (i.e. hold()).&nbsp;
+Since the CallId is no longer known, the TPI will through an exception
+such as ResourceUnavailableException or InvalidArgumentException instead
+of the appropriate RawStateException.&nbsp; Event worse, the CallId may
+by this time have been re-used, causing an unintended side-effect on an
+unrelated call.&nbsp; Not "a good thing" either.</li>
+</ul>
+</blockquote>
+
+<h3>
+<a NAME="Exceptions"></a>Exceptions</h3>
+
+<blockquote>Of the twenty-seven methods in the TelephonyProvider interface
+class, only eleven throw exceptions, and these can be broken into three
+major groups:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#999999">
+<th>Group</th>
+
+<th>Methods</th>
+
+<th>Exceptions</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>Initialization</td>
+
+<td>initialize()</td>
+
+<td>ProviderUnavailableException</td>
+
+<td>This exception is called to indicate that a provider could not be properly
+initialized.</td>
+</tr>
+
+<tr>
+<td>Call Control</td>
+
+<td>answerCall()&nbsp;
+<br>createCall()&nbsp;
+<br>hold()&nbsp;
+<br>join()&nbsp;
+<br>release()&nbsp;
+<br>unHold()</td>
+
+<td>PriviledgeViolationException&nbsp;
+<br>ResourceUnavailableException&nbsp;
+<br>MethodNotSupportedException&nbsp;
+<br>InvalidPartyException&nbsp;
+<br>InvalidArgumentException&nbsp;
+<br>RawStateException&nbsp;
+<br><i>PlatformException</i></td>
+
+<td>These exception denote:&nbsp;
+<ul>
+<li>
+problems with user access rights&nbsp;</li>
+
+<li>
+unavailability of required resources (i.e. DSP or trunk)&nbsp;</li>
+
+<li>
+a function not implemented&nbsp;</li>
+
+<li>
+a defined party that does not exist (address - call pair, for instance)&nbsp;</li>
+
+<li>
+a set of conflicting arguments (making a call on an address from a terminal
+that does not hold that address)&nbsp;</li>
+
+<li>
+state exceptions&nbsp;</li>
+
+<li>
+Runtime unexpected exception (PlatformException)&nbsp;</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>Media</td>
+
+<td>play()&nbsp;
+<br>record()&nbsp;
+<br>sendSignals()&nbsp;
+<br>retrieveSignals()</td>
+
+<td>MediaResourceException</td>
+
+<td>An exception that wraps a ResourceEvent that describes what went wrong
+with the Media device.</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>With the exception of RawStateException, these are all exception
+classes defined in JTAPI itself.&nbsp; RawStateException is an extension
+of InvalidStateExtension necessary since the JTAPI objects are not exposed
+at the TPI level.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For each of these eleven methods, the TPI implementor is free
+to throw the available exceptions if unexpected conditions occur.&nbsp;
+The meaning of the exceptions is fairly clear and translates well to most
+telephony environments.&nbsp; Of course, if an exception does not seem
+to apply, the implementor does not have to declare or use it.&nbsp; On
+the other hand, if some exception occurs that is not mappable easily to
+this list, a PlatformException, since it is a Runtime exception denoting
+catastrophic failures, can always be thrown.&nbsp; An example of this might
+be in a remote TPI proxy that delegates TPI calls off to a remote implementation.&nbsp;
+If a remote exception is caught, indicating that our link to the remote
+implementation has failed, it is reasonable to throw a PlatformException,
+since recovering from this situation is not likely.</blockquote>
+
+<h3>
+<a NAME="Events"></a>Events</h3>
+
+<blockquote>The TPI makes no assumptions about the object model or state
+machine for TPI implementations.&nbsp; It must, however, be notified of
+certain changes, such as when a call arrives or a DTMF signal is received.&nbsp;
+Originally the Generic JTAPI framework relied on an Observer-style event
+notification scheme that required the Telephony provider to generate the
+correct event objects and call the TelephonyListener callback object with
+the event.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Unfortunately, this design left it very unclear on exactly
+which events were expected and what the required event information is.&nbsp;
+For this reason, the Generic JTAPI Framework event notification scheme
+was reworked to provide a more Listener-oriented paradigm.&nbsp; This is
+intended to make it easier for a Telephony provider to properly throw events
+without having to understand the JTAPI event hierarchy.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The following events are supported by the new TelephonyListener
+interface:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#C0C0C0">
+<th>Method</th>
+
+<th>Type</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>callActive</td>
+
+<td>Call Event</td>
+
+<td>Indicates that a Call has become active</td>
+</tr>
+
+<tr>
+<td>callInvalid</td>
+
+<td>Call Event</td>
+
+<td>Indicates that a Call has ended.</td>
+</tr>
+
+<tr>
+<td>connectionInProgress</td>
+
+<td>Connection Event</td>
+
+<td>A Connection is being routed.</td>
+</tr>
+
+<tr>
+<td>connectionAlerting</td>
+
+<td>Connection Event</td>
+
+<td>A Connection is ringing.</td>
+</tr>
+
+<tr>
+<td>connectionConnected</td>
+
+<td>Connection Event</td>
+
+<td>The Connection is now live</td>
+</tr>
+
+<tr>
+<td>connectionDisconnected</td>
+
+<td>Connection Event</td>
+
+<td>The Connection has been disconnected</td>
+</tr>
+
+<tr>
+<td>connectionFailed</td>
+
+<td>Connection Event</td>
+
+<td>The Connection failed (busy signal?)</td>
+</tr>
+
+<tr>
+<td>terminalConnectionCreated</td>
+
+<td>TerminalConnection Event</td>
+
+<td>A terminal has been added to a connection</td>
+</tr>
+
+<tr>
+<td>terminalConnectionRinging</td>
+
+<td>TerminalConnection Event</td>
+
+<td>The terminal is ringing</td>
+</tr>
+
+<tr>
+<td>terminalConnectionTalking</td>
+
+<td>TerminalConnection Event</td>
+
+<td>The terminal is in the call</td>
+</tr>
+
+<tr>
+<td>terminalConnectionHeld</td>
+
+<td>TerminalConnection Event</td>
+
+<td>The terminal is held</td>
+</tr>
+
+<tr>
+<td>terminalConnectionDropped</td>
+
+<td>TerminalConnection Event</td>
+
+<td>The terminal has been dropped from the call</td>
+</tr>
+
+<tr>
+<td>mediaPlayPause</td>
+
+<td>Media Event</td>
+
+<td>The player has paused due to an RTC trigger</td>
+</tr>
+
+<tr>
+<td>mediaPlayResume</td>
+
+<td>Media Event</td>
+
+<td>The player has resumed due to an RTC trigger</td>
+</tr>
+
+<tr>
+<td>mediaRecorderPause</td>
+
+<td>Media Event</td>
+
+<td>The recorder has paused due to an RTC trigger</td>
+</tr>
+
+<tr>
+<td>mediaRecorderResume</td>
+
+<td>Media Event</td>
+
+<td>The recorder has resumed due to an RTC trigger</td>
+</tr>
+
+<tr>
+<td>mediaSignalDetectorDetected</td>
+
+<td>Media Event</td>
+
+<td>The signal detector has detected a particular signal</td>
+</tr>
+
+<tr>
+<td>mediaSignalDetectorOverflow</td>
+
+<td>Media Event</td>
+
+<td>The signal detector has filled it signal buffer</td>
+</tr>
+
+<tr>
+<td>mediaSignalDetectorPatternMatched</td>
+
+<td>Media Event</td>
+
+<td>The signal detector has detected a pattern</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote><i>While not strictly speaking an event, the SignalDetector.receiveSignals()
+method requires a complex set of information to be returned to it detailing
+why the synchronous call returned.&nbsp; Originally the TelephonyProvider
+required the return of a complex SignalDetectorEvent.&nbsp; Creating such
+an event is not easy and subject to the same issues as callback event notification.&nbsp;
+For this reason, the class RawSigDetectEvent was created with six static
+factory methods to ease its creation:</i></blockquote>
+
+<blockquote>&nbsp;</blockquote>
+
+<dl>
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#C0C0C0">
+<th>Static Factory Method</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>initialTimeout()</td>
+
+<td>Creates an event that indicates that no signal was received within
+the initial signal reception timeout period.</td>
+</tr>
+
+<tr>
+<td>interSigTimeout()</td>
+
+<td>Creates an event that indicates that no signal was received within
+the inter-signal timeout period.</td>
+</tr>
+
+<tr>
+<td>timeout()</td>
+
+<td>Creates an event that indicates that no the overall signal reception
+period expired with less than the requested number of signals detected.</td>
+</tr>
+
+<tr>
+<td>maxDetected()</td>
+
+<td>Creates an event that indicates that the maximum number of requested
+signals was&nbsp; collected.</td>
+</tr>
+
+<tr>
+<td>patternMatched()</td>
+
+<td>Creates an event that indicates that a signal pattern was matched.</td>
+</tr>
+
+<tr>
+<td>rtcStopped()</td>
+
+<td>Creates an event that indicates that the signal collection was stopped
+as a result of a signal being detected that triggered a RunTimeControl
+that told the signal generator to stop collected signals.</td>
+</tr>
+</table>
+
+<h4>
+Listener Singleton</h4>
+
+<dl>A TelephonyProvider will only ever receive one "addListener()" invocation
+and can assume that it needs to only keep a handle on one TelephonyListener.&nbsp;
+This simplifies throwing of events back to the TelephonyListener.</dl>
+</dl>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>
+<blockquote>Note that removeListener() is still supported. Most TelephonyProviders
+can choose to ignore this call.&nbsp; This call might seem unnecessary,
+but it is required by the remote Telephony provider proxy to properly manage
+multiplexed Generic JTAPI Framework clients that may be simultaneously
+connected to the same remote Telephony provider.&nbsp; Note that it is
+the responsibility of the Remote Telephony provider to properly delegate
+off TelephonyProvider events to all registered clients.&nbsp; If a new
+remote Telephony provider is required (i.e. for CORBA) there is a TelephonyListener
+multiplexor in the package "com.uforce.jtapi.generic.raw" that may be used.</blockquote>
+
+<h4>
+Callback Threading</h4>
+
+<blockquote>Normally Framework providers must be careful with "callback"
+invocation that the callback processing does not block proper processing.&nbsp;
+Originally this was provied through the use of an asynchronous event pool
+processing thread.&nbsp; Unfortunately this makes Framework state updates
+non-deterministic and can lead to race conditions.
+<p>In the current implementation, event callbacks do occur synchronously,
+but under tightly constrained conditions.&nbsp; The callback only updates
+the Generic Framewor's call state; client application events are dispatched
+through a separate thread.</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<h4>
+Event Throttling</h4>
+
+<blockquote>Obviously if a TelephonyProvider reported every state change
+on every call in a large telephony system, both the TelephonyProvider and
+the Generic JTAPI Framework would soon be overloaded with events to handle.&nbsp;
+Furthermore, for some vendors, monitoring all calls is an expensive operation
+that consumes valuable switch resources.</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>For this reason, the TPI defines two event control methods
+that allow Telephony providers to be informed of which subset of calls
+must be reported on, if "getCapabilities()" indicates that throttling is
+supported. "<tt>reportCallsOnAddress</tt>()" and "<tt>reportCallsOnTerminal</tt>()"
+indicate that calls connecting to a particular address or terminal should
+be reported on.&nbsp; The latter two are preferred over watching an Address
+or Terminal for events and then using the CallId in those events to start
+reporting on calls, since:
+<ul>
+<li>
+They map more closely to JTAPI reporting requests.</li>
+
+<li>
+The remove the glare condition where call events occur between the time
+that a call is noticed and the call is registered for events.</li>
+</ul>
+As well, since the Framework amy hold onto a CallId after having let the
+Call be gabage collected, it may re-fetch call state through "getCall()".
+<p>In all cases, whenever a CallId is returned by the TelephonyProvider
+to the Generic Framework, the TelephonyProvider has a contract to report
+all events on that call or its parts until such time as the call dies or
+a "stopReportingCall()" message is received.</blockquote>
+</blockquote>
+
+<h3>
+<a NAME="Media"></a>Media</h3>
+
+<blockquote>The Generic JTAPI Framework supports the ECTF Media framework
+introduced in JTAPI 1.3.&nbsp; As such, media services are thought of as
+resources attached to MediaTerminals.&nbsp; Unlike basic call control,
+media services are considered a contract and capabilities are not supported.&nbsp;
+That is, if an TPI implementor returns "true" to any "<tt>isMediaTerminal</tt>()"
+query, it must fully support media services on that terminal.&nbsp; Of
+course, if the "<tt>isMediaTerminal</tt>()" method always returns "false",
+media services need never be supported.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For a terminal which is declared to support media, there are
+four basic, two management and two auxiliary methods that may be called:</blockquote>
+</blockquote>
+
+<dl>
+<dl>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=2 >
+<tr BGCOLOR="#999999">
+<th>Method</th>
+
+<th>Type</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>allocateMedia()</td>
+
+<td>allocation</td>
+
+<td>Allocate the indicated collection of media resources for a media terminal</td>
+</tr>
+
+<tr>
+<td>freeMedia()</td>
+
+<td>allocation</td>
+
+<td>Free the indicated media resources from a media terminal</td>
+</tr>
+
+<tr>
+<td>play()</td>
+
+<td>basic</td>
+
+<td>Play a set of media streams referenced by a set of names, usually URLs</td>
+</tr>
+
+<tr>
+<td>record()</td>
+
+<td>basic</td>
+
+<td>Record media to a stream indicated by a name (URL)</td>
+</tr>
+
+<tr>
+<td>sendSignals()</td>
+
+<td>basic</td>
+
+<td>Play a set of DTMF signals indicated by a collection of symbols</td>
+</tr>
+
+<tr>
+<td>retrieveSignals()</td>
+
+<td>basic</td>
+
+<td>Retrieve DTMF signals received since the buffers were last cleared</td>
+</tr>
+
+<tr>
+<td>stop</td>
+
+<td>auxiliary</td>
+
+<td>Stop all running media actions</td>
+</tr>
+
+<tr>
+<td>triggerRTC()</td>
+
+<td>auxiliary</td>
+
+<td>Modify behaviour of running methods (see RTC discussion below)</td>
+</tr>
+</table>
+</dl>
+</dl>
+
+<blockquote>
+<blockquote>To fully understand the TPI media support, the implementor
+must have some understanding of some ECTF media concepts.&nbsp; In particular,
+the ECTF defines:
+<ul>
+<li>
+Symbols.&nbsp; These are identifiers for media "things", such as events
+or actions.&nbsp; One symbol, for instance, my note the reception of a
+DTMF signal.&nbsp; Another symbol may represent the "stop play" command.</li>
+
+<li>
+RTC. All Media methods support the concept of "Runtime Controls".&nbsp;
+These are collections of pre-defined event-responses.&nbsp; This allows,
+for instance, a media service user to tell the system to stop playing an
+audio file is DTMF is received.&nbsp; By pre-sending these event/actions
+to the media device, the response to telephony actions can be much quicker
+than if the system had to report a DTMF signal up to the Generic Framework
+using a media event, the framework had to pass it onto the JTAPI application
+and then that application had to turn around and issue a command back down
+through the framework to the media terminal to stop the audio playing.</li>
+
+<li>
+Optional arguments.&nbsp; These are basically configuration parameters
+that can be passed on from an application to a media service in a relatively
+unstructured fashion.&nbsp; For particular implementations, for instance,
+this may allow the playback speed or volume to be set.</li>
+</ul>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>An TPI implementation that supports media services will then
+have to:
+<ol>
+<li>
+Determine which terminals will support media capture and insertion</li>
+
+<li>
+Be able to allocate and free media resources as required</li>
+
+<li>
+Be able to store event/ response symbols for requested actions</li>
+
+<li>
+Be able to detect state changes and</li>
+
+<ul>
+<li>
+send the appropriate events</li>
+
+<li>
+collect the appropriate signals into a buffer (DTMF)</li>
+
+<li>
+check for RTC actions to invoke</li>
+</ul>
+</ol>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<ol>Signal detection, in particular, has three scenarios that cause the
+"retrieveSignals()" method to return:
+<ol>
+<li>
+The number of requested signals have arrived</li>
+
+<li>
+A signal from a "pattern" set has arrived, indicating that the call should
+return even though the requested number of signals has not been collected.</li>
+
+<li>
+An RTC is invoked that stops the signal retrieval.</li>
+</ol>
+</ol>
+</blockquote>
+
+<blockquote>
+<blockquote>Note that the following should be supported, since the older
+1.2 media relies on it:
+<ol>
+<li>
+triggerRTC(PlayerConstants.rtca_Stop) to stop any active play command.</li>
+
+<li>
+triggerRTC(RecorderConstants.rtca_Stop) to stop any active record command.</li>
+
+<li>
+allocateMedia(..., ..., Dictionary dict) where if the dictionary contains
+an entry p_EnabledEvents -> ev_SignalDetected, the signal detector should
+send a mediaSignalDetected callback event for detected signals.&nbsp; If
+the entry is not there, signal reporting should be turned off.</li>
+</ol>
+</blockquote>
+
+<h3>
+<a NAME="Fax"></a>Fax</h3>
+
+<blockquote>Fax is a particular media type that is not currently supported
+explicitly by the JTAPI media framework.&nbsp; We note, however, that the
+ECTF Media framework defines symbols for FaxGenerator and FaxReceiver media
+resources.&nbsp; There are, then, two options for supporting Fax in the
+JTAPI media framework:
+<ol>
+<li>
+Define new Media Resource interfaces for FaxGenerators and FaxReceivers
+and then define a FaxMediaService that hooks these resource types into
+a Media Group.&nbsp; The downside to this is that it may be superseded
+by the JTAPI 2.0 Media specification.</li>
+
+<li>
+Treat Fax as a special case of Player and Recorder URLs.&nbsp; That is,
+if a media Player is told to play a stream with a Fax URL, it would start
+up a fax generator, do call handshaking and send the fax file referenced
+by the URL.&nbsp; Recorders would similarly allow Fax reception.&nbsp;
+This option can be implemented with no changes to the TPI interface, but
+may require a raw Media service to either allocate Fax resources that may
+never be used, or throw runtime resource exceptions (breaking the media
+contract).</li>
+</ol>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>For simplicity sake, and until such time as the JTAPI media
+package is updated to support Fax resources, the Generic JTAPI framework
+adopts the second strategy.&nbsp; Faxes are send or received by specifying
+a Player or Recorder "streamId" as a URL of format:</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>fax:&lt;real-ulr>
+<br>i.e. fax:file:/tmp/file.bmp</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>If a MediaService binds a Player and/or Recorder resource to
+itself, and the Telephony provider requires separate resources for Fax
+and normal media playing, the Telephony provider has two options:
+<ol>
+<li>
+Reserve all possibly required resources to the terminal even though some
+might never be used.</li>
+
+<li>
+Only reserve non-fax resources, delaying fax resource allocation until
+needed.&nbsp; If a fax resource cannot be found when needed, a MediaResourceException
+may be thrown.</li>
+</ol>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>The strategy used by a particular Telephony provider depends
+on the fax resource allocation costs and possibly on the size of the line
+pool being managed.&nbsp; It is permissibly for the fax resource algorithm
+to be switched at runtime by specifying a provider parameter that is passed
+into the "getProvider()" call during initialization.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>Independent of how a Telephony provider supports fax resource
+allocation, the Generic JTAPI framework will ensure that a media player
+request containing multiple "streamIds" will have either all or none of
+the "streamIds" matching the fax URL pattern.</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote><b>Note</b> that Fax support is subject to change depending
+on changes to the JTAPI media package in subsequent JTAPI releases.</blockquote>
+</blockquote>
+
+<h2>
+<a NAME="Summary"></a>Summary</h2>
+
+<blockquote>The Generic JTAPI TPI defines a simplistic interface for the
+implementation of JTAPI-complient vendor or protocol providers.&nbsp; There
+is a trade-off between power and simplicity and the TPI tries to provide
+a balance that provides a useful set of functionality while not making
+the interface so large as to be un-manageable.&nbsp; This brief Implementor's
+Guide has attempted to outline briefly the intention and usage of each
+part of the TPI and how the framework facets (initialization, call control.
+media, exception, events) are supported.</blockquote>
+
+</body>
+</html>

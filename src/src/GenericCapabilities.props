@@ -1,0 +1,39 @@
+# These are the true capabilities
+answer = t
+create = t
+hold = t
+join = t
+release = t
+# The following determine if we can reduce needless RawProvider calls
+# Should we throttle RawListener events?  'f' means that the RawProvider will report everything
+throttle = t
+# Is media supported at all
+media = t
+# Are all terminals media capable, or do we ask?
+allMediaTerminals = f
+# Do we need to make explicite media resource allocation requests?
+allocateMedia = t
+
+# Do we allow for dynamic terminal and address registration above the domain's static set?
+dynamicAddresses = f
+
+# default PrivateData -- not needed since the system will default to these, but
+# included to ensure raw TPI implementors get the key names correctly if they override these
+#provGetPrivateData = f
+#provSendPrivateData = f
+#provSetPrivateData = f
+#callGetPrivateData = f
+#callSendPrivateData = f
+#callSetPrivateData = f
+#addrGetPrivateData = f
+#addrSendPrivateData = f
+#addrSetPrivateData = f
+#termGetPrivateData = f
+#termSendPrivateData = f
+#termSetPrivateData = f
+#connGetPrivateData = f
+#connSendPrivateData = f
+#connSetPrivateData = f
+#tcGetPrivateData = f
+#tcSendPrivateData = f
+#tcSetPrivateData = f

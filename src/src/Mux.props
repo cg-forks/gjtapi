@@ -1,0 +1,6 @@
+Provider1 = Emulator1
+Provider2 = Emulator2
+Class_Emulator1 = net.sourceforge.gjtapi.raw.emulator.EmProvider
+Props_Emulator1 = Emulator.props
+Class_Emulator2 = net.sourceforge.gjtapi.raw.emulator.EmProvider
+Props_Emulator2 = Emulator2.props

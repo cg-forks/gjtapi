@@ -1,0 +1,241 @@
+module net {
+  module sourceforge {
+    module gjtapi {
+      module raw {
+        module remote {
+          module corba {
+
+  # Define the exceptions
+  exception PrivilegeViolationEx {
+    long type;
+    string reason;
+  };
+
+  exception ResourceUnavailableEx {
+    long type;
+    string reason;
+  };
+
+  exception MethodNotSupportedEx {
+    string reason;
+  };
+
+  exception RawStateEx {
+    long callId;
+    string address;
+    string terminal;
+    long type;
+    long state;
+    string info;
+  };
+
+  exception InvalidPartyEx {
+    long type;
+    string reason;
+  };
+
+  exception InvalidArgumentEx {
+    string reason;
+  };
+
+  exception NotSerializableEx {
+    string reason;
+  };
+
+  exception ProviderUnavailableEx {
+    long cause;
+    string reason;
+  };
+
+  typedef sequence<long> LongArray;
+
+	# Create a ResourceEvent for Players, Recorders, SignalGenerators, SignalDetectors
+  enum ResourceType {player, recorder, sigGenerator, sigDetector};
+  struct PlayerEvent {
+    long change;
+    long index;
+    long offset;
+  };
+  struct RecorderEvent {
+    long duration;
+  };
+  struct SigDetectorEvent {
+    long index;
+    LongArray buffer;
+  };
+  union ResourceUnion switch (ResourceType) {
+    case player: PlayerEvent playEv;
+    case recorder: RecorderEvent recEv;
+    case sigGenerator: SigDetectorEvent sdEv;
+  };
+
+  struct ResourceEvent {
+    long error;
+    long eventId;
+    string terminal;
+    long qualifier;
+    long trigger;
+    ResourceUnion resUnion;
+  };
+
+  exception MediaResourceEx {
+    string reason;
+    ResourceEvent event;
+  };
+
+  # define CallData and it sub-parts
+  struct TermData {
+    string terminal;
+    boolean isMedia;
+  };
+  struct TCData {
+    long state;
+    TermData terminal;
+  };
+  struct ConnectionData {
+    long state;
+    string address;
+    boolean isLocal;
+    sequence<TCData> tcs;
+  };
+  struct CallData {
+    long callId;
+    long state;
+    sequence<ConnectionData> connections;
+  };
+
+  # Define the Dictionary values holder
+  struct LongEntry {
+    long key;
+    long value;
+  };
+
+  typedef sequence<LongEntry> LongDictionary;
+
+  # Define the Properties values holder
+  struct StringEntry {
+    string key;
+    string value;
+  };
+
+  typedef sequence<StringEntry> StringDictionary;
+
+  # Define symbol structure
+  struct DetectEvent {
+    long pattern;
+    LongArray sigs;
+    string terminal;
+    ResourceEvent event;
+  };
+
+  typedef sequence<string> StringArray;
+  typedef sequence<CallData> CallArray;
+  typedef sequence<TermData> TermArray;
+
+  # Define the callback asynchronous listener
+  interface CorbaListener
+  {
+    oneway void addressPrivateData(in string address, in any data, in long cause);
+    oneway void callActive(in long callId, in long cause);
+    oneway void callInvalid(in long callId, in long cause);
+    oneway void callPrivateData(in long callId, in any data, in long cause);
+    oneway void callOverloadCeased(in string address);
+    oneway void callOverloadEncountered(in string address);
+    oneway void connectionAddressAnalyse(in long callId, in string address, in long cause);
+    oneway void connectionAddressCollect(in long callId, in string address, in long cause);
+    oneway void connectionAlerting(in long callId, in string address, in long cause);
+    oneway void connectionAuthorizeCallAttempt(in long callId, in string address, in long cause);
+    oneway void connectionCallDelivery(in long callId, in string address, in long cause);
+    oneway void connectionConnected(in long callId, in string address, in long cause);
+    oneway void connectionDisconnected(in long callId, in string address, in long cause);
+    oneway void connectionFailed(in long callId, in string address, in long cause);
+    oneway void connectionInProgress(in long callId, in string address, in long cause);
+    oneway void connectionSuspended(in long callId, in string address, in long cause);
+    oneway void mediaPlayPause(in string terminal, in long index, in long offset, in long trigger);
+    oneway void mediaPlayResume(in string terminal, in long trigger);
+    oneway void mediaRecorderPause(in string terminal, in long duration, in long trigger);
+    oneway void mediaRecorderResume(in string terminal, in long trigger);
+    oneway void mediaSDDetected(in string terminal, in LongArray sigs);
+    oneway void mediaSDOverflow(in string terminal, in LongArray sigs);
+    oneway void mediaSDPatternMatched(in string terminal, in LongArray sigs, in long index);
+    oneway void providerPrivateData(in any data, in long cause);
+    oneway void terminalConnectionCreated(in long callId, in string address, in string terminal, in long cause);
+    oneway void terminalConnectionDropped(in long callId, in string address, in string terminal, in long cause);
+    oneway void terminalConnectionHeld(in long callId, in string address, in string terminal, in long cause);
+    oneway void terminalConnectionRinging(in long callId, in string address, in string terminal, in long cause);
+    oneway void terminalConnectionTalking(in long callId, in string address, in string terminal, in long cause);
+    oneway void terminalPrivateData(in string terminal, in any data, in long cause);
+  };
+
+  # Define the main interface
+  interface CorbaProvider
+  {
+    oneway void addListener(in CorbaListener cl);
+    boolean allocateMedia(in string term, in long type, in LongDictionary parameters);
+    void answerCall(in long callId, in string address, in string terminal)
+        raises (PrivilegeViolationEx, ResourceUnavailableEx, MethodNotSupportedEx, RawStateEx);
+    boolean attachMedia(in long call, in string address, in boolean onFlag);
+    oneway void beep(in long call);
+    long createCall(in long callId, in string address, in string terminal, in string destination)
+        raises (PrivilegeViolationEx, ResourceUnavailableEx, MethodNotSupportedEx, RawStateEx,
+          InvalidPartyEx, InvalidArgumentEx);
+    boolean freeMedia(in string terminal, in long type);
+    StringArray getAddresses()
+        raises (ResourceUnavailableEx);
+    StringArray getAddressesForTerm(in string terminal)
+        raises (InvalidArgumentEx);
+    long getAddressType(in string name);
+    CallData getCall(in long callId);
+    CallArray getCallsOnAddress(in string address);
+    CallArray getCallsOnTerminal(in string terminal);
+    StringDictionary getCapabilities();
+    string getDialledDigits(in long id, in string address);
+    any getPrivateData(in long callId, in string address, in string terminal)
+        raises (NotSerializableEx);
+    TermArray getTerminals()
+        raises (ResourceUnavailableEx);
+    TermArray getTerminalsForAddr(in string terminal)
+        raises (InvalidArgumentEx);
+    void hold(in long callId, in string address, in string terminal)
+        raises (PrivilegeViolationEx, ResourceUnavailableEx, MethodNotSupportedEx, RawStateEx);
+    void initialize(in StringDictionary props)
+        raises (ProviderUnavailableEx);
+    boolean isMediaTerminal(in string terminal);
+    long join(in long callId1, in long callId2, in string address, in string terminal)
+        raises (RawStateEx, InvalidArgumentEx, MethodNotSupportedEx, PrivilegeViolationEx, ResourceUnavailableEx);
+    void play(in string terminal, in StringArray streamIds, in long offset, in LongDictionary rtcs, in LongDictionary optArgs)
+        raises (MediaResourceEx);
+    void record(in string terminal, in string streamId, in LongDictionary rtcs, in LongDictionary optArgs)
+        raises (MediaResourceEx);
+    void release(in string address, in long callId)
+        raises (RawStateEx, MethodNotSupportedEx, PrivilegeViolationEx, ResourceUnavailableEx);
+    void releaseCallId(in long callId);
+    oneway void removeListener(in CorbaListener cl);
+    void reportCallsOnAddress(in string address, in boolean flag)
+        raises (InvalidArgumentEx, ResourceUnavailableEx);
+    void reportCallsOnTerminal(in string terminal, in boolean flag)
+        raises (InvalidArgumentEx, ResourceUnavailableEx);
+    long reserveCallId(in string address)
+        raises (InvalidArgumentEx);
+    DetectEvent retrieveSignals(in string terminal, in long num, in LongArray patterns, in LongDictionary rtcs, in LongDictionary optArgs)
+        raises (MediaResourceEx);
+    any sendPrivateData(in long callId, in string address, in string terminal, in any data)
+        raises (NotSerializableEx);
+    void sendSignals(in string terminal, in LongArray syms, in LongDictionary rtcs, in LongDictionary optArgs)
+        raises (MediaResourceEx);
+    void setLoadControl(in string startAddr, in string endAddr, in double duration, in double admissionRate, in double interval, in LongArray treatment)
+        raises (MethodNotSupportedEx);
+    oneway void setPrivateData(in long callId, in string address, in string terminal, in any data);
+    void shutdown();
+    void stop(in string terminal);
+    boolean stopReportingCall(in long callId);
+    void triggerRTC(in string terminal, in long action);
+    void unHold(in long callId, in string address, in string term)
+        raises (RawStateEx, MethodNotSupportedEx, PrivilegeViolationEx, ResourceUnavailableEx);
+  };
+          };
+        };
+      };
+    };
+  };
+};

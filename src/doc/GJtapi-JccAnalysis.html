@@ -1,0 +1,381 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Richard Deadman">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (Win98; U) [Netscape]">
+   <title>Generic JTAPI / Jain Integration Analysis</title>
+</head>
+<body>
+
+<center>
+<h1>
+Generic JTAPI JCC Support Analysis</h1></center>
+
+<center>Richard Deadman
+<br>U|Force/Netergy
+<br>August 28, 2000
+<hr WIDTH="80%"></center>
+
+<h2>
+<a NAME="Objective"></a>Objective</h2>
+
+<blockquote>This brief report outlines an initial mapping between the Generic
+JTAPI Framework JTAPI implementation and the JCC specification in order
+to determine the amount of work required to support JCC within the framework
+and therefor use the Generic JTAPI Framework as a basis for building JCC
+call stacks.</blockquote>
+
+<h2>
+<a NAME="Table of Contents"></a>Table of Contents</h2>
+
+<blockquote><a href="#Objective">Objective</a>
+<br><a href="#Table of Contents">Table of Contents</a>
+<br><a href="#Version">Version</a>
+<br><a href="#References">References</a>
+<br><a href="#Background">Background</a>
+<br><a href="#Generic JTAPI - JCC Mapping">Generic JTAPI - JCC Mapping</a>
+<blockquote><a href="#Application Provider Interface">Application Provider
+Interface</a>
+<br><a href="#Service Provider Interface">Service Provider Interface</a></blockquote>
+<a href="#Suggested Work">Suggested Work</a>
+<br><a href="#Open Issues">Open Issues</a></blockquote>
+
+<h2>
+<a NAME="Version"></a>Version</h2>
+
+<blockquote>&nbsp;
+<table BORDER >
+<tr BGCOLOR="#C0C0C0">
+<th>Version</th>
+
+<th>Date</th>
+
+<th>Author</th>
+
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>
+<center>0.1</center>
+</td>
+
+<td>August 28, 2000</td>
+
+<td>Richard Deadman</td>
+
+<td>Initial draft version</td>
+</tr>
+</table>
+</blockquote>
+
+<h2>
+<a NAME="References"></a>References</h2>
+
+<ol>
+<li>
+<a href="http://java.sun.com/products/jtapi/">JTAPI Home web site</a></li>
+
+<li>
+<a href="http://java.sun.com/products/jain/">Jain Public Home site</a></li>
+
+<li>
+<a href="http://java.sun.com/aboutJava/communityprocess/participant/jsr021/jain_jcc.pdf">JCC
+0.8 documentation</a> (required JCP access)</li>
+
+<li>
+<a href="https://24.114.65.197/uforce/genericJtapi/index.html">Generic
+JTAPI Home site</a> (requires Netergy password)</li>
+</ol>
+
+<h2>
+<a NAME="Background"></a>Background</h2>
+
+<blockquote>JTAPI is a broad-based Java Telephony API designed to be able
+to adapt to any call model.&nbsp; As such, it is characterized by its wealth
+of optional capabilities (capabilities and extensions) and by the resulting
+complexity.&nbsp; The Generic JTAPI framework is an attempt to build a
+re-usable core for JTAPI implementations.&nbsp; To accomplish this, the
+Generic JTAPI framework limits its scope to a commonly used subset of JTAPI
+functionality.&nbsp; It also exposes a simplified "service provider interface",
+known as the Telephony Provider Interface, that simplifies the building
+of implementations and allows for implementations to be plugged together
+in arbitrary ways.
+<p>JCC is a call control model designed to support a much more narrowly
+defined role, that of call control in integrated networks.&nbsp; As such,
+it borrows much of the flavour of JTAPI and marries it with the industry-standard
+"Parlay Call Control Service" specification.&nbsp; Parlay is language neutral
+and is defined at the IDL level for both CORBA and Microsoft distributed
+environments.&nbsp; Unlike JTAPI, JCC does not contain optional behaviour
+through capabilities and extensions, although it still allows for "MethodNotSupportedException"s.</blockquote>
+
+<h2>
+<a NAME="Generic JTAPI - JCC Mapping"></a>Generic JTAPI - JCC Mapping</h2>
+
+<blockquote>Using the Generic JTAPI Framework as a basis for JCC support,
+we need to determine how JCC call model objects could be mapped to GJTAPI,
+what new functionality would be needed by GJTAPI and if there is any opportunity
+for simplifying the SPI required to write JCC-compliant adapters.</blockquote>
+
+<blockquote>
+<h3>
+<a NAME="Application Provider Interface"></a>Application Provider Interface</h3>
+The following table maps the Generic JTAPI classes to the corresponding
+Jcc classes and outlines what new functionality would be required by the
+core to support Jcc.&nbsp; Note that Jcp objects all extend Jcp (Java call
+processing) objects which correspond closely to JTAPI objects.
+<p>In general, all Jcp and Jcc calls through exceptions that parallel the
+JTAPI exception but, of course, have a different package.&nbsp; So, for
+instance, JccProvider.createCall() throws jain.jcp.InvalidStateException,
+whereas JTAPI's Provider.createCall() throws javax.telephony.InvalidStateException.&nbsp;
+Since these are both classes, and Java does not support multiple inheritance
+for classes, we cannot simply defined a common subclass that supports both
+and simply throw this.&nbsp; Instead, some sort of exception morphing will
+have to occur.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td></td>
+
+<td>Generic JTAPI</td>
+
+<td>JCC</td>
+
+<td>Additions</td>
+
+<td>Conflicts</td>
+
+<td>Comments</td>
+</tr>
+
+<tr>
+<td>Provider</td>
+
+<td>GenericProvider</td>
+
+<td>JccProvider</td>
+
+<td><i>(<b>all JccProvider methods:</b>)</i>
+<br>addCallListener(listener)
+<br>addCallListener(listener, filter)
+<br>addCallLoadControlListener(listener, filter)
+<br>addConnectionListener(listener, filter)
+<br>addProviderListener(listener, filter)
+<br>removeCallListener()
+<br>removeCallLoadControlListener()
+<br>removeConnectionListener()
+<br>setCallLoadControl()</td>
+
+<td>Exceptions on Jcp methods</td>
+
+<td>Need to add support for Call load control functionality, or decide
+not to support it.</td>
+</tr>
+
+<tr>
+<td>Address</td>
+
+<td>FreeAddress</td>
+
+<td>JccAddress</td>
+
+<td>getType()</td>
+
+<td></td>
+
+<td>Much simplified interface, but we will need low-level access to an
+address's type.</td>
+</tr>
+
+<tr>
+<td>Terminal</td>
+
+<td>FreeTerminal</td>
+
+<td>N/A</td>
+</tr>
+
+<tr>
+<td>Call</td>
+
+<td>FreeCall</td>
+
+<td>JccCall</td>
+
+<td><i>(<b>all JccCall methods:</b>)</i>
+<br>addCallListener(listener, filter)
+<br>addConnectionListenerer(listener, filter)
+<br>createConnection()
+<br>release()
+<br>routeCall()
+<br>superviseCall()</td>
+
+<td>
+<ul>
+<li>
+Exceptions on Jcp methods</li>
+
+<li>
+Simple addCallListener() and removeCallListener() methods in JcpCall use
+JcpCallListener and not CallListener.</li>
+</ul>
+</td>
+
+<td>Listener conflict can be resolved by overloading the methods and having
+the framework track different listener types so it can morph the events
+into the correct type.</td>
+</tr>
+
+<tr>
+<td>Connection</td>
+
+<td>FreeConnection</td>
+
+<td>JccConnection</td>
+
+<td><i>(<b>all JccConnection methods:</b>)</i>
+<br>accept()
+<br>attachMedia()
+<br>continueProcessing()
+<br>detachMedia()
+<br>getJccState()
+<br>getLastAddress()
+<br>isBlocked()
+<br>release()
+<br>routeConnection()</td>
+
+<td>
+<ul>
+<li>
+Exceptions on Jcp methods</li>
+
+<li>
+If mapped to JTAPI, what JTAPI terminal do we accept a call onto?</li>
+
+<li>
+attachMedia and detachMedia add yet a third media control paradigm to the
+Generic JTAPI framework.</li>
+</ul>
+</td>
+
+<td>release() has the same semantics as Connection's disconnect().</td>
+</tr>
+
+<tr>
+<td>TerminalConnection</td>
+
+<td>FreeTerminalConnection</td>
+
+<td>N/A</td>
+</tr>
+</table>
+
+<h3>
+<a NAME="Service Provider Interface"></a>Service Provider Interface</h3>
+The following changes to the TelephonyProvider Interface are suggested
+by a preliminary view of the API mapping:
+<ol>
+<li>
+Addition of CallLoad support methods</li>
+
+<li>
+Addition of Address type interrogation</li>
+
+<li>
+Addition of support for Call and Connection routing and processing</li>
+</ol>
+</blockquote>
+
+<h2>
+<a NAME="Suggested Work"></a>Suggested Work</h2>
+
+<ol>
+<li>
+Add defined functionality to the four affected Generic JTAPI objects</li>
+
+<li>
+Create wrapper subclasses for Provider, Call and Connection that delegate
+off calls but morph thrown exceptions into the proper type.</li>
+
+<li>
+Add tracking of Jcp listeners to the ListenerManager so that it can create
+the appropriate event types.</li>
+
+<li>
+Add event filtering to the ListenerManager</li>
+
+<li>
+Add support for LoadControl to the framework</li>
+
+<li>
+Add support for Address typing to the framework</li>
+
+<li>
+Add support for Call and Connection routing and processing to the framework</li>
+
+<li>
+Map the Jcc media handling to the framework's media objects.</li>
+
+<li>
+Add new methods to support the TelephonyProvider changes outlined in the
+previous section.</li>
+
+<li>
+Create JTAPI and Jcc 'abstract" TelephonyProviders that optionally allows
+providers to be written for just one usage of the framework without the
+other usage's method's being exposed.</li>
+</ol>
+
+<h2>
+<a NAME="Open Issues"></a>Open Issues</h2>
+
+<ol>
+<li>
+Since terminal's are not supported by Jcc, we may have problems mapping
+accept() and media calls to the framework's commands.&nbsp; The framework
+could delegate these calls to a single terminal or throw an exception if
+the terminal is ambiguous.</li>
+
+<li>
+Since the current Generic JTAPI framework bases call answering and media
+access on terminals, providing these services to service providers that
+don't define media terminals may be problematic.&nbsp; One option is to
+force them to define dummy terminals; another is to augment or change the
+TPI mapping for these functions.</li>
+
+<li>
+Currently the Generic JTAPI framework relies on listening to all tracked
+calls to ensure that its call state is synchronized with that of the low-level
+TelephonyProvider.&nbsp; If lazy tracking is employed, the framework only
+requests call information of calls that applications have shown interest
+in.&nbsp; None-the-less, this may not scale to JAIN levels and may require
+an even further loosening of the current lazy call mapping.</li>
+
+<li>
+While Jcc adds these new capabilities, it also simplifies other JTAPI requirements.&nbsp;
+So, do we require:</li>
+
+<ul>
+<li>
+That all low-level TelephonyProviders support all existing Generic JTAPI
+and Jcc capabilities?</li>
+
+<li>
+Provider abstract classes that allow JTAPI-based and Jcc-based providers
+to be build without requiring them to know about the functionality required
+by the other subset.</li>
+
+<li>
+Try not to plug Jcc into the Generic JTAPI Framework, but rather fork off
+a new framework tailored specifically to Jcc requirements?&nbsp; The disadvantage
+of this is loosing low-level TelephonyProvider re-usablility and maintenance
+issues as bugs are now duplicated across two code sets.</li>
+</ul>
+</ol>
+
+<hr WIDTH="80%">
+<center>&copy; Netergy Inc., 2000</center>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+Address1 = 21
+Address2 = 22
+Address3 = 23
+display = true
+# Should we throttle RawListener events?  'f' means that the RawProvider will report everything
+throttle = f
+# Turn on PrivateData for Terminals and TerminalConnections
+termSendPrivateData = t
+tcSendPrivateData = t

@@ -1,0 +1,2 @@
+PeerClassName = net.sourceforge.gjtapi.GenericJtapiPeer
+ProviderString = Emulator

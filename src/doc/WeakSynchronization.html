@@ -1,0 +1,535 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Richard Deadman">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (Win98; U) [Netscape]">
+   <title>Weak TelephonyProvider Synchroniation</title>
+</head>
+<body>
+
+<center>
+<h1>
+Weak TelephonyProvider Synchronization</h1></center>
+
+<center>Richard Deadman
+<br>June 2000
+<hr WIDTH="80%"></center>
+
+<blockquote>
+<center><i>This document outlines a state synchronization problem between
+the Generic JTAPI Framework and some TelephonyProvider implementations,
+and proposes a solution architecture.&nbsp; Support for weak synchronization,
+as well as any support framework architecture, is currently subject to
+debate and discussion and may, in the future, be dropped or altered.&nbsp;
+Feedback is always valuable.</i></center>
+</blockquote>
+
+<h2>
+Background</h2>
+
+<blockquote>The Generic JTAPI Framework takes on the responsibility for:
+<ul>
+<li>
+Mapping JTAPI calls to a smaller TelephonyProvider interface</li>
+
+<li>
+Tracking listener and observer registrations</li>
+
+<li>
+Receiving state and event information from a TelephonyProvider implementation</li>
+
+<li>
+Mapping of complex telephony commands into a smaller-set of primitive commands.</li>
+
+<li>
+Providing threaded handling of events</li>
+
+<li>
+Provide a simple capabilities framework</li>
+
+<li>
+Provide a media service framework that delgates media calls off to a simpler
+media interface</li>
+</ul>
+The concept is to concentrate implementation-independent funcionality into
+a re-usable core and reduce the responsibilities of a particular telephony
+provider to:
+<ul>
+<li>
+implementation of a small set of simple telephony/media commands</li>
+
+<li>
+reporting of state information</li>
+</ul>
+</blockquote>
+
+<h2>
+Problem</h2>
+
+<blockquote>The latter responsibility, however, may cause problems for
+some Telephony implementations.&nbsp; In particular, some implementations
+may manage a large domain with a great deal of activity.&nbsp; Collecting
+and reporting state changes for all domain objects may, therefore, become
+prohibitively expensive due to:
+<ol>
+<li>
+Implementation monitoring costs.&nbsp; Some platforms may have significant
+costs associated with monitoring line or channel behaviour.&nbsp; Invoking
+this cost in order to retrieve information that may never be used may not
+be pratical.</li>
+
+<li>
+Memory size.&nbsp; If thousands of Calls must be maintained in memory with
+associated state, Connection and TerminalConnection information, the JVM
+memory requirements may get very significant.</li>
+
+<li>
+Processing.&nbsp; Receiving and thousands of call events per second may
+strain the JVM implementations and lead to poor performance of unacceptable
+command latency.</li>
+
+<li>
+Network cost.&nbsp; If a TelephonyProvider proxy exists between the telephony
+platform and the Generic JTAPI server, then all state update events must
+be serialized across the network pipe.&nbsp; This may add significant network
+load, including increased collisions, and may cause latency and responsiveness
+degradation.</li>
+</ol>
+</blockquote>
+
+<h2>
+Options</h2>
+
+<blockquote>We are, therefore, left with two options: limit the intended
+domain of the Generic JTAPI Framework to small and medium-sized systems
+with moderate activity levels; or provide a lazy state synchronization
+mechanism.
+<p>This paper outlines a design change for the Generic JTAPI Framework
+and its TelephonyProvider API that will allow for the optional lazy reporting
+of call state information.</blockquote>
+
+<h2>
+Goals</h2>
+
+<ol>Primary goals of a lazy state synchronization architecture include:
+<ol>
+<li>
+Delay reporting of Call information until the Generic Framework has requested
+it.</li>
+
+<li>
+Allow Address#getConnections() and Terminal#getTerminalConnections() to
+lazily fetch their call association information.</li>
+
+<li>
+Provide soft caches to enable Call information to be cached but reclaimed
+by the garbage collector when memory becomes tighted.</li>
+
+<li>
+Allow for the building of static TelephonyProviders that do not need to
+worry about lazy object requests.</li>
+</ol>
+We should analyze the weak reference access scenarios to establish what
+sort of caching, if any, we will require.
+<p>Note that we do not require that the framework analyze dynamic access
+patterns in order to change the caching mechanisms of the fly (as HotSpot
+does with JVMs to optimize calls that are frequently being called).</ol>
+
+<h2>
+Similar Problems</h2>
+
+<blockquote>The problem of maintaining an object-hierarchy that is not
+fully in-memory is reminiscent of the techniques that are used in Object-Oriented
+databases to allow for the flushing in of objects from a persistent store.&nbsp;
+Usually such systems allow for a tree of objects to be "trimmed" such that
+only a certain depth of the tree is returned and the rest of the tree is
+replaced with a placeholder that allows for later flusing out if that part
+of the tree is traversed.&nbsp; The cost trade-off here is between memory
+usage and initial "fetch" expense versus latter traversal lazy fetching.
+<p>In particular, the pre-Java GemStone Smalltalk framework from GemStone
+Systems Inc.&nbsp; Not only did GemStone allow for object hierarchies to
+be managed in a persistent cache that allowed for some to be replaced by
+lazy-access placeholders, but GemStone provided a distribution framework
+that allowed these object trees to be sent to a client with tree-trimming
+and lazy traversing.&nbsp; Unfortunately GemStone/S is a Smalltalk product
+that is not available within our Java context, let alone free.&nbsp; Furthermore
+it uses a Smalltalk feature ("becomes") that is not available directly
+in Java.
+<p>None-the-less, GemStone/S is a successful product with large implementations
+and as such can give us some ideas on how to implement a lazy tree-traversal
+framework.</blockquote>
+
+<h2>
+Analysis</h2>
+
+<blockquote>First, we should look at the JTAPI architecture that must be
+managed.&nbsp; The following diagram presents the relationship between
+the Provider and it's Addresses, Terminals and Calls (Connections being
+associations between Addresses and Calls and TerminalConnections being
+the association between Connections and Terminals.
+<br><img SRC="SynchroObjects.gif" >
+<center><b>Figure 1: Basic Generic JTAPI class diagram</b></center>
+
+<p>From the JTAPI specification, we can see that the following are the
+access methods:
+<blockquote>&nbsp;
+<table BORDER CELLSPACING=0 >
+<tr BGCOLOR="#CCCCCC">
+<th>Accessor</th>
+
+<th>Accessed</th>
+
+<th>Method</th>
+
+<th>Type</th>
+</tr>
+
+<tr>
+<td>Provider</td>
+
+<td>Address</td>
+
+<td>
+<pre>getAddresses() throws ResourceUnavailableException</pre>
+
+<pre>getAddress(String name)</pre>
+</td>
+
+<td>Domain</td>
+</tr>
+
+<tr>
+<td>Provider</td>
+
+<td>Terminal</td>
+
+<td>
+<pre>getTerminals() throws ResourceUnavailableException</pre>
+
+<pre>getTermnal(String name)</pre>
+</td>
+
+<td>Domain</td>
+</tr>
+
+<tr>
+<td>Provider</td>
+
+<td>Call</td>
+
+<td>
+<pre>getCalls() throws ResourceUnavailableException</pre>
+</td>
+
+<td>Call</td>
+</tr>
+
+<tr>
+<td>Address</td>
+
+<td>Connection</td>
+
+<td>
+<pre>getConnections()</pre>
+</td>
+
+<td>Call</td>
+</tr>
+
+<tr>
+<td>Address</td>
+
+<td>Terminal</td>
+
+<td>
+<pre>getTerminals()</pre>
+</td>
+
+<td>Domain</td>
+</tr>
+
+<tr>
+<td>Terminal</td>
+
+<td>TerminalConnection</td>
+
+<td>
+<pre>getTerminalConnections()</pre>
+</td>
+
+<td>Call</td>
+</tr>
+
+<tr>
+<td>Terminal</td>
+
+<td>Address</td>
+
+<td>getAddresses()</td>
+
+<td>Domain</td>
+</tr>
+</table>
+</blockquote>
+We note that we basically have two sets of dynamically loadable information:
+<blockquote>
+<h3>
+Domain (Address &lt;-> Terminal)</h3>
+These are the sets of Addresses and Terminals that make up the provider's
+domain.&nbsp; An application may ask for all the Addresses or Terminals,
+or look them up by name.&nbsp; As well, Each Address may have a number
+of Terminals associated with it and each Terminal will have one or more
+Addresses associated with it.&nbsp; These are static to the domain.
+<h3>
+Call</h3>
+This is transient information about current call activity.&nbsp; Each Address
+may have any number of Connections associated with it (which are basically
+Address to Call association objects).&nbsp; Similarily a Terminal my have
+zero or more TerminalConnections associated with it.</blockquote>
+The following diagram shows these two sets as blocks within the object
+domain.</blockquote>
+<img SRC="SynchroObjects2.gif" >
+<blockquote>
+<center><b>Figure 2: Object Groupings and Accessors</b></center>
+
+<p>We would like to keep these two dynamic sets separate.&nbsp; So, for
+instance, one TelephonyProvider implementation may be able to give a purely
+static set of Addresses and Terminals which is of a manageable size, but
+may not want to automatically incur the cost of reporting all call events
+on these sets.
+<p>Thus we see that we have two dynamic "fetching" scenarios:
+<ol>
+<li>
+<b>Domain Object Interrogation</b>.&nbsp; Here the Provider is asked for
+its set of Addresses or Terminals, or for an Address or Terminal by name.&nbsp;
+In the above diagram, the FreeAddress and FreeTerminal classes are requested.&nbsp;
+The API allows the implementation to return "ResourceUnavailableException"
+to the set accessors but not the name-lookups.&nbsp; It would make sense
+to have a Provider that allows "DynamicDomain" to throw the ResourceUnavailableException
+and then allow lazy look-ups of individual Terminals and Addresses.</li>
+
+<li>
+<b>Call Interrogation</b>.&nbsp; Here the Provider asks for the set of
+all Calls or the Address or Terminal asks for its set of associated calls
+(through the Connection or TerminalConnection association objects).&nbsp;
+Here the bottom three classes, FeeCall, FreeConnection and FreeTerminalConnection,
+are requested.&nbsp; The API allos the implementation to return "ResourceUnavailableException"
+to the global call set accessor, but not the Address or Terminal call set
+accessors.</li>
+</ol>
+From Figure 2 we can also note some other things of importance:
+<ul>
+<li>
+Terminals and Addresses may be looked up by name or by association with
+each other and are also referenced by any active calls that are associated
+with them.&nbsp; Therefore it is not sufficient to refetch an Address or
+Terminal each time it is looked up, since this may corrupt object identity
+if there is already another copy of this object in the system.</li>
+
+<li>
+Note that Addresses and Terminals are related, with a Terminal knowing
+all the Addresses on it, and an Address knowing all Terminals that contain
+it.&nbsp; There are two possibilities for paging in the cross references
+between Addresses and Terminals:</li>
+
+<ol>
+<li>
+Assume that the Terminal-Address graph is not too large.&nbsp; When an
+Address name is returned from the TelephonyProvider that is not currently
+cached in our system, we perform a recursive search until all newly reachable
+Addresses and Terminals have been returned.</li>
+
+<li>
+Don't assume that the Address - Terminal sub-graphs are of moderate size
+since this may not be a valid assumption.&nbsp; Say an Address is available
+on every one of 400 Terminals in a call centre sub-department.&nbsp; Furthermore,
+some of these Terminals also hold Addresses on other distant Address groups.&nbsp;
+Theoretically there is no reason that doing a full graph flush may not
+result in a large number of TelephonyProvider calls and the flushing out
+of information on every Address and Terminal in the domain, if they are
+all reachable.&nbsp; Instead we should, for Address, track all of its Terminal
+names and only use these names to look up Terminals when the name is traversed.&nbsp;
+Delaying the graph traversal until first needed may add some initial lookup
+time, but will reduce Address lookup, memory requirements and TelephonyProvider
+invocations.</li>
+</ol>
+
+<li>
+Calls and their Connections and TerminalConnections cannot expand without
+bound across the whole TelephonyProvider's Call domain, unless there is
+only one call currently active.&nbsp; Active calls tend to have a limited
+number of Connections associated with them.</li>
+</ul>
+</blockquote>
+
+<h2>
+Proposed Architecture</h2>
+
+<blockquote>
+<h3>
+Paradigm</h3>
+The Generic JTAPI Framework will maintain both Domain and Call information
+either statically (by default) or dynamically, based on TelephonyProvider
+Capabilities.&nbsp; If looked up dynamically, the reference will be "softly"
+or "weakly" held in a reference cache so that the reference may be cleared
+once no longer directly accessed by a strong link.&nbsp; Strong links may
+include Listeners (since if a listener is registered on a Call, we want
+to to get it's state updates and keep the call in memory), application
+code, or other directly held dynamic objects (An Address referenced by
+a Call that is held by an application).
+<h3>
+Class Diagram</h3>
+</blockquote>
+
+<center><img SRC="SynchroObjects3.gif">
+<br><b>Figure 3: Basic Object partition</b></center>
+
+<blockquote>
+<h3>
+Reference Determination</h3>
+The following table indicates two things:
+<ul>
+<li>
+The TelephonyCapabilities property that triggers the use of dynamic lookup
+and weak caching</li>
+
+<li>
+The type of cache used.&nbsp; SoftCaches release softly-reachable items
+before a MemoryOutOfError exception is thrown.&nbsp; WeakCaches release
+weakly-reachable items during the next garbage collection.</li>
+</ul>
+
+<table BORDER CELLSPACING=0 >
+<tr BGCOLOR="#CCCCCC">
+<th></th>
+
+<td>Accessors</td>
+
+<th>Dynamic trigger</th>
+
+<th>Cache Style when dynamic</th>
+</tr>
+
+<tr>
+<td><b>Domain</b></td>
+
+<td>
+<pre>Provider->Address</pre>
+
+<pre>Provider->Terminal</pre>
+</td>
+
+<td>ResourceUnavailableException during initialization</td>
+
+<td>SoftCache
+<br>(These are domain objects and are likely to be looked up again once
+initially active)</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td>
+<pre>Address->Terminal</pre>
+
+<pre>Terminal->Address</pre>
+</td>
+
+<td></td>
+
+<td>SoftCache</td>
+</tr>
+
+<tr>
+<td><b>Call</b></td>
+
+<td>
+<pre>Address->Connection</pre>
+
+<pre>Terminal->TerminalConnection</pre>
+</td>
+
+<td>throttle = t</td>
+
+<td>WeakCache
+<br>(These are transient domain objects that are not as likely to be accessed
+in the future)</td>
+</tr>
+</table>
+
+<h3>
+Ease of Implementation</h3>
+
+<blockquote>The addition of dynamic state synchronization to the Generic
+JTAPI Framework should not impose undue burden on TelephonyProviders that
+support static state updates (i.e. that report all state transitions on
+all Domain objects and all Calls).&nbsp; To accomplish this, the following
+is a requirement of the new TelephonyProvider changes:
+<ul>
+<li>
+The new methods may be implemented as NO-OPs if the provider does not throw
+ResourceUnavailableException for getAddresses() and does not have "throttle"
+set to true.</li>
+
+<li>
+A new abstract TelephonyProvider will be provided that remove the additional
+methods from the list of methods a class must implement.&nbsp; TelephoyProviders
+may choose to extend this abstract class.</li>
+</ul>
+</blockquote>
+
+<h3>
+Additions to Telephony Provider API</h3>
+
+<blockquote>The following additions must be made to the TelephonyProvider
+interface:
+<ol>
+<li>
+<tt>String[] getAddresses(String termName)</tt>.&nbsp; This gets an array
+of Address names for the given terminal name.</li>
+
+<li>
+<tt>CallData[] getCallsForAddress(String AddrName)</tt>.&nbsp; This gets
+a Call information object for an Address that can be used to dynamically
+create the Call, Connection and TerminalConnection information as needed.</li>
+</ol>
+As well, some new helper object will be needed for transporting :
+<blockquote>
+<pre>public class CallData {
+&nbsp;&nbsp;&nbsp; public int callState;
+&nbsp;&nbsp;&nbsp; public ConnData[] connections;
+}</pre>
+
+<pre>public class ConnectionData {
+&nbsp;&nbsp;&nbsp; public int connState;
+&nbsp;&nbsp;&nbsp; public String address;
+&nbsp;&nbsp;&nbsp; public TCData[] terminalConnections;
+}</pre>
+
+<pre>public class TCData {
+&nbsp;&nbsp;&nbsp; public int tcState;
+&nbsp;&nbsp;&nbsp; public String terminal;
+&nbsp;&nbsp;&nbsp; public String[] terminals;
+}</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<h2>
+Issues</h2>
+
+<ol>
+<li>
+Do we have the right caching types associated with the Domain and Call
+partitions?</li>
+
+<li>
+Should Call information be retrieved in more atomic method calls.&nbsp;
+This would simplifiy the API and allow for dynamic references between Call
+objects, but would lead to more Framework - Provider interactions.</li>
+</ol>
+
+<hr WIDTH="80%">
+</body>
+</html>
