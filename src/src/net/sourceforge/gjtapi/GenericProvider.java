@@ -401,9 +401,12 @@ private void initialize(Map props) {
 	// handle the properties I care about
 
 	// load the addresses and associated terminals
-	DomainMgr dm = this.setDomainMgr(new DomainMgr(this, this.getRawCapabilities().dynamicAddresses));
-	dm.loadAddresses();
-	dm.loadTerminals();
+	boolean dynamic = this.getRawCapabilities().dynamicAddresses;
+	DomainMgr dm = this.setDomainMgr(new DomainMgr(this, dynamic));
+	if (!dynamic) {
+		dm.loadAddresses();
+		dm.loadTerminals();
+	}
 
 	// see if dynamic call querying is required
 	this.setCallMgr(new CallMgr(this, this.getRawCapabilities().throttle));
