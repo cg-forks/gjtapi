@@ -139,8 +139,10 @@ public GenericMediaService() throws JtapiPeerUnavailableException, ProviderUnava
 		Terminal[] terms = addr.getTerminals();
 	    MediaTerminal term = null;
 	    for (int i = 0; i < terms.length && term == null; i++) {
-		    if (terms[i] instanceof MediaTerminal)
+		    if (terms[i] instanceof MediaTerminal) {
 		    	term = (MediaTerminal)terms[i];
+		    	break;
+		    }
 	    }
 	    if (term == null) {		// no media terminals
 		    throw new MediaCallException("No media terminal for address " + origAddr);
@@ -253,9 +255,10 @@ public GenericMediaService() throws JtapiPeerUnavailableException, ProviderUnava
 			TerminalConnection[] tcs = conns[i].getTerminalConnections();
 			int tcSize = tcs.length;
 			for (int j = 0; j < tcSize; j++) {
-				if (tcs[j].getTerminal().equals(mt))
+				if (tcs[j].getTerminal().equals(mt)) {
 					mediaConn = conns[i];
 					break;
+				}
 			}
 		}
 	}
