@@ -48,6 +48,7 @@ import javax.telephony.events.*;
 import javax.telephony.capabilities.*;
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.FreeMediaTerminal;
+import net.sourceforge.gjtapi.media.GenericMediaService;
 import net.sourceforge.gjtapi.util.*;
 import javax.telephony.privatedata.PrivateData;
 
@@ -490,4 +491,12 @@ public void shutdown() {
   this.getRaw().shutdown();
   rawProvider = null;
 }
+	/**
+	 * @see javax.telephony.media.MediaProvider#getMediaService()
+	 * <P>This adds support for JTAPI 1.4 MediaService factories
+	 */
+	public MediaService getMediaService() {
+		return new GenericMediaService(this);
+	}
+
 }
