@@ -94,13 +94,13 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     private TermData terminal;
     private final static String RESOURCE_NAME = "sip.props";
     private Properties properties = new Properties();
-    protected MediaManager mediaManager;// = new MediaManager();
+    protected MediaManager mediaManager;
     protected SipManager sipManager;
     protected static Console console = Console.getConsole(SipPhone.class);
     private CallId idd;
     private Vector idVector = new Vector();
     private String address ;
-    private SipProvider sipProvider;//kk
+    private SipProvider sipProvider;
     public Properties sipProp;
     /** Add an observer for RawEvents
      *
@@ -109,7 +109,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
      *
      */
     //constructeur
-    public SipPhone( Properties sipProperties , SipProvider sipProvider)//kk
+    public SipPhone( Properties sipProperties , SipProvider sipProvider)
     {
         sipProp = new Properties() ;
         sipProp.putAll(sipProperties);
@@ -119,6 +119,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         sipManager = new SipManager(sipProp);
         this.launch();
         address = "sip:" + sipManager.getLocalUser() + "@" + sipManager.getLocalHostAddress() ;
+        
     }
     public String getAddress()
     {
@@ -131,7 +132,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     {
         console.logEntry();
         console.debug("id = " + id);
-        idd = id;//kk
+        idd = id;
         
         try
         {
@@ -144,16 +145,9 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             sipCallId.setSipId(call.getID());
             idVector.add(new ListIdElement(id, call.getID(), term, dest));
             
-            //connection in progress
-            
-            
-            
-            //inscription au listener StateChange du call
+       
             call.addStateChangeListener(this);
-            //???
-            //Interlocutor interlocutor = new Interlocutor();
-            //interlocutor.setCall(call);
-            //this.addInterlocutor(interlocutor);
+        
             
         }
         catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex)
@@ -274,7 +268,6 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
       /*  try
         {
             console.logEntry();
-            console.debug("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
             String fromAddress = evt.getFromAddress();
             String fromName = evt.getFromName();
             String messageBody = evt.getBody();
@@ -384,14 +377,12 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
                 + exc.getMessage(),
                 exc);
             }
-            mediaManager.addMediaListener(this);
-            
-            //  initDebugTool();
-            
+            mediaManager.addMediaListener(this);            
+                     
             sipManager.addCommunicationsListener(this);
             sipManager.setSecurityAuthority(this);
             
-            //guiManager.showPhoneFrame();
+            
             try
             {
                 sipManager.start();

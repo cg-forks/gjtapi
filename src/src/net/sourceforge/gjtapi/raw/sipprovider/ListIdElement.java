@@ -76,7 +76,7 @@ public class ListIdElement
     private String terminal;
     private String address;
     /** Creates a new instance of ListIdElement */
-    public ListIdElement(CallId jtapiId,int sipId,  String terminal, String address )
+    public ListIdElement(CallId jtapiId, int sipId,  String terminal, String address )
     {
         this.jtapiId = jtapiId;
         this.sipId = sipId;

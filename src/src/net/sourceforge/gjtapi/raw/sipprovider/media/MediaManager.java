@@ -73,6 +73,16 @@ import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import javax.media.rtp.RTPManager;
 import javax.media.rtp.SessionAddress;
 
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import javax.media.*;
+import javax.media.control.*;
+import javax.media.format.*;
+import javax.media.protocol.*;
+import javax.sdp.*;
+
+
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -120,9 +130,9 @@ implements Serializable
         Integer.toString(SdpConstants.DVI4_8000), // javax.media.format.AudioFormat.DVI_RTP;
         Integer.toString(SdpConstants.DVI4_16000), // javax.media.format.AudioFormat.DVI_RTP;
         Integer.toString(SdpConstants.PCMA), // javax.media.format.AudioFormat.ALAW;
-        Integer.toString(SdpConstants.G728)//, // javax.media.format.AudioFormat.G728_RTP;
+        Integer.toString(SdpConstants.G728),//, // javax.media.format.AudioFormat.G728_RTP;
         //g729 is not suppported by JMF
-        //Integer.toString(SdpConstants.G729) // javax.media.format.AudioFormat.G729_RTP
+        Integer.toString(SdpConstants.G729) // javax.media.format.AudioFormat.G729_RTP
     };
     
     /**
@@ -149,7 +159,7 @@ implements Serializable
     {
         audioPort=sipProp.getProperty("net.java.sip.communicator.media.AUDIO_PORT");
         this.sipProp = new Properties() ;
-        this.sipProp.putAll(sipProp);        
+        this.sipProp.putAll(sipProp);
     }
     
     
@@ -219,7 +229,7 @@ implements Serializable
             catch (Exception ex)
             {
                 console.debug(ex.toString());
-            }            
+            }
             
         }
         try
@@ -506,10 +516,7 @@ implements Serializable
             else
             {
                 
-                startTransmitter(
-                remoteAddress,
-                ports,
-                formatSets);
+                startTransmitter(remoteAddress,  ports,     formatSets);
             }
         }
         finally
@@ -518,7 +525,7 @@ implements Serializable
         }
     }
     
-    protected void closeProcessor() 
+    protected void closeProcessor()
     {
         try
         {
@@ -675,19 +682,14 @@ implements Serializable
         try
         {
             console.logEntry();
-            if (avDataSource != null)
-            {
-                AVTransmitter transmitter = new AVTransmitter(processor,
-                destHost,
-                ports,
-                formatSets
-                );
-                transmitter.setMediaManagerCallback(this);
-                avTransmitters.add(transmitter);
-                console.debug("Starting transmission.");
-                transmitter.start();
-                transmitters.add(transmitter);
-            }
+            
+            AVTransmitter transmitter = new AVTransmitter(processor, destHost,  ports,  formatSets  );
+            transmitter.setMediaManagerCallback(this);
+            avTransmitters.add(transmitter);
+            console.debug("Starting transmission.");
+            transmitter.start();
+            transmitters.add(transmitter);
+            
         }
         finally
         {
@@ -917,33 +919,15 @@ implements Serializable
         {
             console.logEntry();
             String hostAddress = sipProp.getProperty("net.java.sip.communicator.media.IP_ADDRESS");
-            
-            InetAddress localhost = null;
-            if (hostAddress == null)
-            {
-                localhost = NetworkAddressManager.getLocalHost(false);
-            }
-            else
-            {
-                try
-                {
-                    localhost = InetAddress.getByName(hostAddress);
-                }
-                catch (UnknownHostException ex)
-                {
-                    throw new MediaException("Failed to create localhost!", ex);
-                }
-            }
-            
-            if (console.isDebugEnabled())
-            {
-                console.debug("returning - " + localhost.getHostAddress());
-            }
-            return localhost;
+            InetAddress lh ;
+            lh = InetAddress.getByName(hostAddress);
+            console.debug(hostAddress);
+            return lh;
         }
-        finally
+        catch (Exception ex)
         {
-            console.logExit();
+            ex.toString();
+            return null;
         }
     }
     
@@ -1092,8 +1076,7 @@ implements Serializable
     
     protected boolean isMediaTransmittable(String media)
     {
-        if (media.equalsIgnoreCase("audio")
-        && isAudioTransmissionSupported())
+        if (media.equalsIgnoreCase("audio")  /*&& isAudioTransmissionSupported()*/)
         {
             return true;
         }
@@ -1246,6 +1229,8 @@ implements Serializable
     
     //This is the data source that we'll be using to transmit
     //let's see what can it do
+    
+    
     protected void initProcessor(DataSource dataSource) throws MediaException
     {
         try
@@ -1290,24 +1275,39 @@ implements Serializable
                 throw new MediaException("Media manager could not connect "
                 + "to the specified data source", ex);
             }
-            processor.setContentDescriptor(new ContentDescriptor(ContentDescriptor.RAW_RTP));
+            processor.setContentDescriptor(new ContentDescriptor( ContentDescriptor.RAW_RTP));
+            TrackControl[] trackControls = processor.getTrackControls();
             
             console.debug("We will be able to transmit in:");
-            
-            
-            
-            
-            transmittableAudioFormats.add(Integer.toString(SdpConstants.GSM));
-            
-            
-            
+            for (int i = 0; i < trackControls.length; i++)
+            {
+                Format[] formats = trackControls[i].getSupportedFormats();
+                for (int j = 0; j < formats.length; j++)
+                {
+                    Format format = formats[j];
+                    String encoding = format.getEncoding();
+                    if (format instanceof AudioFormat)
+                    {
+                        String sdp = findCorrespondingSdpFormat(encoding);
+                        if (sdp != null && !transmittableAudioFormats.contains(sdp))
+                        {
+                            if (console.isDebugEnabled())
+                            {
+                                console.debug("Audio=[" + (j + 1) + "]=" +   encoding + "; sdp=" + sdp);
+                            }
+                            transmittableAudioFormats.add(sdp);
+                        }
+                    }
+                    
+                }
+            }
         }
         finally
         {
             console.logExit();
         }
+        
     }
-    
     /**
      * Returns a cached instance of an RtpManager bound on the specified local
      * address. If no such instance exists null is returned.

@@ -90,7 +90,7 @@ import java.util.Properties;
  * @author Emil Ivov
  * @version 1.0
  */
-public class SipManager    implements SipListener
+public class SipManager implements SipListener
 {
     /**
      * Specifies the number of retries that should be attempted when deleting
@@ -142,7 +142,7 @@ public class SipManager    implements SipListener
     /**
      * The JAIN SIP SipProvider instance.
      */
-    public SipProvider sipProvider;
+    public  SipProvider sipProvider;
     
     /**
      * An instance used to provide user credentials
@@ -245,14 +245,16 @@ public class SipManager    implements SipListener
      * @throws CommunicationsException if an axception should occur during the
      * initialization process
      */
-    public void start() throws CommunicationsException
+    public   void start() throws CommunicationsException
     {
         try
         {
             console.logEntry();
-            initProperties();
+            initProperties();           
+
+           
             this.sipFactory = SipFactory.getInstance();
-            sipFactory.setPathName(sipStackPath);
+             sipFactory.setPathName("gov.nist");
             try
             {
                 addressFactory = sipFactory.createAddressFactory();
@@ -295,8 +297,7 @@ public class SipManager    implements SipListener
                         publicIpAddress = NetworkAddressManager.
                         getPublicAddressFor(localPort);
                         
-                        listeningPoint = sipStack.createListeningPoint(localPort,
-                        transport);
+                        listeningPoint = sipStack.createListeningPoint(localPort, transport);
                     }
                     catch (InvalidArgumentException ex)
                     {
@@ -338,6 +339,7 @@ public class SipManager    implements SipListener
             }
             try
             {
+                
                 sipProvider.addSipListener(this);
             }
             catch (TooManyListenersException exc)
@@ -1240,7 +1242,7 @@ public class SipManager    implements SipListener
             if (routerPath == null)
             {
               sipProp.setProperty("javax.sip.ROUTER_PATH",
-            "net.sourceforge.gjtapi.raw.sip.java.sip.communicator.sip.SipCommRouter");
+            "net.sourceforge.gjtapi.raw.sipprovider.sip.SipCommRouter");
                 
             }
             if (console.isDebugEnabled())

@@ -80,8 +80,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     private final static String RESOURCE_NAME = "sip.props";
     private Properties properties = System.getProperties();
     protected static Console console = Console.getConsole(SipProvider.class);
-    private CallId idd;
-    private Vector idVector = new Vector();
+    private CallId idd;    
     private Vector sipPhoneVector = new Vector();
     
     /** Add an observer for RawEvents
@@ -187,8 +186,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
         {
             SipPhone sp = (SipPhone)enum.nextElement();
             SipManager sm = sp.getSipManager();
-            ret[i] = "sip:" + sm.getLocalUser() + "@" + sp.getSipManager().getLocalHostAddress();
-            
+            ret[i]=sp.getAddress();
             i++;
         }
         return ret;
@@ -216,15 +214,14 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
             
         }
         String [] ret = new String [size];
-         enum = sipPhoneVector.elements();
+        enum = sipPhoneVector.elements();
         int i=0;
         while (enum.hasMoreElements())
         {
             SipPhone sp = (SipPhone)enum.nextElement();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(terminal));
-            ret[i] = sm.getAddress();
-            
+            ret[i] = sp.getAddress();
             i++;
         }
         return ret;
@@ -271,7 +268,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
             SipPhone sp = (SipPhone)enum.nextElement();
             SipManager sm = sp.getSipManager();
             ret[i] =  new TermData(sm.getAddress(), true);
-            
+            ret[i] =  new TermData(sp.getAddress(), true);
             i++;
         }
         return ret;
@@ -307,7 +304,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
             SipPhone sp = (SipPhone)enum.nextElement();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address));
-            ret[i] =  new TermData(sm.getAddress(), true);
+            ret[i] =  new TermData(sp.getAddress(), true);
             
             i++;
         }
@@ -412,20 +409,19 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
             String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
             StringTokenizer st = new StringTokenizer(strPhone,",");
             
-            
-            
             while (st.hasMoreTokens())
             {
                 pFile = new File(st.nextToken());
                 pIS = new FileInputStream(pFile);
-                //Properties sipProperties = new Properties();
                 properties.load(pIS);
                 SipPhone sipPhone = new SipPhone(properties,this);
                 sipPhoneVector.add(sipPhone);
+                console.debug("------------------------"+sipPhone.getAddress());
+                
                 pIS.close();
             }
             System.getProperties().putAll(properties);
-            //terminal = new TermData("sipTerminal", true);
+            
             
         }
         //Catch IO & FileNotFound & NullPointer exceptions
@@ -441,20 +437,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     
     
     //methode utilitaires--------------------------------------
-    private ListIdElement getElementIdListBySipId(int sipId)
-    {
-        ListIdElement ret = null;
-        Enumeration enum = idVector.elements();
-        while (enum.hasMoreElements())
-        {
-            ListIdElement lst = (ListIdElement)enum.nextElement();
-            if ( lst.getSipId() == sipId)
-            {
-                ret = lst;
-            }
-        }
-        return ret;
-    }
+  
     
     private SipPhone getSipPhoneByAddress(String address)
     {
@@ -541,7 +524,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
         console.logEntry();
         try
         {
-
+            
             String[] add = this.getAddresses(terminal);
             for(int i=0; i < add.length; i++)
             {
@@ -562,7 +545,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
         console.logEntry();
         try
         {
-
+            
             String[] add = this.getAddresses(terminal);
             for(int i=0; i < add.length; i++)
             {
@@ -590,7 +573,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     
     public void stop(String terminal)
     {
-          console.logEntry();
+        console.logEntry();
         try
         {
             String[] add = this.getAddresses(terminal);
