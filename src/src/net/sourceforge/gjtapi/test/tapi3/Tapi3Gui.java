@@ -1,0 +1,558 @@
+/*
+	Copyright (c) 2005 Serban Iordache 
+	
+	All rights reserved. 
+	
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the 
+	"Software"), to deal in the Software without restriction, including 
+	without limitation the rights to use, copy, modify, merge, publish, 
+	distribute, and/or sell copies of the Software, and to permit persons 
+	to whom the Software is furnished to do so, provided that the above 
+	copyright notice(s) and this permission notice appear in all copies of 
+	the Software and that both the above copyright notice(s) and this 
+	permission notice appear in supporting documentation. 
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
+	OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+	HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL 
+	INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING 
+	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
+	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+	
+	Except as contained in this notice, the name of a copyright holder 
+	shall not be used in advertising or otherwise to promote the sale, use 
+	or other dealings in this Software without prior written authorization 
+	of the copyright holder.
+*/
+package net.sourceforge.gjtapi.test.tapi3;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.telephony.Address;
+import javax.telephony.Call;
+import javax.telephony.Connection;
+import javax.telephony.JtapiPeer;
+import javax.telephony.JtapiPeerFactory;
+import javax.telephony.JtapiPeerUnavailableException;
+import javax.telephony.Provider;
+import javax.telephony.Terminal;
+import javax.telephony.TerminalConnection;
+import javax.telephony.callcontrol.CallControlTerminalConnection;
+import javax.telephony.media.MediaProvider;
+
+import net.sourceforge.gjtapi.media.GenericMediaService;
+
+import org.apache.log4j.Logger;
+
+public class Tapi3Gui {
+    private static final Logger logger = Logger.getLogger(Tapi3Gui.class);
+    
+    private JtapiPeer peer;
+    private CallListenerObserver obsListener;
+    private Provider provider;
+    private Address address;    
+
+    private JFrame tapi3Frame;
+	private JTextField txtCalledNumber;
+	private JButton butCall;
+
+	private JTextField txtDTMF;
+	private JButton butDTMF;
+
+	private JScrollPane callsScrollPane;
+	private JList lstCalls;
+	private JButton butAnswer;
+	private JButton butHangUp;
+	private JButton butHold;
+	private JButton butUnHold;
+	
+	private JScrollPane traceScrollPane;
+	private JTextArea txtTrace;
+    
+    public Tapi3Gui() {
+        Logger.getRootLogger().addAppender(new GuiAppender(this));
+    }
+    
+    private void initTapi3() throws Tapi3GuiException {
+        try {
+            this.peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");
+            logger.debug("JTapi Peer successfully loaded.");
+        } catch (JtapiPeerUnavailableException e) {
+            throw new Tapi3GuiException("Cannot load JTapi Peer.", e);
+        }
+		obsListener = new CallListenerObserver();
+		
+		String providerName = "Tapi3";
+        try {
+            provider = peer.getProvider(providerName);
+            logger.debug("Provider " + providerName + " successfully loaded.");
+        } catch (Exception e) {
+            throw new Tapi3GuiException("Cannot load provider " + providerName + ".", e);
+        }
+
+        String addressName = chooseAddress();
+        try {
+            address = provider.getAddress(addressName);
+            logger.debug("Address set to " + addressName);
+            
+            address.addCallObserver(obsListener);
+            
+            logger.debug("Setting a listener on address " + addressName + "...");
+            address.addCallListener(obsListener);
+        } catch (Exception e) {
+            throw new Tapi3GuiException("Cannot set address " + addressName, e);
+        }
+    }
+    
+    private String chooseAddress() throws Tapi3GuiException {
+        Address[] addresses;
+        try {
+            addresses = provider.getAddresses();
+        } catch (Exception e) {
+            throw new Tapi3GuiException("Cannot retrieve addresses for " + provider.getName());
+        }
+        if(addresses == null || addresses.length == 0) {
+            throw new Tapi3GuiException("No addresses available for " + provider.getName());
+        }
+        String[] names = new String[addresses.length];
+        for(int i=0; i<names.length; i++) {
+            names[i] = addresses[i].getName();
+        }
+        String addressName = (String)JOptionPane.showInputDialog(null, "Select an address", "Address selection", 
+                				JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
+        if(addressName == null) {
+            System.exit(0);
+        }
+        return addressName;
+    }
+    
+    public void initGui() {
+        tapi3Frame = new JFrame("Tapi3 Demo");
+        
+        JPanel tapiPanel = new JPanel(new BorderLayout());
+        tapi3Frame.getContentPane().add(tapiPanel, BorderLayout.NORTH);
+        
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+        tapiPanel.add(inputPanel, BorderLayout.NORTH);
+        
+	    txtCalledNumber = new JTextField(16);
+		inputPanel.add(txtCalledNumber, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, 
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(40, 15, 10, 10), 0, 0));
+	    
+	    butCall = new JButton("Call");
+	    butCall.setEnabled(false);
+		inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
+		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+		        new Insets(40, 10, 10, 10), 0, 0));
+        
+        
+	    txtDTMF = new JTextField(16);
+		inputPanel.add(txtDTMF, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(10, 15, 10, 10), 0, 0));
+	    
+	    butDTMF = new JButton("DTMF");
+	    butDTMF.setEnabled(false);
+		inputPanel.add(butDTMF, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, 
+		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+		        new Insets(10, 10, 10, 10), 0, 0));
+                
+		inputPanel.add(new JPanel(), new GridBagConstraints(2, 0, 1, 2, 1.0, 1.0, 
+		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
+		        new Insets(10, 10, 10, 10), 0, 0));
+        
+        JPanel callPanel = new JPanel(new GridBagLayout());
+        tapiPanel.add(callPanel, BorderLayout.CENTER);
+        
+	    lstCalls = new JList(obsListener);
+	    callsScrollPane = new JScrollPane(lstCalls);
+	    callsScrollPane.setPreferredSize(new Dimension(480, 72));
+		callPanel.add(callsScrollPane, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(40, 15, 20, 10), 0, 0));
+	    
+	    butAnswer = new JButton("Answer");
+	    butAnswer.setEnabled(false);
+		callPanel.add(butAnswer, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(40, 10, 2, 10), 0, 0));
+
+	    butHold = new JButton("Hold");
+	    butHold.setEnabled(false);
+		callPanel.add(butHold, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(40, 10, 2, 10), 0, 0));
+		
+	    butHangUp = new JButton("Hang up");
+	    butHangUp.setEnabled(false);
+		callPanel.add(butHangUp, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(2, 10, 20, 10), 0, 0));
+		
+	    butUnHold = new JButton("UnHold");
+	    butUnHold.setEnabled(false);
+		callPanel.add(butUnHold, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+		        new Insets(2, 10, 20, 10), 0, 0));
+		
+        
+		callPanel.add(new JPanel(), new GridBagConstraints(3, 0, 1, 2, 1.0, 1.0, 
+		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
+		        new Insets(40, 10, 20, 10), 0, 0));
+        
+        JPanel tracePanel = new JPanel(new BorderLayout());
+        tracePanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        tapi3Frame.getContentPane().add(tracePanel, BorderLayout.CENTER);
+	    txtTrace = new JTextArea(16, 80);
+	    traceScrollPane = new JScrollPane(txtTrace);
+	    tracePanel.add(traceScrollPane, BorderLayout.CENTER);
+
+		butCall.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+                        try {
+                            call(getCalledNumber());
+                        } catch (Tapi3GuiException e) {
+                            logger.error(e.getMessage(), e.getCause());
+		                    new MessageBox("Call error", "Cannot call.", e).show();
+                        }
+                    }
+                }.start();
+            }
+        });
+		
+		butDTMF.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+                        try {
+                            GenericMediaService ms = new GenericMediaService((MediaProvider)provider);
+                            Terminal terminal = getSelectedTerminalConnection().getTerminal();
+                            ms.bindToTerminal(null, terminal);
+                            ms.sendSignals(txtDTMF.getText(), null, null);
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e.getCause());
+		                    new MessageBox("DTMF error", "Cannot send DTMF.", e).show();
+                        }
+                    }
+                }.start();
+            }
+        });
+		
+		butAnswer.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+                        try {
+                            TerminalConnection terminalConnection = getSelectedTerminalConnection();
+                            if(terminalConnection != null) {
+                                    terminalConnection.answer();
+                            }
+                        } catch (Exception e) {
+                            logger.error("Cannot answer.", e);
+		                    new MessageBox("Answer error", "Cannot answer.", e).show();
+                        }
+                    }
+                }.start();
+            }
+        });
+		
+		butHangUp.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+		                try {
+		                    Connection connection = getSelectedConnection();
+		                    if(connection == null) return;
+		                    logger.debug("HangUp for connection in state " + TapiUtil.getConnectionStateName(connection));
+		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
+		                    int state = TapiUtil.getTerminalConnectionState(terminalConnection);
+		                    if(state == CallControlTerminalConnection.RINGING) {
+                                terminalConnection.answer();
+                                synchronized(terminalConnection) {
+                                    terminalConnection.wait(3000);
+                                    state = TapiUtil.getTerminalConnectionState(terminalConnection);
+                                    if(state != CallControlTerminalConnection.TALKING) {
+                                        JOptionPane.showMessageDialog(tapi3Frame, "Cannot reject the call.");
+                                        return;
+                                    }
+                                }
+		                    }
+		                    Thread.sleep(500);
+	                        connection.disconnect();
+		                } catch (Exception e) {
+		                    logger.error("Cannot disconnect.", e);
+		                    new MessageBox("HangUp error", "Cannot disconnect.", e).show();
+		                }
+                    }
+                }.start();
+            }
+        });
+
+		butHold.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+		                try {
+		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
+		                    if(terminalConnection != null && terminalConnection instanceof CallControlTerminalConnection) {
+		                        CallControlTerminalConnection ccTermConn = (CallControlTerminalConnection)terminalConnection;
+		                        ccTermConn.hold();
+		                    }
+		                } catch (Exception e) {
+		                    logger.error("Cannot hold.", e);
+		                    new MessageBox("Hold error", "Cannot hold.", e).show();
+		                }
+                    }
+                }.start();
+            }
+        });
+
+		butUnHold.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+		                try {
+		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
+		                    if(terminalConnection != null && terminalConnection instanceof CallControlTerminalConnection) {
+		                        CallControlTerminalConnection ccTermConn = (CallControlTerminalConnection)terminalConnection;
+		                        ccTermConn.unhold();
+		                    }
+		                } catch (Exception e) {
+		                    logger.error("Cannot unhold.", e);
+		                    new MessageBox("Unhold error", "Cannot unhold.", e).show();
+		                }
+                    }
+                }.start();
+            }
+        });
+
+		txtCalledNumber.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updateButCall();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                updateButCall();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateButCall();
+            }            
+        });
+		
+		txtDTMF.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updateButDTMF();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                updateButDTMF();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateButDTMF();
+            }            
+        });
+		
+		lstCalls.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                updateAllControls();            
+            }
+        });
+		lstCalls.getModel().addListDataListener(new ListDataListener() {
+            public void contentsChanged(ListDataEvent e) {
+                updateSelection();
+            }
+            public void intervalAdded(ListDataEvent e) {
+                updateSelection();
+            }
+            public void intervalRemoved(ListDataEvent e) {
+            	// Nothing to do here. The SelectionListener will call updateAllControls() if needed.
+            }
+            private void updateSelection() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if(lstCalls.getModel().getSize() == 1) {
+                            lstCalls.setSelectedIndex(0);
+                        }
+                        updateAllControls();
+                    }
+                });
+            }
+        });		
+	    
+	    
+	    tapi3Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    tapi3Frame.pack();
+    }
+    
+	private void updateAllControls() {
+	    updateButCall();
+	    updateButDTMF();
+	    updateCallControls();
+	}
+	
+    private void updateButCall() {
+        int len = txtCalledNumber.getText().length();
+        boolean enabled = (len > 0);
+        enabled &= (lstCalls.getModel().getSize() == 0); 
+        butCall.setEnabled(enabled);
+    }
+    
+    private void updateButDTMF() {
+        int len = txtDTMF.getText().length();
+        boolean enabled = (len > 0);
+        TerminalConnection terminalConnection;
+		try {
+			terminalConnection = getSelectedTerminalConnection();
+		} catch (RuntimeException e) {
+            new MessageBox("DTMF error", "Cannot send digits.", e).show();
+			return;
+		}
+		int ccTermConnState = (terminalConnection != null) ? 
+                		TapiUtil.getTerminalConnectionState(terminalConnection) : CallControlTerminalConnection.UNKNOWN;        
+        butDTMF.setEnabled(enabled & ccTermConnState == CallControlTerminalConnection.TALKING);
+    }
+    
+    private void updateCallControls() {
+        Connection connection = getSelectedConnection();
+        TerminalConnection terminalConnection = getSelectedTerminalConnection();
+        int connState = (connection != null) ? connection.getState() : Connection.UNKNOWN;
+        int ccTermConnState = (terminalConnection != null) ? 
+                		TapiUtil.getTerminalConnectionState(terminalConnection) : CallControlTerminalConnection.UNKNOWN;
+        butAnswer.setEnabled(ccTermConnState == CallControlTerminalConnection.RINGING && connState == Connection.ALERTING);
+        butHangUp.setEnabled(
+                connState == Connection.CONNECTED || 
+                connState == Connection.ALERTING || 
+                connState == Connection.INPROGRESS || 
+                connState == Connection.FAILED);
+        boolean holdEnabled = (ccTermConnState == CallControlTerminalConnection.TALKING);
+        // TODO - this should be used only for swapOnHold
+        // allow hold only if there is a terminalConnection in state HELD
+        if(holdEnabled) {
+        	holdEnabled = false;
+        	for(int i=0; i<obsListener.size(); i++) {
+                if(i != lstCalls.getSelectedIndex()) {
+                    TerminalConnection heldTerminalConnection = 
+                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
+                    int currState = TapiUtil.getTerminalConnectionState(heldTerminalConnection);
+                    if(currState == CallControlTerminalConnection.HELD) {
+                    	holdEnabled = true;
+                    	break;
+                    }
+                }
+        	}
+        }
+        butHold.setEnabled(holdEnabled);
+
+        boolean unholdEnabled = (ccTermConnState == CallControlTerminalConnection.HELD);
+        // TODO - this should be used only for swapOnHold
+        // allow unhold only if there is a terminalConnection in state TALKING
+        if(unholdEnabled) {
+        	unholdEnabled = false;
+        	for(int i=0; i<obsListener.size(); i++) {
+                if(i != lstCalls.getSelectedIndex()) {
+                    TerminalConnection talkingTerminalConnection = 
+                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
+                    int currState = TapiUtil.getTerminalConnectionState(talkingTerminalConnection);
+                    if(currState == CallControlTerminalConnection.TALKING) {
+                    	unholdEnabled = true;
+                    	break;
+                    }
+                }
+        	}
+        }
+        butUnHold.setEnabled(unholdEnabled);
+    }
+    
+	private String getCalledNumber() {
+	    return txtCalledNumber.getText();
+	}
+	
+	private TerminalConnection getSelectedTerminalConnection() {
+	    TerminalConnection terminalConnection = null;
+	    CallListenerObserver.Item item = (CallListenerObserver.Item)lstCalls.getSelectedValue();
+	    if(item != null) {
+	        terminalConnection = item.getTerminalConnection();
+	    }
+	    return terminalConnection;
+	}
+	
+	private Connection getSelectedConnection() {
+	    Connection connection = null;
+	    if(obsListener.getSize() > 0) {
+		    CallListenerObserver.Item item = (CallListenerObserver.Item)lstCalls.getSelectedValue();
+		    if(item != null) {
+		        connection = item.getConnection();
+		    }
+	    }
+	    return connection;
+	}
+	
+    private void call(String toAddr) throws Tapi3GuiException {
+		try {
+            logger.debug("Attempting to create call...");
+            Call call = provider.createCall();
+            
+            logger.debug("Attempting to get terminals for an address...");
+            Terminal[] terminals = address.getTerminals();
+
+            logger.debug("Attempting to connect call...");
+            call.connect(terminals[0], address, toAddr);
+
+            logger.debug("Attempting to get call connections...");
+            Connection cons[] = call.getConnections();
+            logger.debug(" success: " + cons.length + " connections.");            
+        } catch (Exception e) {
+            throw new Tapi3GuiException("Call failed.", e);
+        }
+    }
+    
+	public void addLogEntry(final String message) {
+	    SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+        	    if(txtTrace != null && txtTrace.isShowing()) {
+        		    txtTrace.append(message);
+        	    }
+            }
+        });
+	}
+	
+    public static void main(String[] args) {
+        Tapi3Gui gui = new Tapi3Gui();
+        try {
+            gui.initTapi3();
+        } catch (Tapi3GuiException e) {
+            logger.error("", e);
+            new MessageBox("Tapi3 initialization error", "Tapi3 initialization failed.", e).show();
+            System.exit(-1);
+        }
+        gui.initGui();
+        gui.tapi3Frame.show();
+    }
+}
