@@ -122,4 +122,48 @@ private void setSignalBuffer(Symbol[] syms) {
 	if (syms != null)
 		this.sigs = SymbolHolder.create(syms);
 }
+	/* Get signals as a single String with a space character between each signal. Signals with multi-character names appear with their full name. 
+	 * For example, two Fax CALLING tones would appear as: "CNG CNG"
+	 * 
+	 * Note: Returns null if there are no signals in the event.
+	 * @return a String of DTMF Signal chars.
+	 * @see javax.telephony.media.SignalDetectorEvent#getSpacedString()
+	 */
+	public String getSpacedString() {
+		Symbol[] sigs = this.getSignalBuffer();
+		if (sigs != null) {
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < sigs.length; i++) {
+				sb.append(sigs[i].toString()).append(" ");
+			}
+			// take off last space and return
+			sb.setLength(sb.length()-1);
+			return sb.toString();
+		}
+		return null;
+	}
+
+	/*
+	 * Get signals as an array of Strings. Each signal appears as its associated String name. Signals with multi-character names appear with their full name.
+	 * This method is useful for examining Signals that are not represented by single character names. In particular, extensions to the SignalDetector may use Strings to define new signals.
+	 * 
+	 * Note: This method is for compatibility with ECTF S.100 SignalDetectors that may recognize signals for which there is no defined Symbol.
+	 * Note: When getEventID() == ev_flushBuffer and getQualifier() == q_RTC, some implementations may not return the flushed signals. In that case, this method returns null.
+	 * 
+	 * @return a String[], one String for each Signal in the event.
+	 * 
+	 * @see javax.telephony.media.SignalDetectorEvent#getStringArray()
+	 */
+	public String[] getStringArray() {
+		Symbol[] sigs = this.getSignalBuffer();
+		if (sigs != null) {
+			String[] strings = new String[sigs.length];
+			for (int i = 0; i < sigs.length; i++) {
+				strings[i] = sigs.toString();
+			}
+			return strings;
+		}
+		return new String[0];	// spec. doesn't say if we can return null
+	}
+
 }
