@@ -30,9 +30,10 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcp.*;
 import net.sourceforge.gjtapi.*;
-import jain.application.services.jcc.*;
+import net.sourceforge.gjtapi.jcc.filter.*;
+import javax.jain.services.jcc.*;
+import javax.jain.services.jcp.JcpProviderListener;
 import javax.telephony.*;
 import java.util.*;
 import java.lang.ref.WeakReference;
@@ -86,7 +87,7 @@ public Provider(GenericProvider prov) {
 /**
  * addCallListener method comment.
  */
-public void addCallListener(jain.application.services.jcc.JccCallListener cl, EventFilter filter)
+/*public void addCallListener(JccCallListener cl, EventFilter filter)
 	//throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException
 	{
 	Map listMap = this.getCallListeners();
@@ -94,9 +95,9 @@ public void addCallListener(jain.application.services.jcc.JccCallListener cl, Ev
 		// first see if we already have the listener registered.
 	CallListenerAdapter cla = (CallListenerAdapter)listMap.get(cl);
 	if (cla == null) {
-		if (cl instanceof JcpConnectionListener)
+		if (cl instanceof JccConnectionListener)
 			cla = new ConnListenerAdapter(this,
-					(JcpConnectionListener)cl,
+					(JccConnectionListener)cl,
 					filter);
 		else
 			cla = new CallListenerAdapter(this, cl, filter);
@@ -106,82 +107,77 @@ public void addCallListener(jain.application.services.jcc.JccCallListener cl, Ev
 	} else {
 		cla.setFilter(filter);
 	}
-}
+}*/
 /**
  * addCallListener method comment.
  */
-public void addCallListener(jain.application.services.jcp.JcpCallListener cl) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
+public void addCallListener(JccCallListener cl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
 	Map listMap = this.getCallListeners();
 	
 		// first see if we already have the listener registered.
 	CallListenerAdapter cla = (CallListenerAdapter)listMap.get(cl);
 	if (cla == null) {
-		if (cl instanceof JcpConnectionListener)
+		if (cl instanceof JccConnectionListener)
 			cla = new ConnListenerAdapter(this,
-					(JcpConnectionListener)cl,
+					(JccConnectionListener)cl,
 					null);
 		else
-			cla = new CallListenerAdapter(this, cl, null);
+			cla = new CallListenerAdapter(this, cl);
 
 			// now add the new adapter
 		listMap.put(cl, cla);
-	} else {
-		cla.setFilter(null);
 	}
 }
 /**
  * addCallLoadControlListener method comment.
  */
-public void addCallLoadControlListener(CallLoadControlListener clcl, EventFilter filter) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
+/*public void addCallLoadControlListener(CallLoadControlListener clcl, EventFilter filter) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
 	this.getLoadListeners().put(clcl, filter);
-}
+}*/
 /**
  * Add a CallLoadControlListener with no filter
  */
-public void addCallLoadControlListener(CallLoadControlListener clcl) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
-	this.addCallLoadControlListener(clcl, null);
+public void addCallLoadControlListener(CallLoadControlListener clcl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+	this.getLoadListeners().put(clcl, null);
 }
 /**
  * addConnectionListener method comment.
  */
-public void addConnectionListener(jain.application.services.jcc.JccConnectionListener cl, EventFilter filter) {
+public void addConnectionListener(JccConnectionListener cl, EventFilter filter) {
 	Map listMap = this.getCallListeners();
 	
 		// first see if we already have the listener registered.
 	CallListenerAdapter cla = (CallListenerAdapter)listMap.get(cl);
 	if (cla == null) {
-		if (cl instanceof JcpConnectionListener)
-			cla = new ConnListenerAdapter(this,
-					(JcpConnectionListener)cl,
+		cla = new ConnListenerAdapter(this,
+					(JccConnectionListener)cl,
 					filter);
-		else
-			cla = new CallListenerAdapter(this, cl, filter);
-
 			// now add the new adapter
 		listMap.put(cl, cla);
 	} else {
-		cla.setFilter(filter);
+		if (cla instanceof ConnListenerAdapter)
+			((ConnListenerAdapter)cla).setFilter(filter);
 	}
 }
 /**
  * addProviderListener method comment.
  */
-public void addProviderListener(jain.application.services.jcp.JcpProviderListener listener) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
-	this.addProviderListener(listener, null);
+public void addProviderListener(JccProviderListener pl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
+	this.addProviderListener((JcpProviderListener)pl);
 }
+
 /**
  * addProviderListener method comment.
  */
-public void addProviderListener(jain.application.services.jcp.JcpProviderListener pl, EventFilter filter) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
+public void addProviderListener(JcpProviderListener pl) throws javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
 	try {
 		this.getGenProv().addProviderListener(new ProviderListenerAdapter(
 			this,
-			pl,
-			filter));
+			pl));
 	} catch (javax.telephony.ResourceUnavailableException rue) {
-		throw new jain.application.services.jcp.ResourceUnavailableException(rue.getType());
+		throw new javax.jain.services.jcc.ResourceUnavailableException(rue.getType());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new jain.application.services.jcp.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
 	}
 }
 /**
@@ -227,21 +223,21 @@ public void callOverloadEncountered(FreeAddress addr) {
 /**
  * createCall method comment.
  */
-public JcpCall createCall() throws jain.application.services.jcp.InvalidStateException, jain.application.services.jcp.PrivilegeViolationException, jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
+public JccCall createCall() throws javax.jain.services.jcc.InvalidStateException, javax.jain.services.jcc.PrivilegeViolationException, javax.jain.services.jcc.MethodNotSupportedException, javax.jain.services.jcc.ResourceUnavailableException {
 	GenCall call = null;
 	try {
 		call = this.findCall((FreeCall)this.getGenProv().createCall());
 	} catch (javax.telephony.InvalidStateException ise) {
-		throw new jain.application.services.jcp.InvalidStateException(ise.getObject(),
+		throw new javax.jain.services.jcc.InvalidStateException(ise.getObject(),
 								ise.getObjectType(),
 								ise.getState(),
 								ise.getMessage());
 	} catch (javax.telephony.PrivilegeViolationException pve) {
-		throw new jain.application.services.jcp.PrivilegeViolationException(pve.getType(), pve.getMessage());
+		throw new javax.jain.services.jcc.PrivilegeViolationException(pve.getType(), pve.getMessage());
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new jain.application.services.jcp.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
 	} catch (javax.telephony.ResourceUnavailableException rue) {
-		throw new jain.application.services.jcp.ResourceUnavailableException(rue.getType());
+		throw new javax.jain.services.jcc.ResourceUnavailableException(rue.getType());
 	}
 
 		// now add any listeners
@@ -263,67 +259,67 @@ public JcpCall createCall() throws jain.application.services.jcp.InvalidStateExc
 /**
  * createEventFilterAddressRange method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws jain.application.services.jcp.ResourceUnavailableException {
+public EventFilter createEventFilterAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.AddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (jain.application.services.jcp.InvalidPartyException iae) {
-		throw new jain.application.services.jcp.ResourceUnavailableException(jain.application.services.jcp.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
+		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
  * Create a filter that uses a regular expression to look for matches.
  */
-public jain.application.services.jcc.EventFilter createEventFilterAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
+public EventFilter createEventFilterAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.AddressREFilter(addressRE, matchDisposition, nomatchDisposition);
 }
 /**
  * createEventFilterAnd method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterAnd(jain.application.services.jcc.EventFilter[] filters, int nomatchDisposition) {
+public EventFilter createEventFilterAnd(EventFilter[] filters, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.AndFilter(filters, nomatchDisposition);
 }
 /**
  * createEventFilterAddressRange method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterDestAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws jain.application.services.jcp.ResourceUnavailableException {
+public EventFilter createEventFilterDestAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.DestAddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (jain.application.services.jcp.InvalidPartyException iae) {
-		throw new jain.application.services.jcp.ResourceUnavailableException(jain.application.services.jcp.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
+		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
  * Create a filter that uses a regular expression to look for matches.
  */
-public jain.application.services.jcc.EventFilter createEventFilterDestAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
+public EventFilter createEventFilterDestAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.DestAddressREFilter(addressRE, matchDisposition, nomatchDisposition);
 }
 /**
  * createEventFilterEventSet method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterEventSet(int[] blockEvents, int[] notifyEvents) {
+public EventFilter createEventFilterEventSet(int[] blockEvents, int[] notifyEvents) {
 	return new net.sourceforge.gjtapi.jcc.filter.EventSetFilter(blockEvents, notifyEvents);
 }
 /**
  * createEventFilterOr method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterOr(jain.application.services.jcc.EventFilter[] filters, int nomatchDisposition) {
+public EventFilter createEventFilterOr(EventFilter[] filters, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.OrFilter(filters, nomatchDisposition);
 }
 /**
  * createEventFilterAddressRange method comment.
  */
-public jain.application.services.jcc.EventFilter createEventFilterOrigAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws jain.application.services.jcp.ResourceUnavailableException {
+public EventFilter createEventFilterOrigAddressRange(String lowAddress, String highAddress, int matchDisposition, int nomatchDisposition) throws javax.jain.services.jcc.ResourceUnavailableException {
 	try {
 		return new net.sourceforge.gjtapi.jcc.filter.OrigAddressRangeFilter(this.getAddress(lowAddress), this.getAddress(highAddress), matchDisposition, nomatchDisposition);
-	} catch (jain.application.services.jcp.InvalidPartyException iae) {
-		throw new jain.application.services.jcp.ResourceUnavailableException(jain.application.services.jcp.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+	} catch (javax.jain.services.jcc.InvalidPartyException iae) {
+		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcp.ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
 	}
 }
 /**
  * Create a filter that uses a regular expression to look for matches.
  */
-public jain.application.services.jcc.EventFilter createEventFilterOrigAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
+public EventFilter createEventFilterOrigAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.OrigAddressREFilter(addressRE, matchDisposition, nomatchDisposition);
 }
 
@@ -351,7 +347,7 @@ public jain.application.services.jcc.EventFilter createEventFilterOrigAddressReg
     @since 1.0a
     */
     public EventFilter createEventFilterCauseCode(int causeCode, int matchDisposition, int nomatchDisposition) {
-    	return new net.sourceforge.gjtapi.jcc.filter.CauseCodeFilter(causeCode, matchDisposition, nomatchDisposition);
+    	return new CauseCodeFilter(causeCode, matchDisposition, nomatchDisposition);
     }
 
 /**
@@ -408,12 +404,12 @@ GenConnection findConnection(FreeConnection jtapiConn) {
 /**
  * getAddress method comment.
  */
-public jain.application.services.jcp.JcpAddress getAddress(String number) throws jain.application.services.jcp.InvalidPartyException {
+public JccAddress getAddress(String number) throws javax.jain.services.jcc.InvalidPartyException {
 	try {
 		return this.findAddress((FreeAddress)this.getGenProv().getAddress(number));
 	} catch (javax.telephony.InvalidArgumentException iae) {
-		throw new jain.application.services.jcp.InvalidPartyException(
-			jain.application.services.jcp.InvalidPartyException.UNKNOWN_PARTY,
+		throw new javax.jain.services.jcc.InvalidPartyException(
+			javax.jain.services.jcc.InvalidPartyException.UNKNOWN_PARTY,
 			iae.getMessage());
 	}
 }
@@ -494,7 +490,7 @@ public int getState() {
 /**
  * removeCallListener method comment.
  */
-public void removeCallListener(jain.application.services.jcp.JcpCallListener cl) {
+public void removeCallListener(JccCallListener cl) {
 		// see if it is registered
 	Map clMap = this.getCallListeners();
 	CallListenerAdapter cla = (CallListenerAdapter)clMap.remove(cl);
@@ -515,14 +511,6 @@ public void removeCallLoadControlListener(CallLoadControlListener clcl) {
 	this.getLoadListeners().remove(clcl);
 }
 /**
- * Remove the JCP ConnectionListener.
- * 
- * @deprecated
- */
-public void removeConnectionListener(jain.application.services.jcp.JcpConnectionListener cl) {
-	this.removeCallListener(cl);
-}
-/**
  * Remove the JCC ConnectionListener.
  */
 public void removeConnectionListener(JccConnectionListener cl) {
@@ -531,16 +519,21 @@ public void removeConnectionListener(JccConnectionListener cl) {
 /**
  * removeProviderListener method comment.
  */
-public void removeProviderListener(jain.application.services.jcp.JcpProviderListener listener) {
+public void removeProviderListener(JccProviderListener listener) {
+	this.removeProviderListener((JcpProviderListener)listener);
+}
+/**
+ * removeProviderListener method comment.
+ */
+public void removeProviderListener(JcpProviderListener listener) {
 	this.getGenProv().removeProviderListener(new ProviderListenerAdapter(
 		this,
-		listener,
-		null));
+		listener));
 }
 /**
  * setCallLoadControl method comment.
  */
-public void setCallLoadControl(jain.application.services.jcc.JccAddress[] a1, double dur, double[] mech, int[] treat) throws jain.application.services.jcp.MethodNotSupportedException {
+public void setCallLoadControl(JccAddress[] a1, double dur, double[] mech, int[] treat) throws javax.jain.services.jcc.MethodNotSupportedException {
 	String low = null;
 	String high = null;
 	double adRate = 0;
@@ -565,7 +558,7 @@ public void setCallLoadControl(jain.application.services.jcc.JccAddress[] a1, do
 			interval,
 			treat);
 	} catch (javax.telephony.MethodNotSupportedException mnse) {
-		throw new jain.application.services.jcp.MethodNotSupportedException(mnse.getMessage());
+		throw new javax.jain.services.jcc.MethodNotSupportedException(mnse.getMessage());
 	}
 }
 /**
@@ -582,6 +575,75 @@ private void setGenProv(net.sourceforge.gjtapi.GenericProvider newGenProv) {
 public void shutdown() {
 	this.getGenProv().shutdown();
 }
+
+	/**
+	This method returns a standard EventFilter which is implemented by the JCC platform.
+	For all events that require filtering by this {@link EventFilter}, apply the following:
+	<ul>
+	<li>If the mid call event type and value are matched and the connection's state (e.g. returned by 
+	{@link JccConnection#getJccState()}) of the connection is {@link JccConnection#CONNECTED}, the filter 
+	returns the value matchDisposition. 
+	<li>If the mid call event type and value are not matched or the connection's state is not 
+	{@link JccConnection#CONNECTED}, then return nomatchDisposition.
+	</ul>
+	
+	@param midCallType an integer that represents the mid call type.  Valid values are defined, i.e. {@link MidCallData#SERVICE_CODE_DIGITS SERVICE_CODE_DIGITS},
+	{@link MidCallData#SERVICE_CODE_FACILITY SERVICE_CODE_FACILITY}, {@link MidCallData#SERVICE_CODE_HOOKFLASH SERVICE_CODE_HOOKFLASH}, 
+	{@link MidCallData#SERVICE_CODE_RECALL SERVICE_CODE_RECALL}, {@link MidCallData#SERVICE_CODE_U2U SERVICE_CODE_U2U}, and
+	{@link MidCallData#SERVICE_CODE_UNDEFINED SERVICE_CODE_UNDEFINED}.
+	@param midCallValue a string or regular expression that constrains the mid call value (for the purpose of this specification, the platform 
+    will use the Perl5 regular expressions).  
+	@param matchDisposition indicates the disposition of a {@link JccConnectionEvent#CONNECTION_MID_CALL}, {@link JccConnection#getMidCallData() getMidCallData()}
+	gets access to the {@link MidCallData} object. The disposition should be one of the legal
+	dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+	@param nomatchDisposition indicates the disposition of a {@link JccConnectionEvent#CONNECTION_MID_CALL}. This should be one of the legal
+	dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+	@return EventFilter standard EventFilter provided by the JCC platform to enable 
+	filtering of events based on the application's requirements.    
+	@throws ResourceUnavailableException An internal resource for completing this request is unavailable. 
+	@throws InvalidArgumentException One or more of the provided argument is not valid
+	
+	@since 1.0b
+	*/
+	public EventFilter createEventFilterMidCallEvent(int midCallType, String midCallValue, int matchDisposition, int nomatchDisposition) throws
+	javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidArgumentException {
+		//return new MidCallEventFilter(midCallType, midCallValue, matchDisposition, nomatchDisposition);
+		throw new javax.jain.services.jcc.ResourceUnavailableException(javax.jain.services.jcc.ResourceUnavailableException.UNKNOWN);
+	}
+
+    /**
+    This method returns a standard EventFilter which is implemented by the JCC platform.
+    For all events that require filtering by this {@link EventFilter}, apply the following:
+    <ul>
+    <li>If the minimum address length is matched and the connection's state (e.g. returned by {@link JccConnection#getJccState()}) of the connection is {@link JccConnection#ADDRESS_ANALYZE}, the filter returns the value matchDisposition. 
+    <li>If the minimum address length is not matched or the connection's state is not {@link JccConnection#ADDRESS_ANALYZE}, then return nomatchDisposition.
+    </ul>
+    
+    Note that applications may need to remove this filter (through 
+    {@link JccCall#removeConnectionListener(JccConnectionListener)} or 
+    {@link JccProvider#removeConnectionListener(JccConnectionListener)}) if they are notified once.  Otherwise the 
+    filter may be satisfied each time a set of digits is added to the received address and keep firing.  
+    If this is not desirable, the application needs to remove the listener as indicated above.
+    
+    @param minimumAddressLength an integer that represents a minimum address length.  
+    @param matchDisposition indicates the disposition of a {@link JccConnectionEvent#CONNECTION_ADDRESS_ANALYZE} where
+    the length of the address matches or is greater than the given minimum length. This should be one of the legal
+    dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+    @param nomatchDisposition indicates the disposition of a {@link JccConnectionEvent#CONNECTION_ADDRESS_ANALYZE} where
+    the length of the address is less than the given minimum length. This should be one of the legal
+    dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+    @return EventFilter standard EventFilter provided by the JCC platform to enable 
+    filtering of events based on the application's requirements.    
+    @throws ResourceUnavailableException An internal resource for completing this request is unavailable. 
+    @throws InvalidArgumentException One or more of the provided argument is not valid
+    
+    @since 1.0b
+    */
+    public EventFilter createEventFilterMinimunCollectedAddressLength(int minimumAddressLength, int matchDisposition, int nomatchDisposition) throws
+    javax.jain.services.jcc.ResourceUnavailableException, javax.jain.services.jcc.InvalidArgumentException {
+    	return new MinimumCollectedAddressLengthFilter(minimumAddressLength, matchDisposition, nomatchDisposition);
+    }
+
 /**
  * Describe myself.
  * @return a string representation of the receiver

@@ -173,7 +173,7 @@ public int getAddressType(java.lang.String name) {
 	if (this.jcc != null)
 		return this.jcc.getAddressType(name);
 	else
-		return jain.application.services.jcc.JccAddress.UNDEFINED;	// Can't return type
+		return javax.jain.services.jcc.JccAddress.UNDEFINED;	// Can't return type
 }
 /**
  * getCall method comment.

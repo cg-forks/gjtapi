@@ -30,8 +30,8 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
+import javax.jain.services.jcp.JcpCallListener;
 import javax.telephony.*;
 import javax.telephony.callcontrol.*;
 /**
@@ -43,27 +43,22 @@ import javax.telephony.callcontrol.*;
 public class CallListenerAdapter implements CallListener {
 	private Provider prov = null;
 	private JcpCallListener realCallListener = null;
-	private EventFilter callFilter = null;
 /**
  * EventConnectionAdapter constructor comment.
  */
 public CallListenerAdapter(Provider prov,
-			JcpCallListener listener,
-			EventFilter filter) {
+			JcpCallListener listener) {
 	super();
 
 	this.setProv(prov);
 	this.setRealCallListener(listener);
-	this.setCallFilter(filter);
 }
 /**
  * Forward the event if the filter doesn't tell me to shut the event down.
  */
 public void callActive(CallEvent event) {
-	EventFilter filter = this.getCallFilter();
 	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealCallListener().callActive(ce);
+	this.getRealCallListener().callActive(ce);
 }
 /**
  * Forward the event if the filter doesn't tell me to shut the event down.
@@ -71,27 +66,21 @@ public void callActive(CallEvent event) {
  * registered with.
  */
 void callCreated(JccCallEvent event) {
-	EventFilter filter = this.getCallFilter();
-	if ((filter == null) || (filter.getEventDisposition(event) != EventFilter.EVENT_DISCARD))
-		this.getRealCallListener().callCreated(event);
+	this.getRealCallListener().callCreated(event);
 }
 /**
  * Forward the event if the filter doesn't tell me to shut the event down.
  */
 public void callEventTransmissionEnded(CallEvent event) {
-	EventFilter filter = this.getCallFilter();
 	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealCallListener().callEventTransmissionEnded(ce);
+	this.getRealCallListener().callEventTransmissionEnded(ce);
 }
 /**
  * Forward the event if the filter doesn't tell me to shut the event down.
  */
 public void callInvalid(CallEvent event) {
-	EventFilter filter = this.getCallFilter();
 	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealCallListener().callInvalid(ce);
+	this.getRealCallListener().callInvalid(ce);
 }
 /**
  * Compares two objects for equality. Returns a boolean that indicates
@@ -108,15 +97,7 @@ public boolean equals(Object obj) {
 		return false;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:27:59)
- * @return jain.application.services.jcc.JccCallEventFilter
- */
-private jain.application.services.jcc.EventFilter getCallFilter() {
-	return callFilter;
-}
-/**
- * Insert the method's description here.
+ * Get the provider that I am attached to
  * Creation date: (2000-10-30 10:43:58)
  * @return com.uforce.jain.generic.Provider
  */
@@ -157,22 +138,6 @@ public void multiCallMetaTransferEnded(MetaEvent event) {}
  * Not supported by Jcc
  */
 public void multiCallMetaTransferStarted(MetaEvent event) {}
-/**
- * Allow my filter to be updated at runtime
- * Creation date: (2000-10-30 10:27:59)
- * @param newCallFilter jain.application.services.jcc.JccCallEventFilter
- */
-private void setCallFilter(jain.application.services.jcc.EventFilter newCallFilter) {
-	callFilter = newCallFilter;
-}
-/**
- * Allow my filter to be updated at runtime
- * Creation date: (2000-10-30 10:27:59)
- * @param newCallFilter jain.application.services.jcc.JccCallEventFilter
- */
-void setFilter(jain.application.services.jcc.EventFilter newCallFilter) {
-	this.setCallFilter(newCallFilter);
-}
 /**
  * Insert the method's description here.
  * Creation date: (2000-10-30 10:43:58)

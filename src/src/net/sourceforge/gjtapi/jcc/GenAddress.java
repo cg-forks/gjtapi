@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import jain.application.services.jcc.*;
+import javax.jain.services.jcc.*;
 /**
  * A Jain Jcc address adapter for a Generic JTAPI Address object.
  * Creation date: (2000-10-10 14:17:06)
@@ -81,7 +81,7 @@ public String getName() {
 /**
  * getProvider method comment.
  */
-public jain.application.services.jcp.JcpProvider getProvider() {
+public JccProvider getProvider() {
 	return this.provider;
 }
 /**

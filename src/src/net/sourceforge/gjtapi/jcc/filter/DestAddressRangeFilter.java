@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * This filter requires a complete ordering of values in JCPAddress. The ordering is arranged
  * by defining the order to be by JCPAddress.getName()'s string order.  For each address
@@ -49,7 +48,7 @@ public class DestAddressRangeFilter implements EventFilter {
 /**
  * AddressRangeFilter constructor comment.
  */
-public DestAddressRangeFilter(JcpAddress lowAddress, JcpAddress highAddress, int match, int noMatch) {
+public DestAddressRangeFilter(JccAddress lowAddress, JccAddress highAddress, int match, int noMatch) {
 	super();
 
 	this.setLow(lowAddress.getName());
@@ -78,19 +77,17 @@ public boolean equals(Object obj) {
 /**
  * Return the match disposition value if the event address is in the range.
  */
-public int getEventDisposition(JcpEvent e) {
-	if (e instanceof JcpCallEvent) {
-		JcpConnection[] conns = ((JcpCallEvent)e).getCall().getConnections();
+public int getEventDisposition(JccEvent e) {
+	if (e instanceof JccCallEvent) {
+		JccConnection[] conns = ((JccCallEvent)e).getCall().getConnections();
 		for (int i = 0; i < conns.length; i++) {
-			if (conns[i] instanceof JccConnection) {
-				JccConnection jc = (JccConnection)conns[i];
-				String addr = jc.getDestinationAddress();
+			JccConnection jc = (JccConnection)conns[i];
+			String addr = jc.getDestinationAddress();
 
-				if ((addr.compareTo(this.getLow()) >= 0) &&
-					(addr.compareTo(this.getHigh()) <= 0)) {
-						return this.getMatchValue();
-					}
-			}
+			if ((addr.compareTo(this.getLow()) >= 0) &&
+				(addr.compareTo(this.getHigh()) <= 0)) {
+					return this.getMatchValue();
+				}
 		}
 	}
 	return this.getNoMatchValue();

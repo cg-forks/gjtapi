@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
     For all events that require filtering by this {@link EventFilter}, apply the following:
     <ul>
@@ -75,7 +74,7 @@ public boolean equals(Object obj) {
 /**
  * Return the match disposition value if the event address is in the range.
  */
-public int getEventDisposition(JcpEvent e) {
+public int getEventDisposition(JccEvent e) {
 	if(e.getCause() == this.getCauseCode())
 		return this.getMatchValue();
 	else

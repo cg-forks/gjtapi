@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * Special purpose event for a Call created event that is not reflected in
  * JTAPI.
@@ -39,11 +38,11 @@ import jain.application.services.jcp.*;
  * @author: Richard Deadman
  */
 public class CreatedCallEvent implements JccCallEvent {
-	private JcpCall call = null;
+	private JccCall call = null;
 /**
  * CreatedCallEvent constructor comment.
  */
-public CreatedCallEvent(JcpCall c) {
+public CreatedCallEvent(JccCall c) {
 	super();
 
 	this.call = c;
@@ -51,20 +50,21 @@ public CreatedCallEvent(JcpCall c) {
 /**
  * getCall method comment.
  */
-public JcpCall getCall() {
+public JccCall getCall() {
 	return this.call;
 }
 /**
  * getCause method comment.
  */
 public int getCause() {
-	return JcpCallEvent.CALL_CREATED;
+	return JccCallEvent.CALL_CREATED;
 }
 /**
  * getID method comment.
  */
 public int getID() {
-	return JcpCallEvent.CAUSE_NEW_CALL;
+		// must use JcpCallEvent constant due to Jcc 1.0b error
+	return javax.jain.services.jcp.JcpCallEvent.CAUSE_NEW_CALL;
 }
 /**
  * getSource method comment.

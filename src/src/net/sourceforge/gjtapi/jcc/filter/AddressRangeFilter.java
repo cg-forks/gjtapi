@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * This filter requires a complete ordering of values in JCPAddress. The ordering is arranged
  * by defining the order to be by JCPAddress.getName()'s string order.  For each address
@@ -49,7 +48,7 @@ public class AddressRangeFilter implements EventFilter {
 /**
  * AddressRangeFilter constructor comment.
  */
-public AddressRangeFilter(JcpAddress lowAddress, JcpAddress highAddress, int match, int noMatch) {
+public AddressRangeFilter(JccAddress lowAddress, JccAddress highAddress, int match, int noMatch) {
 	super();
 
 	this.setLow(lowAddress.getName());
@@ -78,9 +77,9 @@ public boolean equals(Object obj) {
 /**
  * Return the match disposition value if the event address is in the range.
  */
-public int getEventDisposition(JcpEvent e) {
-	if (e instanceof JcpCallEvent) {
-		JcpConnection[] conns = ((JcpCallEvent)e).getCall().getConnections();
+public int getEventDisposition(JccEvent e) {
+	if (e instanceof JccCallEvent) {
+		JccConnection[] conns = ((JccCallEvent)e).getCall().getConnections();
 		for (int i = 0; i < conns.length; i++) {
 			String addr = conns[i].getAddress().getName();
 

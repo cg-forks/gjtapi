@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * This filter takes as input an array of EventFilters. For a given event, it applies the
  * filters in order. If a filter returns nomatchDisposition, then the next filter is
@@ -56,7 +55,7 @@ public OrFilter(EventFilter[] filters, int noMatchDisposition) {
 /**
  * getEventDisposition method comment.
  */
-public int getEventDisposition(JcpEvent e) {
+public int getEventDisposition(JccEvent e) {
 	EventFilter[] flts = this.getFilters();
 	int continueMatch = this.getNoMatch();
 	
@@ -72,7 +71,7 @@ public int getEventDisposition(JcpEvent e) {
  * Creation date: (2000-11-08 14:28:09)
  * @return jain.application.services.jcc.EventFilter[]
  */
-private jain.application.services.jcc.EventFilter[] getFilters() {
+private EventFilter[] getFilters() {
 	return filters;
 }
 /**
@@ -88,7 +87,7 @@ private int getNoMatch() {
  * Creation date: (2000-11-08 14:28:09)
  * @param newFilters jain.application.services.jcc.EventFilter[]
  */
-private void setFilters(jain.application.services.jcc.EventFilter[] newFilters) {
+private void setFilters(EventFilter[] newFilters) {
 	filters = newFilters;
 }
 /**

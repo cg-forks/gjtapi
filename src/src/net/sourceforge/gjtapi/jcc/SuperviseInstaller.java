@@ -32,14 +32,14 @@ package net.sourceforge.gjtapi.jcc;
 */
 import java.util.Set;
 import java.util.Iterator;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * This is a simple call listener that listens for idle -> active transitions on a call
  * and installs any supervisors pending for the call.
  * Creation date: (2000-11-10 14:40:49)
  * @author: Richard Deadman
  */
-class SuperviseInstaller implements JcpCallListener {
+class SuperviseInstaller implements JccCallListener {
 /**
  * SuperviseInstaller constructor comment.
  */
@@ -49,7 +49,7 @@ public SuperviseInstaller() {
 /**
  * Pop off any waiting supervisors for the call and start them.
  */
-public void callActive(JcpCallEvent event) {
+public void callActive(JccCallEvent event) {
 	Set sups = ((GenCall)event.getCall()).getWaitingSupervisors();
 	synchronized (sups) {
 		Iterator it = sups.iterator();
@@ -62,15 +62,30 @@ public void callActive(JcpCallEvent event) {
 /**
  * callcreated method comment.
  */
-public void callCreated(jain.application.services.jcp.JcpCallEvent event) {}
+public void callCreated(javax.jain.services.jcc.JccCallEvent event) {}
 /**
  * callEventTransmissionEnded method comment.
  */
-public void callEventTransmissionEnded(JcpCallEvent event) {}
+public void callEventTransmissionEnded(JccCallEvent event) {}
 /**
  * callInvalid method comment.
  */
-public void callInvalid(JcpCallEvent event) {}
+public void callInvalid(JccCallEvent event) {}
+
+    /**
+        Indicates that the supervision of the call has started.
+
+        @param callevent JccCallevent.
+    */
+    public void callSuperviseStart( JccCallEvent callevent ) {}
+
+    /**
+        Indicates that the supervision of the call has ended.
+
+        @param callevent JccCallevent.
+    */
+    public void callSuperviseEnd( JccCallEvent callevent ) {}
+
 /**
  * Describe myself.
  * @return a string representation of the receiver

@@ -30,14 +30,16 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
+import javax.jain.services.jcc.JccProviderEvent;
+import javax.jain.services.jcp.JcpProviderEvent;
 import javax.telephony.*;
 /**
  * Wrapper for a JTPAI Provider event that morphs it into a JcpProviderEvent
  * Creation date: (2000-10-30 13:23:05)
  * @author: Richard Deadman
  */
-public class GenProviderEvent implements JcpProviderEvent {
+public class GenProviderEvent implements JccProviderEvent {
 	private Provider prov = null;
 	private ProviderEvent realEvent = null;
 /**
@@ -69,6 +71,7 @@ public boolean equals(Object obj) {
 public int getCause() {
 	int jCause = this.getRealEvent().getCause();
 	switch (jCause) {
+			// Note that we must return JcpProviderEvent constants due to a Jcc 1.0b error
 		case ProviderEvent.CAUSE_CALL_CANCELLED: {
 			return JcpProviderEvent.CAUSE_CALL_CANCELLED;
 		} 
@@ -111,19 +114,19 @@ public int getID() {
 	int jId = this.getRealEvent().getID();
 	switch (jId) {
 		case ProviderEvent.PROVIDER_EVENT_TRANSMISSION_ENDED: {
-			return JcpProviderEvent.PROVIDER_EVENT_TRANSMISSION_ENDED;
+			return JccProviderEvent.PROVIDER_EVENT_TRANSMISSION_ENDED;
 		} 
 		case ProviderEvent.PROVIDER_IN_SERVICE: {
-			return JcpProviderEvent.PROVIDER_IN_SERVICE;
+			return JccProviderEvent.PROVIDER_IN_SERVICE;
 		} 
 		case ProviderEvent.PROVIDER_OUT_OF_SERVICE: {
-			return JcpProviderEvent.PROVIDER_OUT_OF_SERVICE;
+			return JccProviderEvent.PROVIDER_OUT_OF_SERVICE;
 		} 
 		case ProviderEvent.PROVIDER_SHUTDOWN: {
-			return JcpProviderEvent.PROVIDER_SHUTDOWN;
+			return JccProviderEvent.PROVIDER_SHUTDOWN;
 		} 
 		default: {
-			return JcpProviderEvent.PROVIDER_OUT_OF_SERVICE;
+			return JccProviderEvent.PROVIDER_OUT_OF_SERVICE;
 		}
 	}
 }
@@ -138,7 +141,7 @@ private Provider getProv() {
 /**
  * getProvider method comment.
  */
-public JcpProvider getProvider() {
+public JccProvider getProvider() {
 	return this.getProv();
 }
 /**

@@ -1,10 +1,10 @@
 package net.sourceforge.gjtapi.jcc;
-
+
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
-
+
 	All rights reserved. 
-
+
 	Permission is hereby granted, free of charge, to any person obtaining a 
 	copy of this software and associated documentation files (the 
 	"Software"), to deal in the Software without restriction, including 
@@ -14,7 +14,7 @@ package net.sourceforge.gjtapi.jcc;
 	copyright notice(s) and this permission notice appear in all copies of 
 	the Software and that both the above copyright notice(s) and this 
 	permission notice appear in supporting documentation. 
-
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
 	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
@@ -24,14 +24,14 @@ package net.sourceforge.gjtapi.jcc;
 	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
 	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
 	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
-
+
 	Except as contained in this notice, the name of a copyright holder 
 	shall not be used in advertising or otherwise to promote the sale, use 
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcp.*;
-import jain.application.services.jcc.*;
+import javax.jain.services.jcp.JcpProviderListener;
+import javax.jain.services.jcc.*;
 import javax.telephony.*;
 /**
  * An adapter that converts JTAPI Provider events into Jcp ProviderEvents.
@@ -41,16 +41,14 @@ import javax.telephony.*;
 public class ProviderListenerAdapter implements ProviderListener {
 	private Provider prov;
 	private JcpProviderListener realListener;
-	private EventFilter filter;
 /**
  * ProviderListenerAdapter constructor comment.
  */
-public ProviderListenerAdapter(Provider prov, JcpProviderListener listener, EventFilter filter) {
+public ProviderListenerAdapter(Provider prov, JcpProviderListener listener) {
 	super();
-
+
 	this.setProv(prov);
 	this.setRealListener(listener);
-	this.setFilter(filter);
 }
 /**
  * Compares two objects for equality. Returns a boolean that indicates
@@ -68,14 +66,6 @@ public boolean equals(Object obj) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (2001-01-24 8:21:41)
- * @return jain.application.services.jcc.EventFilter
- */
-private jain.application.services.jcc.EventFilter getFilter() {
-	return filter;
-}
-/**
- * Insert the method's description here.
  * Creation date: (2000-10-30 13:40:03)
  * @return com.uforce.jain.generic.Provider
  */
@@ -87,7 +77,7 @@ private Provider getProv() {
  * Creation date: (2000-10-30 13:40:03)
  * @return jain.application.services.jcp.JcpProviderListener
  */
-private jain.application.services.jcp.JcpProviderListener getRealListener() {
+private JcpProviderListener getRealListener() {
 	return realListener;
 }
 /**
@@ -104,45 +94,29 @@ public int hashCode() {
  * providerEventTransmissionEnded method comment.
  */
 public void providerEventTransmissionEnded(ProviderEvent event) {
-	EventFilter filter = this.getFilter();
-	JcpProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealListener().providerEventTransmissionEnded(ce);
+	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
+	this.getRealListener().providerEventTransmissionEnded(ce);
 }
 /**
  * providerEventTransmissionEnded method comment.
  */
 public void providerInService(ProviderEvent event) {
-	EventFilter filter = this.getFilter();
-	JcpProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealListener().providerInService(ce);
+	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
+	this.getRealListener().providerInService(ce);
 }
 /**
  * providerEventTransmissionEnded method comment.
  */
 public void providerOutOfService(ProviderEvent event) {
-	EventFilter filter = this.getFilter();
-	JcpProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealListener().providerOutOfService(ce);
+	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
+	this.getRealListener().providerOutOfService(ce);
 }
 /**
  * providerEventTransmissionEnded method comment.
  */
 public void providerShutdown(ProviderEvent event) {
-	EventFilter filter = this.getFilter();
-	JcpProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	if ((filter == null) || (filter.getEventDisposition(ce) != EventFilter.EVENT_DISCARD))
-		this.getRealListener().providerShutdown(ce);
-}
-/**
- * Insert the method's description here.
- * Creation date: (2001-01-24 8:21:41)
- * @param newFilter jain.application.services.jcc.EventFilter
- */
-private void setFilter(jain.application.services.jcc.EventFilter newFilter) {
-	filter = newFilter;
+	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
+	this.getRealListener().providerShutdown(ce);
 }
 /**
  * Insert the method's description here.
@@ -157,7 +131,7 @@ private void setProv(Provider newProv) {
  * Creation date: (2000-10-30 13:40:03)
  * @param newRealListener jain.application.services.jcp.JcpProviderListener
  */
-private void setRealListener(jain.application.services.jcp.JcpProviderListener newRealListener) {
+private void setRealListener(JcpProviderListener newRealListener) {
 	realListener = newRealListener;
 }
 /**

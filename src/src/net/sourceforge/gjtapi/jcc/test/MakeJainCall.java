@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.test;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcp.*;
-import jain.application.services.jcc.*;
+import javax.jain.services.jcc.*;
 /**
  * Simple test script for running a Jcc program against the emulator raw provider
  * Creation date: (2000-11-16 15:40:58)
@@ -72,9 +71,9 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 	java.io.PrintStream out = System.out;
 
 	// Get a Jain Peer
-	JcpPeer peer = null;
+	JccPeer peer = null;
 	try {
-		peer = JcpPeerFactory.getJcpPeer("net.sourceforge.gjtapi.jcc.Peer");
+		peer = JccPeerFactory.getJccPeer("net.sourceforge.gjtapi.jcc.Peer");
 		out.println("1.1: Successfully loaded the Jcp Peer");
 	} catch (ClassNotFoundException jpue) {
 		out.println("1.1: Failed to locate Peer with the factory");
@@ -119,7 +118,8 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		prompt();
 		
 		out.print("3.3: Attempting to release a call...");
-		c.release();
+			// had to use the Jcp constant due to an error in Jcc 1.0b
+		c.release(javax.jain.services.jcp.JcpCallEvent.CAUSE_NORMAL);
 		out.println(" success.");
 
 	} catch (Exception e) {

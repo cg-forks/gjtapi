@@ -30,8 +30,7 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.*;
+import javax.jain.services.jcc.*;
 /**
  * This requires a complete ordering of values in JCPAddress. The ordering is arranged by defining the order to be by JCPAddress.getName()'s string order.
 For each address in the call obtained by event.getCall(), apply the following. Obtain a string using address.getName(). If
@@ -76,17 +75,15 @@ public boolean equals(Object obj) {
 /**
  * getEventDisposition method comment.
  */
-public int getEventDisposition(JcpEvent e) {
-	if (e instanceof JcpCallEvent) {
-		JcpConnection[] conns = ((JcpCallEvent)e).getCall().getConnections();
+public int getEventDisposition(JccEvent e) {
+	if (e instanceof JccCallEvent) {
+		JccConnection[] conns = ((JccCallEvent)e).getCall().getConnections();
 		for (int i = 0; i < conns.length; i++) {
-			if (conns[i] instanceof JccConnection) {
-				JccConnection jc = (JccConnection)conns[i];
-				String addr = jc.getOriginatingAddress().getName();
+			JccConnection jc = (JccConnection)conns[i];
+			String addr = jc.getOriginatingAddress().getName();
 
-				if (this.match(this.getRegEx(), addr)) {
-					return this.getMatch();
-				}
+			if (this.match(this.getRegEx(), addr)) {
+				return this.getMatch();
 			}
 		}
 	}

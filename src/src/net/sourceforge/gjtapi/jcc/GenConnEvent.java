@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeConnection;
-import jain.application.services.jcc.*;
+import javax.jain.services.jcc.*;
 import javax.telephony.*;
 /**
  * This is a wrapper that adapts a JTAPI Connection event into a JccConnectionEvent.
@@ -53,7 +53,7 @@ public GenConnEvent(net.sourceforge.gjtapi.jcc.Provider prov, ConnectionEvent ev
 /**
  * getConnection method comment.
  */
-public jain.application.services.jcp.JcpConnection getConnection() {
+public JccConnection getConnection() {
 	return this.getProv().findConnection((FreeConnection)this.getRealEvent().getConnection());
 }
 /**

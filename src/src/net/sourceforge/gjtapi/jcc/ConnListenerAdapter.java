@@ -31,8 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeConnection;
-import jain.application.services.jcc.*;
-import jain.application.services.jcp.JcpConnectionListener;
+import javax.jain.services.jcc.*;
 import javax.telephony.*;
 import javax.telephony.callcontrol.*;
 /**
@@ -42,15 +41,15 @@ import javax.telephony.callcontrol.*;
  * @author: Richard Deadman
  */
 public class ConnListenerAdapter extends CallListenerAdapter implements ConnectionListener {
-	private JcpConnectionListener realConnectionListener = null;
+	private JccConnectionListener realConnectionListener = null;
 	private EventFilter connFilter = null;
 /**
  * EventConnectionAdapter constructor comment.
  */
 public ConnListenerAdapter(Provider prov,
-		JcpConnectionListener listener,
+		JccConnectionListener listener,
 		EventFilter filter) {
-	super(prov, listener, filter);
+	super(prov, listener);
 
 	this.setRealConnectionListener(listener);
 	this.setConnFilter(filter);
@@ -75,9 +74,7 @@ public void connectionAddressAnalyse(net.sourceforge.gjtapi.FreeConnection conn,
 	if (filter != null)
 		disposition = filter.getEventDisposition(ce);
 	if (disposition != EventFilter.EVENT_DISCARD) {
-		JcpConnectionListener cl = this.getRealConnectionListener();
-		if (cl instanceof JccConnectionListener)
-			((JccConnectionListener)cl).connectionAddressAnalyze(ce);
+		this.getRealConnectionListener().connectionAddressAnalyze(ce);
 	}
 	if (disposition == EventFilter.EVENT_BLOCK)
 		((GenConnection)ce.getConnection()).setBlocked(true);
@@ -102,9 +99,7 @@ public void connectionAddressCollect(net.sourceforge.gjtapi.FreeConnection conn,
 	if (filter != null)
 		disposition = filter.getEventDisposition(ce);
 	if (disposition != EventFilter.EVENT_DISCARD) {
-		JcpConnectionListener cl = this.getRealConnectionListener();
-		if (cl instanceof JccConnectionListener)
-			((JccConnectionListener)cl).connectionAddressCollect(ce);
+		this.getRealConnectionListener().connectionAddressCollect(ce);
 	}
 	if (disposition == EventFilter.EVENT_BLOCK)
 		((GenConnection)ce.getConnection()).setBlocked(true);
@@ -143,9 +138,7 @@ public void connectionAuthorizeCallAttempt(net.sourceforge.gjtapi.FreeConnection
 	if (filter != null)
 		disposition = filter.getEventDisposition(ce);
 	if (disposition != EventFilter.EVENT_DISCARD) {
-		JcpConnectionListener cl = this.getRealConnectionListener();
-		if (cl instanceof JccConnectionListener)
-			((JccConnectionListener)cl).connectionAuthorizeCallAttempt(ce);
+		this.getRealConnectionListener().connectionAuthorizeCallAttempt(ce);
 	}
 	if (disposition == EventFilter.EVENT_BLOCK)
 		((GenConnection)ce.getConnection()).setBlocked(true);
@@ -170,9 +163,7 @@ public void connectionCallDelivery(net.sourceforge.gjtapi.FreeConnection conn, i
 	if (filter != null)
 		disposition = filter.getEventDisposition(ce);
 	if (disposition != EventFilter.EVENT_DISCARD) {
-		JcpConnectionListener cl = this.getRealConnectionListener();
-		if (cl instanceof JccConnectionListener)
-			((JccConnectionListener)cl).connectionCallDelivery(ce);
+		this.getRealConnectionListener().connectionCallDelivery(ce);
 	}
 	if (disposition == EventFilter.EVENT_BLOCK)
 		((GenConnection)ce.getConnection()).setBlocked(true);
@@ -277,9 +268,7 @@ public void connectionSuspended(net.sourceforge.gjtapi.FreeConnection conn, int 
 	if (filter != null)
 		disposition = filter.getEventDisposition(ce);
 	if (disposition != EventFilter.EVENT_DISCARD) {
-		JcpConnectionListener cl = this.getRealConnectionListener();
-		if (cl instanceof JccConnectionListener)
-			((JccConnectionListener)cl).connectionSuspended(ce);
+		this.getRealConnectionListener().connectionSuspended(ce);
 	}
 	if (disposition == EventFilter.EVENT_BLOCK)
 		((GenConnection)ce.getConnection()).setBlocked(true);
@@ -303,7 +292,7 @@ public void connectionUnknown(ConnectionEvent event) {
  * Creation date: (2000-10-30 10:24:26)
  * @return jain.application.services.jcc.JccConnectionEventFilter
  */
-private jain.application.services.jcc.EventFilter getConnFilter() {
+private EventFilter getConnFilter() {
 	return connFilter;
 }
 /**
@@ -311,7 +300,7 @@ private jain.application.services.jcc.EventFilter getConnFilter() {
  * Creation date: (2000-10-30 10:24:26)
  * @return jain.application.services.jcc.JccConnectionListener
  */
-private jain.application.services.jcp.JcpConnectionListener getRealConnectionListener() {
+private JccConnectionListener getRealConnectionListener() {
 	return realConnectionListener;
 }
 /**
@@ -319,7 +308,7 @@ private jain.application.services.jcp.JcpConnectionListener getRealConnectionLis
  * Creation date: (2000-10-30 10:24:26)
  * @param newConnFilter jain.application.services.jcc.EventFilter
  */
-private void setConnFilter(jain.application.services.jcc.EventFilter newConnFilter) {
+private void setConnFilter(EventFilter newConnFilter) {
 	connFilter = newConnFilter;
 }
 /**
@@ -327,8 +316,7 @@ private void setConnFilter(jain.application.services.jcc.EventFilter newConnFilt
  * Creation date: (2000-10-30 10:24:26)
  * @param newConnFilter jain.application.services.jcc.EventFilter
  */
-void setFilter(jain.application.services.jcc.EventFilter newConnFilter) {
-	super.setFilter(newConnFilter);
+void setFilter(EventFilter newConnFilter) {
 	this.setConnFilter(newConnFilter);
 }
 /**
@@ -336,7 +324,7 @@ void setFilter(jain.application.services.jcc.EventFilter newConnFilter) {
  * Creation date: (2000-10-30 10:24:26)
  * @param newRealConnectionListener jain.application.services.jcp.JcpConnectionListener
  */
-private void setRealConnectionListener(jain.application.services.jcp.JcpConnectionListener newRealConnectionListener) {
+private void setRealConnectionListener(JccConnectionListener newRealConnectionListener) {
 	realConnectionListener = newRealConnectionListener;
 }
 /**

@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.jcc;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import jain.application.services.jcc.*;
+import javax.jain.services.jcc.*;
 /**
  * <P>
 The JcpPeer interface represents a vendor's particular implementation of the JCP API.
@@ -69,7 +69,7 @@ interfaces conflict with the return value of "getProvider()".
  * Creation date: (2000-10-10 12:18:48)
  * @author: Richard Deadman
  */
-public class Peer implements jain.application.services.jcp.JcpPeer {
+public class Peer implements javax.jain.services.jcc.JccPeer {
 	private GenericJtapiPeer genPeer = null;
 /**
  * Peer constructor comment.
@@ -96,7 +96,7 @@ public String getName() {
 /**
  * getProvider method comment.
  */
-public jain.application.services.jcp.JcpProvider getProvider(String providerString) throws jain.application.services.jcp.ProviderUnavailableException {
+public JccProvider getProvider(String providerString) throws ProviderUnavailableException {
 	return new Provider((GenericProvider)this.getGenPeer().getProvider(providerString));
 }
 /**

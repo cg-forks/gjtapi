@@ -30,7 +30,7 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import jain.application.services.jcc.*;
+import javax.jain.services.jcc.*;
 /**
  * Special purpose event for a Connection created event that is not reflected in JTAPI.
  * Creation date: (2000-11-15 14:34:09)
@@ -44,7 +44,7 @@ public class ExtraConnEvent extends CreatedCallEvent implements JccConnectionEve
  * Create the event.
  * @param conn The Connection I hold an event for.
  */
-public ExtraConnEvent(jain.application.services.jcc.JccConnection conn, int id, int cause) {
+public ExtraConnEvent(JccConnection conn, int id, int cause) {
 	super(conn.getCall());
 
 	this.connection = conn;
@@ -60,7 +60,7 @@ public int getCause() {
 /**
  * getConnection method comment.
  */
-public jain.application.services.jcp.JcpConnection getConnection() {
+public JccConnection getConnection() {
 	return this.connection;
 }
 /**
