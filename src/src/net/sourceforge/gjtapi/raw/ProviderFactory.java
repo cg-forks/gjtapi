@@ -33,6 +33,7 @@ package net.sourceforge.gjtapi.raw;
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
 import net.sourceforge.gjtapi.raw.*;
+import java.util.Properties;
 import javax.telephony.*;
 /**
  * This is a factory for creating a TelephonyProvider wrapper around a coreTpi implementation.
@@ -205,7 +206,9 @@ public net.sourceforge.gjtapi.CallData[] getCallsOnTerminal(String name) {
  * getCapabilities method comment.
  */
 public java.util.Properties getCapabilities() {
-	java.util.Properties props = this.core.getCapabilities();
+	Properties props = this.core.getCapabilities();
+	if (props == null)
+		props = new Properties();
 	if (this.callControl == null) {
 		props.put(Capabilities.HOLD, "f");
 		props.put(Capabilities.JOIN, "f");
