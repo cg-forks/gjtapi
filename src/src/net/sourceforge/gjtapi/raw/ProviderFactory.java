@@ -276,7 +276,7 @@ public net.sourceforge.gjtapi.TermData[] getTerminals() throws ResourceUnavailab
 	if (this.basicJtapi != null)
 		return this.basicJtapi.getTerminals();
 	else
-		return null;
+            throw new ResourceUnavailableException(ResourceUnavailableException.OBSERVER_LIMIT_EXCEEDED, "Terminal querying not supported");
 }
 /**
  * getTerminals method comment.
