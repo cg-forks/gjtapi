@@ -155,6 +155,9 @@ public GenericMediaService() throws JtapiPeerUnavailableException, ProviderUnava
 	    try {
 		    gp.createCall().connect(term, addr, dialDigits);
 	    } catch (Exception e) {
+	    	// release the MediaService, since the call failed
+	    	this.releaseAndFree();
+
 		    throw new MediaCallException("Error making call: " + e.toString());
 	    }
 	}
