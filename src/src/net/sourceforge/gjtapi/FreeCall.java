@@ -53,15 +53,15 @@ public class FreeCall implements CallControlCall, PrivateData {
 	private FreeTerminalConnection confController = null;
 	private FreeTerminalConnection transController = null;
 /**
- * Public constructor for a Call.
+ * Protected constructor for a Call.
  * Initially the call starts in the Idle state.
  * @author Richard Deadman
  **/
-public FreeCall() {
+protected FreeCall() {
 	this.listMgr = new ListenerManager(this);
 }    
 /**
- * Internal CallCreator that uses a CallData object to clesh out the call.
+ * Internal CallCreator that uses a CallData object to flesh out the call.
  * Initially the call starts in the Idle state.
  * @author Richard Deadman
  **/

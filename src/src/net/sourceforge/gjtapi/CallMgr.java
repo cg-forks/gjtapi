@@ -438,7 +438,9 @@ public String toString() {
 		sb.append("dynamcally queried");
 	else
 		sb.append("event reported");
-	return sb.append(" calls: ").append(this.getCallSet().toString()).toString();
+	return sb.append(" calls: ").append(this.getCallSet().values().toString())
+			.append(" and idle calls: ").append(this.getIdleCalls().keySet().toString())
+			.toString();
 }
 /**
  * This is called by a Call that is no longer observed or Listened to so that it will no longer be
