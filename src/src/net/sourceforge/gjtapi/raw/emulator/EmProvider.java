@@ -43,6 +43,11 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class EmProvider implements net.sourceforge.gjtapi.raw.FullJtapiTpi {
+	// property to note if I should replace properties loaded from resource file during initialization
+	public final static String REPLACE = "replace";
+	// property to note that I shoould operate headless
+	public final static String DISPLAY = "display";
+	
 	private final static String RESOURCE_NAME = "Emulator.props";
 	private final static String ADDRESS_PREFIX = "Address";
 	private static Set universe = new HashSet();	// globally accessible set of emulators
@@ -286,7 +291,7 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	// determine if we need to totally replace the current properties
 	boolean replace = false;
 	if (props != null) {
-		value = props.get("replace");
+		value = props.get(REPLACE);
 		replace = net.sourceforge.gjtapi.capabilities.Capabilities.resolve(value);
 	}
 	if (replace)
@@ -310,8 +315,8 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	// Now create an instance of the manager
 	this.setMgr(new TestManager((String[])adds.toArray(new String[0])));
 
-	// determine is a view is required
-	value = m.get("display");
+	// determine if a view is required
+	value = m.get(DISPLAY);
 	if (value instanceof String) {
 		String display = (String)value;
 		if (display != null && display.length() > 0 && Character.toLowerCase(display.charAt(0)) == 't')
@@ -580,7 +585,7 @@ public boolean stopReportingCall(CallId call) {
  * @return a string representation of the receiver
  */
 public String toString() {
-	return "A JTAPI Raw Provider for: " + this.getMgr().toString();
+	return "A JTAPI Raw Provider for: " + this.getMgr();
 }
 /**
  * Only triggers we support are for shutting down any player or recorders
