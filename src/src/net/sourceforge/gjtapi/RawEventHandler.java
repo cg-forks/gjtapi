@@ -41,6 +41,7 @@ import javax.telephony.*;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.events.Ev;
 import net.sourceforge.gjtapi.util.*;
+import net.sourceforge.gjtapi.util.ExceptionHandler;
 /**
  * This is a helper class for the GenericProvider that takes care or receiving and dispatching
  * TelephonyProvider events.
@@ -61,12 +62,17 @@ class RawEventHandler implements TelephonyListener {
 	}
 
 	// define a Synchronous Block manager for (paradoxically) processing events synchronously
-	// this is a test of synchronout event processing to see if it fixes race conditions
+	// this is a test of synchronous event processing to see if it fixes race conditions
 	private class SynchronousBlockManager extends BlockManager{
 		private GenericProvider prov;
+		//private ExceptionHandler exHandler = null;
 
 		SynchronousBlockManager(GenericProvider gp) {
-			super(null);	// we don't need an exception handler
+			this(gp, new NullExceptionHandler());
+		}
+		
+		SynchronousBlockManager(GenericProvider gp, ExceptionHandler exh) {
+			super(exh);
 
 			this.prov = gp;
 		}
@@ -82,7 +88,14 @@ class RawEventHandler implements TelephonyListener {
 		 * @param eh The EventHandler to process
 		 */
 		public void put(EventHandler eh) {
-			eh.process(this.getGenProvider());
+			try {
+				eh.process(this.getGenProvider());
+			} catch (RuntimeException ex) {
+				ExceptionHandler exh = this.exHandler;
+				if (exh != null)
+					// handle the exception
+					exh.handleException(eh, ex, this.getGenProvider());
+			}
 		}
 	}
 		// incoming raw provider event queue
