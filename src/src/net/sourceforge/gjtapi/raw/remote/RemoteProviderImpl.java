@@ -184,9 +184,10 @@ public int getAddressType(java.lang.String name) throws java.rmi.RemoteException
 public CallData getCall(CallId id) throws RemoteException  {
 	TelephonyProvider rp = this.getDelegate();
 	
-	if (rp != null)
-		return rp.getCall(id);
-	else
+	if (rp != null) {
+		CallData cd = rp.getCall(id);
+		return new CallData(this.getRefMapper().swapId(cd.id), cd.callState, cd.connections);
+	}else
 		throw new RemoteException();
 }
 /**
@@ -205,7 +206,7 @@ public net.sourceforge.gjtapi.CallData[] getCallsOnAddress(java.lang.String numb
 	TelephonyProvider rp = this.getDelegate();
 	
 	if (rp != null)
-		return rp.getCallsOnAddress(number);
+		return this.toSerialCallData(rp.getCallsOnAddress(number));
 	else
 		throw new RemoteException();
 }
@@ -215,11 +216,26 @@ public net.sourceforge.gjtapi.CallData[] getCallsOnAddress(java.lang.String numb
 public CallData[] getCallsOnTerminal(String name) throws RemoteException  {
 	TelephonyProvider rp = this.getDelegate();
 	
-	if (rp != null)
-		return rp.getCallsOnTerminal(name);
-	else
+	if (rp != null) {
+		return this.toSerialCallData(rp.getCallsOnTerminal(name));
+	} else
 		throw new RemoteException();
 }
+
+/**
+ * Helper method to turn an array of CallData objects into a Serialized version. * @param cds The CallData objects to make serializable * @return CallData[] A clone with the internal CallIds replaced with their SerializableCallIds. */
+private CallData[] toSerialCallData(CallData[] cds) {
+	if (cds == null)
+		return null;
+	int len = cds.length;
+	CallData[] newCds = new CallData[len];
+	for (int i = 0; i < len; i++) {
+		CallData cd = cds[i];
+		newCds[i] = new CallData(this.getRefMapper().swapId(cd.id), cd.callState, cd.connections);
+	}
+	return newCds;
+}
+
 /**
  * getCapabilities method comment.
  */
@@ -241,14 +257,14 @@ protected TelephonyProvider getDelegate() {
 	return delegate;
 }
 /**
- * getDialledDigits method comment.
+ * Return the dialed digits for a connection identified by a CallId and address.
  */
-public java.lang.String getDialledDigits(SerializableCallId id, java.lang.String address) throws java.rmi.RemoteException {
+public String getDialledDigits(SerializableCallId id, String address) throws java.rmi.RemoteException {
 
 	return this.getDelegate().getDialledDigits(this.getProvCall(id), address);
 }
 /**
- * Forward to real TPI Provider.
+ * Forward privateData access call to real TPI Provider.
  */
 public Serializable getPrivateData(CallId call, String address, String terminal) throws NotSerializableException, RemoteException {
 	TelephonyProvider rp = this.getDelegate();
