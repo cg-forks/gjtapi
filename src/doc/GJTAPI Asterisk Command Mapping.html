@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>GJTAPI Asterisk Command Mapping</title>
+</head>
+<body>
+<div style="text-align: center;">
+<h1>GJTAPI Asterisk Mapping</h1>
+March 31, 2005<br>
+<hr style="width: 80%; height: 2px;">
+<div style="text-align: left; margin-left: 40px;">
+<h2>Executive Summary</h2>
+This document serves as a basic architecture and design document for
+mapping the GJTAPI Service Provider interface into available Asterisk
+API calls and protocols. The intention is to provide full JTAPI support
+for the Asterisk open-source VoIP PBX under the X11 open-source
+licence. In addition JAIN JCC and JAIN Jcat support will also be
+forthcoming.<br>
+<br>
+In the spirit of releasing early and gathering developer interest and
+support, the development of the Asterisk GJTAPI service provider will
+proceed from basic capabilities to more advanced functions. For the
+first major milestone, only basic JTAPI support will be provided.<br>
+<h2>Table of Contents</h2>
+<h2>History</h2>
+GJTAPI is an open-source Java Telephony framework that supports three
+Java telephony standards:<br>
+<ol>
+  <li>JTAPI. Currently JTAPI 1.3.1 is supported, although a branch to
+support JTAPI 1.4 has had a significant amount of work done on it.</li>
+  <li>JAIN JCC 2.1. This is a JCP JSR that supports basic call control
+functionality targetted at the network telephony providers</li>
+  <li>JAIN JCAT. This is a JCP JSR for providing coordination and
+transaction control of telephony calls (such as applications invoked on
+calls), targetted at the network telephony providers.</li>
+</ol>
+In order to support the three standards as well as the multiple
+packages within JTAPI itself (GJTAPI supports base, callcontrol, media
+(1.2 and 1.3) and privatedata), while simplifying the development of
+the GJTAPI service providers, GJTAPI defines a hierarchy of interfaces
+that a service provider may implement. So, for instance, implementing
+the interface "BasicJtapiTpi" provides enough functionality to support
+the core JTAPI package.<br>
+<h2>Introduction</h2>
+The purpose of this document is to outline how GJTAPI service provider
+methods and events will be mapped to Asterisk protocols such as IAX,
+FastAGI and ManagerAPI. It is intended to be a living document and to
+take input from developers as they develop certain components.<br>
+<br>
+<span style="font-weight: bold;">Please do not edit this in Word or
+some other word processor that pollutes the HTML with a lot of style
+cruft.</span><br>
+<h3>Asterisk Protocols</h3>
+<div style="margin-left: 40px;">
+<h4>IAX</h4>
+<h4>FastAGI</h4>
+<h4>ManagerAPI</h4>
+</div>
+<h2>Implementation Plan</h2>
+<ol>
+  <li>Implement BasicJtapiTpi. This allows us to set up the provider,
+register listeners, create calls, release calls, get Addresses and get
+Terminals.<br>
+  </li>
+  <li>Implement CCTpi. Provides support for <span
+ style="font-weight: bold;">Hold, Unhold and Join</span>.</li>
+  <li>Implement MediaTpi. Supports <span style="font-weight: bold;">playing
+sounds, recording sounds, generating signals, retrieving signals</span>.</li>
+  <li>JccTpi. Support <span style="font-weight: bold;">JAIN JCC</span></li>
+  <li>JcatTpi. Supports basic Jcc requirements of <span
+ style="font-weight: bold;">beeping, attaching media, setting load
+control, getting address types and getting dialled digits.</span><br>
+  </li>
+  <li>ThrottleTpi. Supports Jcat requirements of <span
+ style="font-weight: bold;">suspending and reconnecting calls,
+registering and unregistering addresses, and managing terminal text.<br>
+    </span></li>
+</ol>
+<h2>Domain Models</h2>
+What do an Address, Terminal and Call map to in Asterisk<br>
+<h3>Address</h3>
+<div style="margin-left: 40px;">This is probably fairly trivial. It is
+just a number that can be associated with an Asterisk end-point.<br>
+</div>
+<h3>Terminal</h3>
+<h3>Call</h3>
+<h2>Service Provider Mappings</h2>
+<h3>Step 1<br>
+</h3>
+To start, we need to support five things:<br>
+<ol>
+  <li>Initialization. Do we use initialize(Map) entries to define which
+Asterisk machine to connect to, with user name and password?<br>
+  </li>
+  <li>getAddresses(). How do we find all the Addresses in the Asterisk
+Domain?</li>
+  <li>getTerminals().</li>
+  <li>reserveCallId() and createCall(). How do we instantiate and place
+a new call?<br>
+  </li>
+  <li>answerCall(). How do we tell a call to be answered? What does
+this mean?<br>
+  </li>
+  <li>release(). Can we shut down the leg of a call? Using what API?<br>
+  </li>
+  <li>Monitor events and event translation. How do we track a call's
+state. It would be nice to get caller id information as well.<br>
+  </li>
+</ol>
+<h2>Future Work</h2>
+<hr style="width: 80%; height: 2px;">
+<div style="text-align: center;">&copy; 2005, GJTAPI Project Team<br>
+</div>
+</div>
+</div>
+</body>
+</html>
