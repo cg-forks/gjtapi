@@ -128,12 +128,12 @@ public void answer() {
 	// unblock
 	this.continueProcessing();
 
-	TerminalConnection[] tcs = (TerminalConnection[])this.getFrameConn().getTerminalConnections();
+	TerminalConnection[] tcs = this.getFrameConn().getTerminalConnections();
 	if (tcs.length > 0)
 		try {
 			tcs[0].answer();
 		} catch (Exception e) {
-			throw new RuntimeException("Could not answer do to " + e);
+			throw new RuntimeException("Could not answer due to " + e);
 		}
 }
 /**
