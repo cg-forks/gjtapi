@@ -232,16 +232,17 @@ public net.sourceforge.gjtapi.media.SymbolHolder[] getSigs() {
 	return sigs;
 }
 /**
- * Insert the method's description here.
+ * Get the name of the terminal that this signal was detected on.
  * Creation date: (2000-08-25 1:09:33)
  * @author: Richard Deadman
  * @return java.lang.String
  */
-public java.lang.String getTerminal() {
+public String getTerminal() {
 	return terminal;
 }
 /**
- * Insert the method's description here.
+ * Get a holder for the RTC symbol that triggered the
+ * signal detection event.
  * Creation date: (2000-08-25 1:09:33)
  * @author: Richard Deadman
  * @return net.sourceforge.gjtapi.media.SymbolHolder
