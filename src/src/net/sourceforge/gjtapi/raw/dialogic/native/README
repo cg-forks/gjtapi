@@ -4,10 +4,10 @@ Dialogic (an Intel company)'s GlobalCall API.
 What you need to have to use it:
     1) A working Dialogic configuration. There is no point in
 trying to use it if the Dialogic GlobalCall demos don't work.
-    2) JTAPI/JAIN/GJTAPI 
+    2) JTAPI(/JAIN/)GJTAPI 
     3) This code
     4) Java 1.41
-    6) gcc(linux) or VC 6.0(Windows) to build the shared library
+    6) gcc(linux) or VC 6.0(Windows) if you want to build the shared library
 
 I've updated the net.sourceforge.gjtapi.test.TestCallListener so
 that it takes a provider as an argument. It also waits 'till
@@ -16,6 +16,34 @@ its phases.
 
 
 I've only used it on RedHat 7.2 and WindowsNT with DNA 5.1 
+
+If you take the binary release, here's how to use it:
+1) download the gjtapi-1.6.jar from sourceforge
+2) use jar or unzip to extract the shared library for your platform
+	 (unix)$ jar -xvf gjtapi-1.6.jar DialogicGC.props lib/libgcprovider.so
+or
+	(windows) jar -xvf gjtapi-1.6.jar DialogicGC.props lib/gcprovider.dll
+
+3) edit the DialogicGC.props to reflect your setup.
+You need to edit the Addresse lines to the 'local' phone
+numbers you have, and the Device lines to the appropriate dialogic devices
+present in your system. On windows you _must_ set SigMode to f
+on Linux you can set it to either t or f
+(I'm still working out which is better)
+4) run the test program.
+On Linux this looks like:
+ . /usr/dialogic/bin/setenv.sh      
+LD_PRELOAD=`pwd`/lib/libgcprovider.so export LD_PRELOAD
+LD_LIBRARY_PATH=`pwd`/lib export  LD_LIBRARY_PATH
+java -classpath .:lib/jtapi131.jar:lib/gjtapi-1.6.jar net.sourceforge.gjtapi.test.TestCallListener DialogicGC 1 2
+
+on Windows it looks like :
+set PATH=C:gjtapi\lib;%PATH%
+java -classpath .:lib\jtapi131.jar:lib\gjtapi-1.6.jar net.sourceforge.gjtapi.test.TestCallListener DialogicGC 1 2
+
+(Substitute 1 with one of the Addresses from the .props file and 2 with
+the number you want the test prog to dial). 
+
 
 Caveats:
    1) it doesn't do media -yet- I need a week or two to get that
@@ -29,7 +57,7 @@ text to stdout - we need to make that smarter.
    5) My ISDN supplier doesn't bind telephone numbers to channels,
 so the provider reports all numbers on all terminals (and vica versa)
 
-How to use it:
+How to rebuild  it from source:
    Compile the lot.
    edit the DialogicGC.props file to describe the Dialogic
 devices you have, and the telephone numbers you have.
@@ -39,9 +67,6 @@ devices you have, and the telephone numbers you have.
       Make the .so
       edit the testjtcall script to reflect your numbers
       run it.
-
-We've included a dll and a .so in the 'binary' release so 
-people can play without needing to build the source.
 
 tpanton@users.sourceforge.net
    
