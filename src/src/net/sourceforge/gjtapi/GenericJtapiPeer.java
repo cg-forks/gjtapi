@@ -307,6 +307,12 @@ private String[] split(String line) {
  * Find a resource. All resources used to be only looked up on the
  * classpath in the base "package", but this method refactores the
  * search so that it can also use an environment variable.
+ * <P>The algorithm looks for the named resource
+ * <ol>
+ * <li>In the directory specified by the net.sourceforge.gjtapi.resourceDir
+ * <li>In the application's current working directory
+ * <li>In the classloader base package.
+ * </ul>
  * @param resourceName The name of the resource that we want to find
  * @return An InputStream for reading the resource, or null if none is found
  * @author rdeadman
@@ -325,7 +331,17 @@ private InputStream findResource(String resourceName) {
 			}
 		}
 	}
-	// we didn't find the resource in the resource directory
+	// it wasn't on the Resource_Dir path, let's check the current working directory
+	File resource = new File(System.getProperty("user.dir") + File.separator + resourceName);
+	if (resource.exists() && resource.isFile()) {
+	try {
+		return new FileInputStream(resource);
+	} catch (FileNotFoundException fnfe) {
+		// should never get here unless the resource is not readable -- let the class loader look for it then
+		}
+	}
+
+	// we didn't find the resource in the resource directory or the working directory
 	// now let's check the classpath
 	return this.getClass().getResourceAsStream("/" + resourceName);
 }
