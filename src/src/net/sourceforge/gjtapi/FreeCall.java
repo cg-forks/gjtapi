@@ -300,8 +300,10 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 
 	// create two connections - they add themselves back to me
 	Connection[] connSet = new Connection[2];
-	connSet[0] = new FreeConnection(this, (FreeAddress) origaddr);
-	connSet[1] = new FreeConnection(this, dialedDigits);
+	FreeConnection origConn = new FreeConnection(this, (FreeAddress) origaddr);
+	FreeConnection destConn = new FreeConnection(this, dialedDigits);
+	connSet[0] = origConn;
+	connSet[1] = destConn;
 
 	// tell the service provider to hook up the connections
 	try {
@@ -310,8 +312,15 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 		throw rse.morph((GenericProvider)this.getProvider());
 	}
 
-	// change the call state - do we need this?
-	//this.setState(Call.ACTIVE, Event.CAUSE_NEW_CALL);
+	// change the call state - even though an event will do this
+	this.toActive(Event.CAUSE_NEW_CALL);
+	
+	// ensure the origination Connection is in the right initial state
+	origConn.toConnected(Event.CAUSE_NEW_CALL);
+	new FreeTerminalConnection(origConn, origterm).toTalking(Event.CAUSE_NEW_CALL);
+	
+	// Now ensure the destination Connection is in the INPROGRESS state (no TerminalConnections yet)
+	destConn.toInProgress(Event.CAUSE_NEW_CALL);
 
 	//return getConnections();	// this method does not guarantee that they will be in the right order
 	return connSet;
@@ -870,10 +879,13 @@ private void stopReporting() {
  * @author: Richard
  */
 void toActive(int cause) {
-	this.setState(Call.ACTIVE);
-	
-	// notify any listeners
-	this.getGenProvider().dispatch(new FreeCallActiveEv(cause, this));
+	// only process once
+	if (this.getState() == Call.IDLE) {
+		this.setState(Call.ACTIVE);
+		
+		// notify any listeners
+		this.getGenProvider().dispatch(new FreeCallActiveEv(cause, this));
+	}
 }
 /**
  * Defines the actions to be taken when the Call moves to the Invalid state.
