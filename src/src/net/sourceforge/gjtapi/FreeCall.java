@@ -488,8 +488,10 @@ public boolean getConferenceEnable() {
   public Connection[] getConnections() {
 	Connection[] ret = null;
 	synchronized (connections) {
-		ret = new Connection[connections.size()];
-		connections.values().toArray(ret);
+		if ( ! connections.isEmpty() ) {
+                    ret = new Connection[connections.size()];
+                    connections.values().toArray(ret);
+                }
 	}
 	return ret;
   }              
