@@ -216,7 +216,12 @@ public Call[] getCalls() throws ResourceUnavailableException {
 			"The TelephonyProvider does not support querying the full call set");
 
 		// otherwise turn the known call set into an array of Call objects
-	return cm.toArray();
+	Call[] calls = cm.toArray();
+	
+		// check if the array is empty
+	if (calls.length == 0)
+		return null;
+    return calls;
 }
 /**
  * getCapabilities method comment.
