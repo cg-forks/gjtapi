@@ -1,33 +1,33 @@
 package net.sourceforge.gjtapi.test;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 8x8 Inc. (www.8x8.com)
 
-	All rights reserved. 
+	All rights reserved.
 
-	Permission is hereby granted, free of charge, to any person obtaining a 
-	copy of this software and associated documentation files (the 
-	"Software"), to deal in the Software without restriction, including 
-	without limitation the rights to use, copy, modify, merge, publish, 
-	distribute, and/or sell copies of the Software, and to permit persons 
-	to whom the Software is furnished to do so, provided that the above 
-	copyright notice(s) and this permission notice appear in all copies of 
-	the Software and that both the above copyright notice(s) and this 
-	permission notice appear in supporting documentation. 
+	Permission is hereby granted, free of charge, to any person obtaining a
+	copy of this software and associated documentation files (the
+	"Software"), to deal in the Software without restriction, including
+	without limitation the rights to use, copy, modify, merge, publish,
+	distribute, and/or sell copies of the Software, and to permit persons
+	to whom the Software is furnished to do so, provided that the above
+	copyright notice(s) and this permission notice appear in all copies of
+	the Software and that both the above copyright notice(s) and this
+	permission notice appear in supporting documentation.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
-	OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
-	HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL 
-	INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING 
-	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
-	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
-	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+	OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+	HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL
+	INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING
+	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-	Except as contained in this notice, the name of a copyright holder 
-	shall not be used in advertising or otherwise to promote the sale, use 
-	or other dealings in this Software without prior written authorization 
+	Except as contained in this notice, the name of a copyright holder
+	shall not be used in advertising or otherwise to promote the sale, use
+	or other dealings in this Software without prior written authorization
 	of the copyright holder.
 */
 import javax.telephony.media.*;
@@ -84,7 +84,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		pue.printStackTrace();
 		System.exit(1);
 	}
-	
+
 	try {
 		// Load the Terminal
 		out.print("2.1: Attempting to get address...");
@@ -95,7 +95,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		out.print("2.3: Attempting to create call...");
 		Call c = prov.createCall();
 		out.println(" success.");
-		
+
 		out.print("4.3: Attempting to get terminals for an address...");
 		Terminal[] ts = addr.getTerminals();
 		out.println(" success.");
@@ -121,8 +121,8 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		out.println(" success.");
 
 		// find the outgoing terminal
-		out.print("2.4: Attempting to get a Terminal by name...");
-		Terminal t = prov.getTerminal(fromAddr);
+		out.print("2.4b: Using first terminal on from address...");
+		Terminal t = ts[0];
 		out.println(" success.");
 
 		// bind the media service
@@ -154,7 +154,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		out.print("13.8: Attempting to release a Media Service...");
 		ms.release();
 		out.println(" success.");
-	
+
 	} catch (Exception e) {
 		out.println(" failure: " + e);
 		e.printStackTrace();
