@@ -49,9 +49,9 @@ import net.sourceforge.gjtapi.raw.BasicJtapiTpi;
 
 public class GCProvider implements BasicJtapiTpi, Runnable {
     
-    boolean polling = false;
+    boolean polling = true;
     boolean done = true;
-    private int debug_level =0;
+    int debug_level =0;
     Thread eventThread;
     
     public GCProvider() {
@@ -396,6 +396,18 @@ public class GCProvider implements BasicJtapiTpi, Runnable {
             GCTermData gct = new GCTermData(devname,false);
             devs.add(gct);
         }
+    }
+    String deb =(String) p.get("Debug");
+    if(deb != null){
+      try {
+        debug_level = Integer.parseInt(deb);
+      } catch (NumberFormatException nfx){
+        ;// drop it.
+      }
+    }
+    String sig = (String) p.get("SigMode");
+    if ((sig != null) && (sig.startsWith("t"))){
+        this.polling = false;
     }
     addresses = new String[addrs.size()];
     for (int i=0;i<addresses.length;i++){

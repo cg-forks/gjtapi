@@ -179,8 +179,7 @@ void createCall(JNIEnv *env,CRN crn,LINEDEV ldev,char *destaddr,char *origaddr){
 void pushCallInfo(JNIEnv *env,int crn){
     char destaddr[50];
     char origaddr[50];
-    jstring jdestaddr;
-    jstring jorigaddr;
+
     LINEDEV ldev;
     
     ldev = 0;
@@ -249,7 +248,6 @@ long handleEvent() {
     struct eventData ev;
     int a =0;
     jint arg;
-    char *evtxt;
     jmethodID handleEventID = NULL;
     
     
@@ -295,17 +293,17 @@ throw(JNIEnv *env, char * which, char *what)
     char errbuf[128];
 
    newExcCls = (*env)->FindClass(env, which);
-   if (newExcCls == 0)  return 0;
-   sprintf(errbuf, what);
-   (*env)->ThrowNew(env, newExcCls, errbuf);
+   if (newExcCls != 0)  {
+		sprintf(errbuf, what);
+		(*env)->ThrowNew(env, newExcCls, errbuf);
+   }
+   return 0;
 }
 
 
 
 int gcinit( JNIEnv *env , jobject obj)  
-{  
-    GC_START_STRUCT gclib_start;     /* Structure for gc_Start( ) */  
-    int            cclibid;          /* cclib id for gc_ErrorValue( ) */  
+{   
     int            gc_error;         /* GlobalCall error code */  
     long           cc_error;         /* Call Control Library error code */   
     char           *msg;             /* points to the error message string */
@@ -363,7 +361,6 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_dialogic_GCProvider_gc_1O
     int ret;
     int mode = EV_ASYNC;
     char *name;
-    char *nname;
     LINEDEV line = -1;
     
     name =(char *) (*env)->GetStringUTFChars(env, Sline, 0);
@@ -394,15 +391,17 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_dialogic_GCProvider_gc_1O
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_dialogic_GCProvider_srlibinit
   (JNIEnv *env , jobject obj, jboolean poll)
 {
-    int nvm, gotvm;
+    int gotvm;
     int par,ret ;
 
-
+	ret = 0;
+#ifndef WIN32
     /* Reference symbols to get them loaded  - pulls in LiS */
     if (0) {
         getpmsg(0);
         putpmsg(0);
     }
+#endif
     
     gotvm = (*env)->GetJavaVM(env, &vm);
     if (gotvm < 0) {

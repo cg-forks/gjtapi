@@ -7,7 +7,7 @@ trying to use it if the Dialogic GlobalCall demos don't work.
     2) JTAPI/JAIN/GJTAPI 
     3) This code
     4) Java 1.41
-    5) gcc (etc) to build the shared library
+    6) gcc(linux) or VC 6.0(Windows) to build the shared library
 
 I've updated the net.sourceforge.gjtapi.test.TestCallListener so
 that it takes a provider as an argument. It also waits 'till
@@ -15,7 +15,7 @@ the user hits return so as to allow the call to go through all
 its phases.
 
 
-I've only used it on RedHat 7.2 with DNA 5.1
+I've only used it on RedHat 7.2 and WindowsNT with DNA 5.1 
 
 Caveats:
    1) it doesn't do media -yet- I need a week or two to get that
@@ -35,9 +35,13 @@ How to use it:
 devices you have, and the telephone numbers you have.
    In net/sourceforge/gjtapi/raw/dialogic/native:
       Edit the makefile to reflect your paths
+(Vc++ users you'll have to make your own project)
       Make the .so
       edit the testjtcall script to reflect your numbers
       run it.
+
+We've included a dll and a .so in the 'binary' release so 
+people can play without needing to build the source.
 
 tpanton@users.sourceforge.net
    
