@@ -455,7 +455,14 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				int handle = realProvider.XTOpenLine(i, termName);
 			
 				// populate the Address and Terminal information
-				String term = termName.toString();
+				/*
+				 * If TAPI does not store line information for
+				 * several lines, then we have multiple "" terminals
+				 * that cause incorrect terminal-address mapping.
+				 * The solution is to prepend the terminal name
+				 * with its line number.
+				 */
+				String term = ADDR_PREFIX + i + ":" + termName.toString();
 				AddressInfo addInfo = new AddressInfo(i, term, handle);
 				this.addInfoMap.put(ADDR_PREFIX + i, addInfo);
 				
