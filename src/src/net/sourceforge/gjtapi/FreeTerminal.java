@@ -362,13 +362,17 @@ public TerminalConnection[] getTerminalConnections() {
 
 	// now dereference all my TerminalConnections
 	synchronized (terminalConnections) {
-		ret = new TerminalConnection[terminalConnections.size()];
-		Iterator it = terminalConnections.iterator();
-		int i = 0;
-		while (it.hasNext()) {
-			ret[i] = ((TCHolder) it.next()).getTerminalConnection();
-			i++;
-		}
+            ret = new TerminalConnection[terminalConnections.size()];
+            // check if the array is empty
+            if (ret.length == 0) {
+                return null;
+            }
+            Iterator it = terminalConnections.iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                ret[i] = ((TCHolder) it.next()).getTerminalConnection();
+                i++;
+            }
 	}
 	return ret;
 }
