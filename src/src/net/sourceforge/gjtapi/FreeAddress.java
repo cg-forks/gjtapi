@@ -281,13 +281,17 @@ public Connection[] getConnections() {
 
 	// now dereference all my Connections
 	synchronized (connections) {
-		ret = new Connection[connections.size()];
-		Iterator it = connections.iterator();
-		int i = 0;
-		while (it.hasNext()) {
-			ret[i] = ((ConnectionHolder) it.next()).getConnection();
-			i++;
-		}
+            ret = new Connection[connections.size()];
+            // check if the array is empty
+            if (ret.length == 0) {
+                return null;
+            }
+            Iterator it = connections.iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                ret[i] = ((ConnectionHolder) it.next()).getConnection();
+                i++;
+            }
 	}
 	return ret;
 }
