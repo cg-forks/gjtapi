@@ -6,9 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.telephony.Address;
-import javax.telephony.Call;
-import javax.telephony.Connection;
 import javax.telephony.Event;
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
@@ -17,15 +14,6 @@ import javax.telephony.MethodNotSupportedException;
 import javax.telephony.PrivilegeViolationException;
 import javax.telephony.ProviderUnavailableException;
 import javax.telephony.ResourceUnavailableException;
-import javax.telephony.Terminal;
-import javax.telephony.TerminalConnection;
-import javax.telephony.events.ConnAlertingEv;
-import javax.telephony.events.ConnConnectedEv;
-import javax.telephony.events.ConnDisconnectedEv;
-import javax.telephony.events.ConnInProgressEv;
-import javax.telephony.events.TermConnActiveEv;
-import javax.telephony.events.TermConnDroppedEv;
-import javax.telephony.events.TermConnRingingEv;
 import javax.telephony.media.MediaResourceException;
 import javax.telephony.media.PlayerConstants;
 import javax.telephony.media.RTC;
@@ -33,17 +21,11 @@ import javax.telephony.media.RecorderConstants;
 import javax.telephony.media.SignalDetectorConstants;
 import javax.telephony.media.Symbol;
 import net.sourceforge.gjtapi.CallId;
-import net.sourceforge.gjtapi.FreeAddress;
-import net.sourceforge.gjtapi.FreeCall;
-import net.sourceforge.gjtapi.FreeConnection;
-import net.sourceforge.gjtapi.FreeTerminal;
-import net.sourceforge.gjtapi.FreeTerminalConnection;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
 import net.sourceforge.gjtapi.RawStateException;
 import net.sourceforge.gjtapi.TelephonyListener;
 import net.sourceforge.gjtapi.TermData;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
-import net.sourceforge.gjtapi.media.FreeMediaTerminalConnection;
 import net.sourceforge.gjtapi.media.SymbolConvertor;
 import net.sourceforge.gjtapi.raw.MediaTpi;
 
@@ -97,6 +79,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		// initially not set.
 		private int callNum = -1;
 		
+		// the local address of the call
+		private String localAddress = null;
+		
+		// the remote address of the call, if known
+		private String remoteAddress = null;
 		public XtapiCallId() {
 			super();
 		}
@@ -137,6 +124,34 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		}
 		*/
 		
+		/**
+		 * @return
+		 */
+		public String getLocalAddress() {
+			return localAddress;
+		}
+
+		/**
+		 * @return
+		 */
+		public String getRemoteAddress() {
+			return remoteAddress;
+		}
+
+		/**
+		 * @param string
+		 */
+		public void setLocalAddress(String string) {
+			localAddress = string;
+		}
+
+		/**
+		 * @param string
+		 */
+		public void setRemoteAddress(String string) {
+			remoteAddress = string;
+		}
+
 	}
 	
 	/**
@@ -222,17 +237,20 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	 * Map of line ids to CallHandles
 	 */
 	private Map lineToCalls = new HashMap();
-
+	
 	/**
-	 * The last remote call number
+	 * map call handles to calls
 	 */
+	private Map callNumToCalls = new HashMap();
+	
+	// now hold onto the last remote number and name reported
+	private String remoteName = null;
 	private String remoteNumber = null;
 	
-	/**
-	 * The last remote call name
-	 */
-	private String remoteName = null;
-	
+	// The digit buckets to record digits for various terminals
+	// This contains a Map of Terminal names to digit StringBuffers.
+	private Map termToBuckets = new HashMap();
+
 	/**
 	 * Raw constructor used by the GenericJtapiPeer factory
 	 * Creation date: (2002-04-12 10:28:55)
@@ -360,7 +378,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		}
 
 		// update the call structure
-		((XtapiCallId)id).setCallNumber(callNum);
+		XtapiCallId xid = (XtapiCallId)id;
+		xid.setCallNumber(callNum);
+		this.callNumToCalls.put(new Integer(callNum), xid);
+		xid.setLocalAddress(address);
+		xid.setRemoteAddress(dest);
 		
 		// register the call with the terminal
 		this.termToCalls.put(term, id);
@@ -369,7 +391,10 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		// register the call with the line
 		//this.lineToCalls.put(new Integer(addInfo.line), id);
                 //end sf
-                
+
+		// now note that the local leg is connected
+		this.gjListener.connectionConnected(id, address, Event.CAUSE_NORMAL);
+		this.gjListener.connectionAlerting(id, dest, Event.CAUSE_NORMAL);
 		
 		return id;
 	}
@@ -435,7 +460,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				this.addInfoMap.put(ADDR_PREFIX + i, addInfo);
 				
 				this.termToAddr.put(term, addInfo);
-				
+
 				this.lineToAddr.put(new Integer(handle), addInfo);
 			} catch (InvalidStateException ise) {
 				// try the next line
@@ -500,16 +525,17 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 		Dictionary resourceArgs) {
 		return true;
 	}
-
+
 	/**
 	 * Free media resources.
-	 * This is a NO-OP, since XTAPI doesn't need this.
 	 * @see MediaTpi#freeMedia(String, int)
 	 */
 	public boolean freeMedia(String terminal, int type) {
-		return false;
+		// clear out the digit bucket for the terminal.
+		this.retrieveSignals(terminal);
+		return true;
 	}
-
+
 	/**
 	 * All known terminals support media
 	 * @see MediaTpi#isMediaTerminal(String)
@@ -519,7 +545,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			return true;
 		return false;
 	}
-
+
 	/**
 	 * @see MediaTpi#play(String, String[], int, RTC[], Dictionary)
 	 */
@@ -546,7 +572,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				throw new MediaResourceException(rue.toString());
 			} 
 	}
-
+
 	/**
 	 * @see MediaTpi#record(String, String, RTC[], Dictionary)
 	 */
@@ -568,7 +594,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				throw new MediaResourceException(rue.toString());
 			}
 	}
-
+
 	/**
 	 * @see MediaTpi#retrieveSignals(String, int, Symbol[], RTC[], Dictionary)
 	 */
@@ -590,10 +616,43 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			} catch (ResourceUnavailableException rue) {
 				throw new MediaResourceException(rue.toString());
 			}
-			// wait for signals to come inXXXX
-			return new RawSigDetectEvent();
+			// wait for signals to come in
+			//---------------------------------------------------------------------------
+			// Get the local p_Duration (if any).
+			//---------------------------------------------------------------------------
+			Object timeoutVal = null;
+			if (optArgs != null) {
+				timeoutVal = optArgs.get(SignalDetectorConstants.p_Duration);
+			}
+
+			boolean timed = (timeoutVal != null);
+			int timeout = (timed ? ((Integer) timeoutVal).intValue() : 0);
+			int timeSoFar = 0;
+
+			StringBuffer sb = this.getSignalBuffer(terminal);
+			synchronized (sb) {
+				if (sb.length() >= num) {
+					return RawSigDetectEvent.maxDetected(terminal, SymbolConvertor.convert(sb.toString()));
+				} else {
+						// should add support for timeout as well
+					while ((sb.length() < num) &&
+							((!timed) || (timeSoFar < timeout))) {
+						try {
+							sb.wait(100);	// wait until another signal comes in
+						} catch (InterruptedException ie) {
+							// keep going...
+						}
+						timeSoFar += 100;
+					}
+					if (sb.length() >= num) {
+						return RawSigDetectEvent.maxDetected(terminal, SymbolConvertor.convert(sb.toString()));
+					} else {
+						return RawSigDetectEvent.timeout(terminal, SymbolConvertor.convert(sb.toString()));
+					}
+				}
+			}
 	}
-
+
 	/**
 	 * This should wait until the signals have all been sent.
 	 * @see MediaTpi#sendSignals(String, Symbol[], RTC[], Dictionary)
@@ -616,7 +675,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				throw new MediaResourceException(rue.toString());
 			}
 	}
-
+
 	/**
 	 * @see MediaTpi#stop(String)
 	 */
@@ -637,7 +696,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 			// ignore
 		}
 	}
-
+
 	/**
 	 * RTCs are not supported by XTAPI, but we do support stopping
 	 * @see MediaTpi#triggerRTC(String, Symbol)
@@ -689,6 +748,8 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 
             case LINE_CALLINFO:
             	try {
+					// we don't have a callId yet, so we store the remote
+					// name and number until we get an OFFERING event
 	                String[] s = this.realProvider.XTGetCallInfo(dwDevice);
 					if(null != s) {
 	                    // We got caller id info
@@ -729,17 +790,28 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 debugString(5,"dwDevice -> " + dwDevice + " dwInstance -> " + dwInstance +
                 " dwParam1 -> "  + dwParam1 + " dwParam2 -> " + dwParam2 + 
                 " dwParam3 -> " + dwParam3);
-*/                
+*/
 				//System.out.println("Monitoring digits");
 				//System.out.println("dwDevice -> " + dwDevice + " dwInstance (line) -> " + dwInstance +
                 	//" dwParam1 -> "  + dwParam1 + " dwParam2 -> " + dwParam2 + 
                 	//" dwParam3 -> " + dwParam3);
-				AddressInfo ai = (AddressInfo)this.lineToAddr.get(new Integer(dwInstance));
+                XtapiCallId cid = (XtapiCallId)this.callNumToCalls.get(new Integer(dwDevice));
+				String address = null;
+				AddressInfo ai = null;
+                if (cid != null) {
+                	address = cid.getLocalAddress();
+                }
+                if (address != null)
+					ai = (AddressInfo)this.addInfoMap.get(address); 
+				//(AddressInfo)this.lineToAddr.get(new Integer(dwInstance));
 				if (ai != null) {
 					String terminal = ai.terminal;
 	                char[] detectedChars = { (char)dwParam1 };
                 	Symbol[] syms = SymbolConvertor.convert(new String(detectedChars));
                 	this.gjListener.mediaSignalDetectorDetected(terminal, syms);
+                	
+                	// now drop the digits into the digit bucket
+                	this.storeSignals(terminal, detectedChars);
 				}
                 break;                
                 
@@ -822,6 +894,10 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	                	if (ai != null) {
 	                		this.gjListener.connectionDisconnected(callId, ai.getName(), Event.CAUSE_NORMAL);
 	                	}
+	                	// now see if we can disconnect the remote leg
+	                	String remoteAddress = callId.getRemoteAddress();
+	                	if (remoteAddress != null)
+	                		this.gjListener.connectionDisconnected(callId, remoteAddress, Event.CAUSE_NORMAL);
 	                }
                 }catch(Exception e){
                     System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
@@ -843,6 +919,8 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	                	//callId.setCallNumber(dwInstance); // dwInstance contains the line id (NOT the line handle!)
                                 //sf
 						callId.setCallNumber(dwDevice); // dwDevice contains the call handle
+						this.callNumToCalls.put(new Integer(dwDevice), callId);
+						
                 		// register the call with the line
 		                this.lineToCalls.put(new Integer(ai.line), callId); 
                                 //end sf
@@ -854,8 +932,16 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	                	this.gjListener.terminalConnectionRinging(callId, ai.getName(), ai.terminal, Event.CAUSE_NORMAL);
 	                	if (this.remoteNumber != null) {
 		                	this.gjListener.connectionConnected(callId, this.remoteNumber, Event.CAUSE_NORMAL);
-		                	this.gjListener.terminalConnectionTalking(callId, this.remoteNumber, this.remoteName, Event.CAUSE_NORMAL);
-	                	}
+		                	callId.setRemoteAddress(this.remoteNumber);
+		                	// now handle the remote terminal connection
+		                	if (this.remoteName != null) {
+			                	this.gjListener.terminalConnectionTalking(callId, this.remoteNumber, this.remoteName, Event.CAUSE_NORMAL);
+			                	// clear remoteName for next call
+			                	this.remoteName = null;
+							}
+							// clear remoteNumber for next call
+							this.remoteNumber = null;
+		            	}
 	                }
 				}catch(Exception e){
 					System.out.println("Exception in LINECALLSTATE_OFFERING: " +
@@ -898,6 +984,10 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                                         //end sf
 //							this.gjListener.terminalConnectionTalking(callId, "UNKNOWN", "UNKNOWN", Event.CAUSE_NORMAL);
 	                	}
+	                	// now note that the remote connection is connected
+	                	String remoteAddress = callId.getRemoteAddress();
+	                	if (remoteAddress != null)
+	                		this.gjListener.connectionConnected(callId, remoteAddress, Event.CAUSE_NORMAL);
 	                }
                 }catch(Exception e){
                 	e.printStackTrace();
@@ -958,8 +1048,14 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 								// we can get the terminal, and remove the call from the term -> call map
 							this.termToCalls.remove(ai.terminal);
 							}
+						// disconnect the remote Connection
+						String remoteAddress = callId.getRemoteAddress();
+						if (remoteAddress != null)
+							this.gjListener.connectionDisconnected(callId, remoteAddress, Event.CAUSE_NORMAL);
 							// now remove the entry from the line -> CallId map
 						this.lineToCalls.remove(lineKey);
+							// and the callNum -> call map
+						this.callNumToCalls.remove(new Integer(callId.getCallNum()));
 	                }
                 }catch(Exception e){
                     System.out.println("LINECALLSTATE_IDLE exception: " + e.toString());
@@ -1096,7 +1192,7 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 	 */
 	public String toString() {
 		return "GJTAPI bridge to XTAPI service provider: " + realProvider.toString();
-	}
+	}
 	/**
 	 * @see BasicJtapiTpi#release(String, CallId)
 	 */
@@ -1115,6 +1211,57 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
 				throw new RawStateException(call, ise.getState());
 			}
 	}
-
+
+	/**
+	 * Stores signals for a terminal and notifies any waiting
+	 * threads of the arrival of the digits.
+	 * @param terminalName
+	 * @param digits
+	 */
+	private void storeSignals(String terminalName, char[] digits) {
+		StringBuffer sb = this.getSignalBuffer(terminalName);
+		synchronized (sb) {
+			sb.append(digits);
+			
+			// now we notify anyone waiting for digits
+			sb.notify();		}
+	}
+
+	/**
+	 * Retrieves the latest uncollected signals on a
+	 * terminal and clears the terminal signal bucket.
+	 * @param terminalName
+	 * @return
+	 */
+	private String retrieveSignals(String terminalName) {
+		StringBuffer sb = this.getSignalBuffer(terminalName);
+		synchronized (sb) {
+			String signals = sb.toString();
+			sb.delete(0, sb.length());
+			return signals;
+		}		
+	}
+	
+	/**
+	 * Get a StringBuffer for a terminal, used to store
+	 * the latest unretrieved signals on that terminal.
+	 * @param terminalName
+	 * @return A StringBuffer holding signals for the terminal.
+	 */
+	private StringBuffer getSignalBuffer(String terminalName) {
+		Map bucketSet = this.termToBuckets;
+		StringBuffer signalBuffer = (StringBuffer)bucketSet.get(terminalName);
+		if (signalBuffer == null) {
+			synchronized (bucketSet) {
+				// try again to avoid double creation error
+				signalBuffer = (StringBuffer)bucketSet.get(terminalName);
+				if (signalBuffer == null) {
+					signalBuffer = new StringBuffer();
+					bucketSet.put(terminalName, signalBuffer);
+				}
+			}
+		}
+		return signalBuffer;
+	}
 }
 
