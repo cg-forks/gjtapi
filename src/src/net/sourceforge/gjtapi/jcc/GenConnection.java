@@ -37,7 +37,11 @@ import jain.application.services.jcc.*;
 import jain.application.services.jcp.*;
 import javax.telephony.*;
 /**
- * Jain Jcc Connection adapter for a Generic JTAPI Connection
+ * Jain Jcc Connection adapter for a Generic JTAPI Connection.
+ * 
+ * <P>Note that current implementations of release(int) and getRedirectedAddress() are
+ * not properly implemented due to an insufficient service provider SPI not providing sufficient information.
+ * 
  * Creation date: (2000-10-10 13:48:56)
  * @author: Richard Deadman
  */
@@ -301,6 +305,28 @@ public String getOriginalAddress() {
 public jain.application.services.jcc.JccAddress getOriginatingAddress() {
 	return this.getCallingAddr();
 }
+
+/**
+		Returns the redirected address. 
+		Only after the event with id. {@link JcpConnectionEvent#CONNECTION_DISCONNECTED 
+		CONNECTION_DISCONNECTED} with cause code {@link JccCallEvent#CAUSE_REDIRECTED 
+		CAUSE_REDIRECTED} occured and the connection returned by 
+		{@link JcpConnectionEvent#getConnection()} is <code>this</code> and it is a 
+		terminating connection, this method will return the address of the party to 
+		which this connection is redirected.  In all other cases this method returns 
+		<code>null</code>.
+		
+		<P>Note: Currently the TelephonyListener does not receive redirecting information
+		for connection disconnects, and so this information is not available.
+		
+		@return the address to which the call is redirected or <code>null</code> if 
+		the call is not redirected. 
+		@since 1.0a
+    */
+    public String getRedirectedAddress() {
+    	return null;
+    }
+    
 /**
  * Insert the method's description here.
  * Creation date: (2000-11-09 15:32:29)
@@ -430,6 +456,17 @@ public void release() throws jain.application.services.jcp.InvalidStateException
 		throw new RuntimeException("Release failed due to " + mnse);
 	}
 }
+
+/**
+ * release the connection with a cause code.
+ * 
+ * <P>Note: For now, the cause code is ignored since the JccTpi has no current way of passing
+ * it on to the low-level implementation.
+ */
+public void release(int cause) throws jain.application.services.jcp.InvalidStateException, jain.application.services.jcp.PrivilegeViolationException, jain.application.services.jcp.ResourceUnavailableException {
+	this.release();
+}
+
 /**
  * routeConnection method comment.
  */

@@ -136,6 +136,12 @@ public void addCallLoadControlListener(CallLoadControlListener clcl, EventFilter
 	this.getLoadListeners().put(clcl, filter);
 }
 /**
+ * Add a CallLoadControlListener with no filter
+ */
+public void addCallLoadControlListener(CallLoadControlListener clcl) throws jain.application.services.jcp.MethodNotSupportedException, jain.application.services.jcp.ResourceUnavailableException {
+	this.addCallLoadControlListener(clcl, null);
+}
+/**
  * addConnectionListener method comment.
  */
 public void addConnectionListener(jain.application.services.jcc.JccConnectionListener cl, EventFilter filter) {
@@ -320,6 +326,34 @@ public jain.application.services.jcc.EventFilter createEventFilterOrigAddressRan
 public jain.application.services.jcc.EventFilter createEventFilterOrigAddressRegEx(java.lang.String addressRE, int matchDisposition, int nomatchDisposition) {
 	return new net.sourceforge.gjtapi.jcc.filter.OrigAddressREFilter(addressRE, matchDisposition, nomatchDisposition);
 }
+
+    /**
+    This method returns a standard EventFilter which is implemented by the JCC platform.
+    For all events that require filtering by this {@link EventFilter}, apply the following:
+    <ul>
+    <li>If the cause code is matched, the filter returns the value matchDisposition. 
+    <li>If the cause code is not matched, then return nomatchDisposition.
+    </ul>
+    
+    @param causeCode an integer that represents a cause code.  Valid cause codes (prefixed by 
+    <code>CAUSE_</code>) are defined in {@link JcpEvent} and {@link JccCallEvent}.
+    @param matchDisposition indicates the disposition of a JCC related event occurring on a
+    JcpAddress which forms part of the range specified. This should be one of the legal
+    dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+    @param nomatchDisposition indicates the disposition of a JCC related event occurring on a
+    JcpAddress which DOES not form part of the range specified. This should be one of the legal
+    dispositions namely, {@link EventFilter#EVENT_BLOCK}, {@link EventFilter#EVENT_DISCARD} or {@link EventFilter#EVENT_NOTIFY}. 
+    @return EventFilter standard EventFilter provided by the JCC platform to enable 
+    filtering of events based on the application's requirements.    
+    @throws ResourceUnavailableException An internal resource for completing this call is unavailable. 
+    @throws InvalidArgumentException One or more of the provided argument is not valid
+    
+    @since 1.0a
+    */
+    public EventFilter createEventFilterCauseCode(int causeCode, int matchDisposition, int nomatchDisposition) {
+    	return new net.sourceforge.gjtapi.jcc.filter.CauseCodeFilter(causeCode, matchDisposition, nomatchDisposition);
+    }
+
 /**
  * Find the JccAddress object that wraps the given JTAPI Address object.
  * Creation date: (2000-10-31 15:17:00)
@@ -481,9 +515,17 @@ public void removeCallLoadControlListener(CallLoadControlListener clcl) {
 	this.getLoadListeners().remove(clcl);
 }
 /**
- * removeConnectionListener method comment.
+ * Remove the JCP ConnectionListener.
+ * 
+ * @deprecated
  */
 public void removeConnectionListener(jain.application.services.jcp.JcpConnectionListener cl) {
+	this.removeCallListener(cl);
+}
+/**
+ * Remove the JCC ConnectionListener.
+ */
+public void removeConnectionListener(JccConnectionListener cl) {
 	this.removeCallListener(cl);
 }
 /**

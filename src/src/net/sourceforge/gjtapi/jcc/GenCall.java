@@ -37,6 +37,10 @@ import jain.application.services.jcc.*;
 import java.util.*;
 /**
  * Wrapper for a Generic JTAPI Framework Call object to make it Jain Jcc compliant.
+ *
+ * <P>Note that the current implementation of release(int) is
+ * not properly implemented due to an insufficient service provider SPI not providing sufficient information.
+ * 
  * Creation date: (2000-10-10 12:42:59)
  * @author: Richard Deadman
  */
@@ -182,6 +186,106 @@ public jain.application.services.jcc.JccConnection createConnection(String targe
 	this.addPendingConn(conn);
 	return conn;
 }
+
+	/**
+	 * 		Places a call from an originating address to a destination address string. 
+		
+		<p>The Call must be in the {@link JcpCall#IDLE} state (and therefore have no 
+		existing associated JcpConnections and the Provider must be in the 
+		{@link JcpProvider#IN_SERVICE} state. The successful effect of this method 
+		is to place the call and create and return two JcpConnections associated with 
+		this Call. 
+		
+		<h5>Method Arguments</h5>
+		
+		This method has two arguments. The first argument is the originating Address 
+		for the Call. The second argument is a destination string whose value represents 
+		the address to which the call is placed. This destination address must be valid and 
+		complete. 
+		
+		<h5>Method Post-conditions</h5>
+		
+		This method returns successfully when the Provider can successfully initiate the 
+		placing of the call. As a result, when the JccCall.connect() method returns, the JccCall 
+		will be in the {@link JcpCall#ACTIVE} state and exactly two JccConnections will be 
+		created and returned. The JccConnection associated with the originating endpoint is 
+		the first JccConnection in the returned array.  This JccConnection will execute the 
+		originating JccConnection's Final State Diagram (see 
+		<a href="package-summary.html#TOConnections">table 3</a>). The JccConnection associated 
+		with the destination endpoint is the second JccConnection in the returned array and 
+		will execute the terminating JccConnection's Final State Diagram. These 
+		two JccConnections must at least be in the {@link #IDLE} state. That is, if one of 
+		the Connections progresses beyond the IDLE state while this method is completing, this
+		Connection may be in a state other than the IDLE. This state must be reflected by an 
+		event sent to the application. 
+		
+		<p><B>Pre-Conditions:</B> <OL>
+		<LI>(this.getProvider()).getState() == JcpProvider.IN_SERVICE 
+		<LI>this.getState() == JcpCall.IDLE 
+		</OL>
+		
+		<B>Post-Conditions:</B> <OL>
+		<LI>(this.getProvider()).getState() == JcpProvider.IN_SERVICE 
+		<LI>this.getState() == JcpCall.ACTIVE 
+		<LI>Let Connection c[] = this.getConnections() 
+		<LI>c.length == 2 
+		<LI>c[0].getState() == JcpConnection.IDLE (at least) 
+		<LI>c[1].getState() == JcpConnection.IDLE (at least) 
+		</OL>
+		
+		@param origaddr The originating Address for this call.
+		@param dialedDigits The destination address string for this call.
+		
+		@return array of Connections
+		
+		@throws ResourceUnavailableException An internal resource necessary for placing 
+		the call is unavailable.
+		@throws PrivilegeViolationException The application does not have the proper 
+		authority to place a call.
+		@throws InvalidPartyException Either the originator or the destination does not 
+		represent a valid party required to place a call.
+		@throws InvalidStateException Some object required by this method is not in a valid 
+		state as designated by the pre-conditions for this method.
+		@throws MethodNotSupportedException The implementation does not support this method.
+		@since 1.0a
+	*/
+	public JccConnection[] connect(JccAddress origaddr, String dialedDigits) throws 
+	ResourceUnavailableException, PrivilegeViolationException, InvalidPartyException, 
+	InvalidStateException, MethodNotSupportedException {
+		
+		Provider prov = this.getPrivateProvider();
+		JccAddress target = null;
+		try {
+			target = (JccAddress)prov.getAddress(dialedDigits);
+		} catch (InvalidPartyException iae) {
+			throw new ResourceUnavailableException(
+				ResourceUnavailableException.ORIGINATOR_UNAVAILABLE);
+		}
+		GenConnection conn1 = new GenConnection(prov, this, origaddr, (GenAddress)origaddr, null, null);
+		GenConnection conn2 = new GenConnection(prov, this, target, (GenAddress)origaddr, null, null);
+		this.addPendingConn(conn1);
+		this.addPendingConn(conn2);
+		
+		// now complete the routing
+		try {
+			conn1.routeConnection(true);
+		} catch (InvalidArgumentException iae) {	// is this a spec. bug?
+			throw new InvalidStateException(conn1, InvalidStateException.CONNECTION_OBJECT, conn1.getState(), "trying to route connection");
+		}
+		try {
+			conn2.routeConnection(true);
+		} catch (InvalidArgumentException iae) {	// is this a spec. bug?
+			throw new InvalidStateException(conn2, InvalidStateException.CONNECTION_OBJECT, conn2.getState(), "trying to route connection");
+		}
+		
+		JccConnection jc[] = new JccConnection[2];
+		jc[0] = conn1;
+		jc[1] = conn2;
+		
+		return jc;
+		
+	}
+
 /**
  * Compares two objects for equality. Returns a boolean that indicates
  * whether this object is equivalent to the specified object. This method
@@ -316,6 +420,53 @@ public void release() throws jain.application.services.jcp.InvalidStateException
 		throw new jain.application.services.jcp.ResourceUnavailableException(rue.getType());
 	}
 }
+    /**
+        This method requests the release of the call object and associated connection
+        objects. Thus this method is equivalent to using the {@link JccConnection#release(int)}
+        method on each JccConnection which is part of the Call. Typically each JccConnection 
+        associated with this call will move into the {@link JccConnection#DISCONNECTED} state. 
+        The call will also be terminated in the network. If the application
+        has registered as a listener then it receives the {@link JcpCallEvent#CALL_EVENT_TRANSMISSION_ENDED}
+        event.  <p>
+        Valid cause codes (prefixed by <code>CAUSE_</code>) for the integer that is 
+        named causeCode are defined in {@link JcpEvent} and {@link JccCallEvent}.
+        
+        <P>Note: currently cuase codes are not properly reported in events due to a
+        limitation in the CoreTpi. Causes are not sent to the underlying fabric.
+
+       <p> <B>Pre-conditions:</B> <OL>
+        <LI>(this.getProvider()).getState() == IN_SERVICE <br>
+        <LI> this.getState() == ACTIVE
+        </OL>
+       <p> <B>Post-conditions:</B> <OL>
+        <LI>(this.getProvider()).getState() == IN_SERVICE <br>
+        <LI> this.getState() == INVALID
+        <LI>CALL_EVENT_TRANSMISSION_ENDED event delivered to the 
+        valid Calllisteners. 
+        <LI>Appropriate ConnectionEvents are also delivered to the ConnectionListeners. 
+        </OL>
+
+       @param causeCode an integer that represents a cause code.  Valid values 
+       are defined in {@link JcpEvent} and {@link JccCallEvent}, they are typically prefixed 
+       by <code>CAUSE_</code>.
+
+        @throws PrivilegeViolationException The application does not have 
+        the authority or permission to disconnect the Call. For example, 
+         an  Address associated with this Call may not be controllable 
+        in the Provider's domain. 
+        @throws ResourceUnavailableException An internal resource required 
+        to drop a connection is not available. 
+        @throws InvalidStateException Some object required for the 
+        successful invocation of this method is not in the proper state as 
+        given by this method's pre-conditions. 
+		@throws InvalidArgumentException The given release cause code is invalid. 
+		@since 1.0a
+    */
+    public void release(int causeCode) throws PrivilegeViolationException, 
+    ResourceUnavailableException, InvalidStateException, InvalidArgumentException {
+    	this.release();
+    }
+    
 /**
  * removeCallListener method comment.
  */
