@@ -277,6 +277,11 @@ synchronized void bindToGroup(GenericMediaGroup group) throws AlreadyBoundExcept
 		throw new AlreadyBoundException();
 	this.setMediaGroup(group);
 	this.getMgr().bind(group.getTerminal().getName(), this);
+	
+	// notify any thread that is waiting for this service to be bound
+	synchronized(this) {
+		this.notify();
+	}
 }
 	/*
 	 * This MediaService is ready for a MediaGroup.
@@ -819,10 +824,6 @@ synchronized private GenericMediaGroup releaseGroup() {
 				throw new NoServiceReadyException("No MediaService registered for " + disposition);
 		}
 		((GenericMediaService)ms).bindToGroup(mg);
-		// tell the new media service's waiting thread to continue
-		synchronized (ms) {
-			ms.notify();
-		}
 	}
 	/** remove this MediaListener. */
 	public void removeMediaListener(MediaListener listener) {
