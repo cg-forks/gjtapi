@@ -33,7 +33,36 @@ package net.sourceforge.gjtapi.raw;
 import javax.telephony.*;
 import net.sourceforge.gjtapi.*;
 /**
- * These are the methods required by TelephonyProviders that support object "throttling" for JTAPI
+ * These are the methods required by TelephonyProviders that support object "throttling" for JTAPI.
+ * 
+ * Throttling attempts to reduce the amount of information the service provider
+ * has to report about calls by telling it when information is needed on calls.
+ * So, for instance, I can tell the service provider that I want all call
+ * information reported on certain addresses or terminals, so that if a call
+ * exists, the GJTAPI layer will start receiving event notifications about it
+ * and can track it's state.
+ * 
+ * If the user actively creates a call, this call object now exists in GJTAPI
+ * and needs event notification when the call's state changes.
+ * CoreTpi.createCall(...) implicitly says that events must be reported for
+ * the call until GJTAPI says it doesn't need state information anymore
+ * (which is when all handles to the Call have been dropped and the object is
+ * being gc'd from the weak map), since GJTAPI has an object for the Call that
+ * needs its state information synchronized. At this point, GJTAPI issues a
+ * TrottleTpi.stopReportingCall(CallId) message.
+ * 
+ * The other time that a service provider should start reporting events on a
+ * call is when TrottleTpi.getCall(CallId) is called. In this case, a Call
+ * object is being re-constituted and GJTAPI needs its current state information.
+ * 
+ * So, basically, start reporting events on Calls when "CoreTpi.createCall(...)"
+ * or "TrottleTpi.getCall(CallId)" is called and stop when
+ * "ThrottleTpi.stopReportingCall(CallId)" is called.
+ * 
+ * Note that the CallId lifecycle may be different than the Call object, since
+ * GJTAPI keeps a weak map from CallIds to Calls so that it can reconstitute
+ * them when needed.
+ * 
  * Creation date: (2000-10-04 13:46:43)
  * @author: Richard Deadman
  */
