@@ -43,7 +43,7 @@ import net.sourceforge.gjtapi.raw.*;
 
 public class GenericJtapiPeer implements JtapiPeer {
 	// dictionary of raw providers
-	private final static String RESOURCE_NAME = "/GenericResources.props";
+	private final static String RESOURCE_NAME = "GenericResources.props";
 	private final static String DEFAULT_PROVIDER = "DefaultProvider";
 	private final static String PROV_PREFIX = "PROVIDER_";
 	private final static String PROV_CLASS_KEY = "ProviderClass";
@@ -51,6 +51,9 @@ public class GenericJtapiPeer implements JtapiPeer {
 	// key for the property for disconnecting a Connection when a MediaService releases
 	private final String MEDIA_RELEASE_DISCONNECT = "mediaReleaseDisconnect";
 	
+	// System property key for looking up resource directory
+	private final static String RESOURCE_DIR = "net.sourceforge.gjtapi.resourceDir";
+
 	private Properties properties = null;
 	private Hashtable providers = new Hashtable();
 	
@@ -153,7 +156,7 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	
 	// See if this is a Property file or a call name
 	Properties provProps = new Properties();
-	InputStream is = this.getClass().getResourceAsStream("/" + providerFileName);
+	InputStream is = this.findResource(providerFileName);
 	if (is != null) {
 		try {
 			provProps.load(is);
@@ -217,7 +220,7 @@ private void loadResources() {
 	// an exception.
 	Properties props = new Properties();
 	try {
-		props.load(this.getClass().getResourceAsStream(GenericJtapiPeer.RESOURCE_NAME));
+		props.load(this.findResource(GenericJtapiPeer.RESOURCE_NAME));
 		this.setProperties(props);
 	} catch (IOException ioe) {
 		// don't set properties then...
@@ -298,5 +301,32 @@ private String[] split(String line) {
 		ret[i] = tok.nextToken().trim();
 	}
 	return ret;
+}
+
+/**
+ * Find a resource. All resources used to be only looked up on the
+ * classpath in the base "package", but this method refactores the
+ * search so that it can also use an environment variable.
+ * @param resourceName The name of the resource that we want to find
+ * @return An InputStream for reading the resource, or null if none is found
+ * @author rdeadman
+ *
+ */
+private InputStream findResource(String resourceName) {
+	// first we see if we should check for a resource directory
+	String resourceDir = System.getProperty(RESOURCE_DIR);
+	if (resourceDir != null) {
+		File resource = new File(resourceDir + File.separator + resourceName);
+		if (resource.exists() && resource.isFile()) {
+			try {
+				return new FileInputStream(resource);
+			} catch (FileNotFoundException fnfe) {
+				// should never get here unless the resource is not readable -- let the class loader look for it then
+			}
+		}
+	}
+	// we didn't find the resource in the resource directory
+	// now let's check the classpath
+	return this.getClass().getResourceAsStream("/" + resourceName);
 }
 }
