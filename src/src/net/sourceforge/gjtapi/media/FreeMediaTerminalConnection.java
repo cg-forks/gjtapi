@@ -1,7 +1,5 @@
 package net.sourceforge.gjtapi.media;
 
-import java.net.URL;
-import java.util.*;
 import javax.telephony.*;
 import javax.telephony.media.*;
 /*

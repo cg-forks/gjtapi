@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.test;
 import net.sourceforge.gjtapi.raw.emulator.EmProvider;
 import java.rmi.*;
 import java.rmi.registry.*;
-import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.raw.ProviderFactory;
 import net.sourceforge.gjtapi.raw.remote.*;
 /**

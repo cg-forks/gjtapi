@@ -30,7 +30,9 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.events.*;
+import javax.telephony.callcontrol.*;
+
+import net.sourceforge.gjtapi.FreeCall;
 /**
  * A CallControl dropped event
  * Creation date: (2000-08-03 14:15:39)
@@ -38,7 +40,18 @@ import javax.telephony.callcontrol.events.*;
  */
 public class CCTermConnHeldEv extends CCTermConnEv {
 /**
- * CCtermConnDroppedEv constructor comment.
+ * Create a CallControl TerminalConnection Held event for a snapshot.
+ * @param cause Cause identifier (see javax.telephony.Event)
+ * @param metaCode The Observer-style MetaCode ohigher-level description
+ * @param isNewMetaEvent Is this a MetaEvent?
+ * @param tc The terminal connection the event applies to
+ */
+public CCTermConnHeldEv(int cause, int metaCode, boolean isNewMetaEvent, net.sourceforge.gjtapi.FreeTerminalConnection tc) {
+	super(cause, metaCode, isNewMetaEvent, tc);
+}
+/**
+ * CCTermConnDroppedEv constructor that represents a CallControl
+ * Held event to be dispatched to both the Observers and Listeners.
  * @param cause int
  * @param tc net.sourceforge.gjtapi.FreeTerminalConnection
  */
@@ -49,6 +62,18 @@ public CCTermConnHeldEv(int cause, net.sourceforge.gjtapi.FreeTerminalConnection
  * Return the id for the CallControl held event.
  */
 public int getID() {
-	return CallCtlTermConnHeldEv.ID;
+	return CallControlTerminalConnection.HELD;
 }
+/**
+ * Define how an event dispatches itself to registered clients.
+ * Creation date: (2000-04-26 10:48:23)
+ * @author: Richard Deadman
+ */
+public void dispatch() {
+	super.dispatch();	// send to Obsersers
+
+	// now send to listeners
+	((CallControlTerminalConnectionListener)((FreeCall)this.getCall()).getListener()).terminalConnectionHeld(this);
+}
+
 }

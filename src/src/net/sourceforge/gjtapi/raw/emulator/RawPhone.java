@@ -31,8 +31,6 @@ package net.sourceforge.gjtapi.raw.emulator;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.TelephonyListener;
-import javax.telephony.media.Symbol;
-import net.sourceforge.gjtapi.media.*;
 import net.sourceforge.gjtapi.CallId;
 /**
  * This describes the interface to a simple test phone

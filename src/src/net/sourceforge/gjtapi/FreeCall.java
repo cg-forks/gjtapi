@@ -803,13 +803,13 @@ public java.lang.Object sendPrivateData(java.lang.Object data) {
 					break;
 				}
 				case CallControlTerminalConnection.TALKING : {
-					evs.add(new FreeTermConnTalkingEv(Event.CAUSE_SNAPSHOT, Ev.META_SNAPSHOT, false, tc));
+					evs.add(new CCTermConnTalkingEv(Event.CAUSE_SNAPSHOT, Ev.META_SNAPSHOT, false, tc));
 					active = true;
 					talking = true;
 					break;
 				}
 				case CallControlTerminalConnection.HELD : {
-					evs.add(new FreeTermConnHeldEv(Event.CAUSE_SNAPSHOT, Ev.META_SNAPSHOT, false, tc));
+					evs.add(new CCTermConnHeldEv(Event.CAUSE_SNAPSHOT, Ev.META_SNAPSHOT, false, tc));
 					active = true;
 					talking = false;
 					break;

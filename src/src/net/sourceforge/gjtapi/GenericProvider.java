@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import java.lang.ref.WeakReference;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
 /* Copyright UForce Inc. 2000 */
 /**
@@ -50,7 +49,6 @@ import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.FreeMediaTerminal;
 import net.sourceforge.gjtapi.media.GenericMediaService;
 import net.sourceforge.gjtapi.util.*;
-import javax.telephony.privatedata.PrivateData;
 
 import net.sourceforge.gjtapi.events.*;
 

@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.media;
 	of the copyright holder.
 */
 import javax.telephony.media.*;
-import net.sourceforge.gjtapi.*;
 /**
  * This is the abstract class for one of the Media Resource Events
  * Creation date: (2000-03-08 11:31:18)

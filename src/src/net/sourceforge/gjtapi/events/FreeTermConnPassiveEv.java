@@ -31,8 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
-import javax.telephony.*;
-import javax.telephony.events.TermConnPassiveEv;
+
+import javax.telephony.TerminalConnection;
 /**
  * An Observer-style TermConnEv subclass
  * Creation date: (2000-02-15 14:51:24)
@@ -72,6 +72,6 @@ public void dispatch() {
  * Return observer-style event id.
  */
 public int getID() {
-	return TermConnPassiveEv.ID;
+	return TerminalConnection.PASSIVE;
 }
 }

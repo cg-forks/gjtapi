@@ -32,11 +32,9 @@ package net.sourceforge.gjtapi.raw.remote;
 */
 import java.io.Serializable;
 import net.sourceforge.gjtapi.media.*;
-import javax.telephony.media.Symbol;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.events.FreeEv;
 
 /**
  * This is a wrapper class for a RawListener that lets the RawListener receive remote updates.

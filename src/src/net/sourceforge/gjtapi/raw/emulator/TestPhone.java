@@ -30,13 +30,11 @@ package net.sourceforge.gjtapi.raw.emulator;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.events.*;
 import net.sourceforge.gjtapi.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.*;
 import javax.telephony.*;
-import javax.telephony.events.Ev;
 
 /**
  * This is a simple implementation of RawPhone that provides a GUI interface.

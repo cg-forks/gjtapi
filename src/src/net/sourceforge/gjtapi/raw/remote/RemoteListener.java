@@ -32,8 +32,6 @@ package net.sourceforge.gjtapi.raw.remote;
 */
 import java.io.Serializable;
 import net.sourceforge.gjtapi.media.*;
-import net.sourceforge.gjtapi.*;
-import javax.telephony.media.Symbol;
 import java.rmi.*;
 /* Copyright UForce Inc. 2000 */
 /**
@@ -41,8 +39,6 @@ import java.rmi.*;
  *
  * @author: Richard Deadman
  **/
-
-import net.sourceforge.gjtapi.events.*;
 
 public interface RemoteListener extends Remote {
 /**

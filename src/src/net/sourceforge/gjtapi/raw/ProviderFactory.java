@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi.raw;
 */
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
-import net.sourceforge.gjtapi.raw.*;
 import java.util.Properties;
 import javax.telephony.*;
 /**

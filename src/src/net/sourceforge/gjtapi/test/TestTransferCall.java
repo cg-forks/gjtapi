@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi.test;
 */
 import java.io.*;
 import javax.telephony.callcontrol.CallControlCall;
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Simple test script for transfering a call.

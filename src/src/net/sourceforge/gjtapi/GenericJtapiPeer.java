@@ -76,7 +76,7 @@ public class GenericJtapiPeer implements JtapiPeer {
  * or provider lookup name is passed to the JtapiPeer.getProvider() method.
  */
 protected String getDefaultProvider() {
-	return (String) this.getProperties().get(this.DEFAULT_PROVIDER);
+	return (String) this.getProperties().get(GenericJtapiPeer.DEFAULT_PROVIDER);
 }
 /**
  * Get the fully qualified class name for the Peer
@@ -157,8 +157,8 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	if (is != null) {
 		try {
 			provProps.load(is);
-			if (provProps.containsKey(this.PROV_CLASS_KEY))
-				providerClassName = (String)provProps.get(this.PROV_CLASS_KEY);
+			if (provProps.containsKey(GenericJtapiPeer.PROV_CLASS_KEY))
+				providerClassName = (String)provProps.get(GenericJtapiPeer.PROV_CLASS_KEY);
 		} catch (IOException ioe) {
 			// No provider property file by that name, assume it is a class
 			is = null;
@@ -217,7 +217,7 @@ private void loadResources() {
 	// an exception.
 	Properties props = new Properties();
 	try {
-		props.load(this.getClass().getResourceAsStream(this.RESOURCE_NAME));
+		props.load(this.getClass().getResourceAsStream(GenericJtapiPeer.RESOURCE_NAME));
 		this.setProperties(props);
 	} catch (IOException ioe) {
 		// don't set properties then...
@@ -229,8 +229,8 @@ private void loadResources() {
 	Enumeration e = props.keys();
 	while (e.hasMoreElements()) {
 		String key = (String)e.nextElement();
-		if (key.startsWith(this.PROV_PREFIX)) {
-			String name = key.substring(this.PROV_PREFIX.length());
+		if (key.startsWith(GenericJtapiPeer.PROV_PREFIX)) {
+			String name = key.substring(GenericJtapiPeer.PROV_PREFIX.length());
 			provs.put(name, props.get(key));
 		}
 

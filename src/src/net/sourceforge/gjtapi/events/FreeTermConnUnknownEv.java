@@ -31,7 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
-import javax.telephony.*;
+
+import javax.telephony.TerminalConnection;
 import javax.telephony.events.TermConnUnknownEv;
 /**
  * An Observer-style TermConnEv subclass
@@ -72,6 +73,6 @@ public void dispatch() {
  * Return observer-style event id.
  */
 public int getID() {
-	return TermConnUnknownEv.ID;
+	return TerminalConnection.UNKNOWN;
 }
 }

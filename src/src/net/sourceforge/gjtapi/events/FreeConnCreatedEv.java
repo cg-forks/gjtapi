@@ -31,7 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
-import javax.telephony.*;
+
+import javax.telephony.Connection;
 import javax.telephony.events.*;
 /**
  * A connection creation event.
@@ -73,6 +74,6 @@ public void dispatch() {
  * Return the observer-style ConnEv subtype id.
  */
 public int getID() {
-	return ConnCreatedEv.ID;
+	return Connection.IDLE;
 }
 }

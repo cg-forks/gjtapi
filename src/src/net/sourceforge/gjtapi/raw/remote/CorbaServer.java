@@ -35,7 +35,6 @@ import javax.telephony.media.RTC;
 import javax.telephony.media.MediaResourceException;
 import javax.telephony.*;
 import net.sourceforge.gjtapi.raw.remote.corba.*;
-import org.omg.CORBA.portable.ObjectImpl;
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.raw.*;
 import java.util.*;

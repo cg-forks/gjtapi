@@ -30,9 +30,12 @@ package net.sourceforge.gjtapi;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.events.CallCtlCallEv;
 import javax.telephony.callcontrol.CallControlCallObserver;
-import javax.telephony.events.*;
+import javax.telephony.callcontrol.CallControlConnectionEvent;
+import javax.telephony.callcontrol.CallControlConnectionListener;
+import javax.telephony.callcontrol.CallControlTerminalConnectionEvent;
+import javax.telephony.callcontrol.CallControlTerminalConnectionListener;
+
 import net.sourceforge.gjtapi.events.*;
 import javax.telephony.*;
 import java.util.*;
@@ -47,7 +50,7 @@ import java.util.*;
  * Creation date: (2000-05-01 10:57:44)
  * @author: Richard Deadman
  */
-class ListenerManager implements TerminalConnectionListener {
+class ListenerManager implements TerminalConnectionListener, CallControlTerminalConnectionListener {
 
 	/**
 	 * internal Listener Holder that holds a Listener and all its registers
@@ -430,6 +433,19 @@ public void connectionUnknown(javax.telephony.ConnectionEvent event) {
 			((ConnectionListener)o).connectionUnknown(event);
 	}
 }
+/**
+ * CallControl ConnectionAlerting event. This will override the general one, wo we must
+ * make sure to call both.
+ */
+public void connectionAlerting(CallControlConnectionEvent event) {
+	Iterator it = this.getConnListeners();
+	while (it.hasNext()) {
+		Object o = it.next();
+		if (o instanceof CallControlConnectionListener)
+			((CallControlConnectionListener)o).connectionAlerting(event);
+	}
+}
+
 	/**
 	 * Internal accessor for the managed call
 	 * @return The Call I manage Listeners for
@@ -877,4 +893,227 @@ private void unProtect() {
 		((GenericProvider)call.getProvider()).getCallMgr().unProtect(call);
 	}
 }
+	/**
+	 * Currently we don't support bridged... so this is never called.
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionBridged(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionBridged(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionBridged(event);
+		}
+	}
+
+	/**
+	 * Note that a connection is dropped.
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionDropped(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionDropped(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionDropped(event);
+		}
+	}
+
+	/**
+	 * Note that the terminal connection is now held
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionHeld(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionHeld(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionHeld(event);
+		}
+	}
+
+	/**
+	 * Send CallControl InUse event
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionInUse(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionInUse(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionInUse(event);
+		}
+	}
+
+	/**
+	 * Forward CallControl ringing event on
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionRinging(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionRinging(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionRinging(event);
+		}
+	}
+
+	/**
+	 * Forward CallControl talking event on
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionTalking(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionTalking(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionTalking(event);
+		}
+	}
+
+	/**
+	 * Forward CallControl TerminalConnection Unknown event on to listeners
+	 * @see javax.telephony.callcontrol.CallControlTerminalConnectionListener#terminalConnectionUnknown(javax.telephony.callcontrol.CallControlTerminalConnectionEvent)
+	 */
+	public void terminalConnectionUnknown(CallControlTerminalConnectionEvent event) {
+		Iterator it = this.getTcListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlTerminalConnectionListener)
+				((CallControlTerminalConnectionListener)o).terminalConnectionUnknown(event);
+		}
+	}
+
+	/**
+	 * Forward the CallControl ConnectionDialing event to all listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionDialing(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionDialing(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionDialing(event);
+		}
+	}
+
+	/**
+	 * Forward the disconnected event to the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionDisconnected(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionDisconnected(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionDisconnected(event);
+		}
+	}
+
+	/**
+	 * Forward the established event to the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionEstablished(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionEstablished(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionEstablished(event);
+		}
+	}
+
+	/**
+	 * Forward the Failed event to the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionFailed(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionFailed(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionFailed(event);
+		}
+	}
+
+	/**
+	 * Forward the initiated event to all the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionInitiated(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionInitiated(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionInitiated(event);
+		}
+	}
+
+	/**
+	 * Forward the NetworkAlerting event to all the CallControl listeners
+	 * <P> not called
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionNetworkAlerting(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionNetworkAlerting(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionNetworkAlerting(event);
+		}
+	}
+
+	/**
+	 * Forward the network reached event to the CallControl listeners
+	 * <P>not called
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionNetworkReached(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionNetworkReached(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionNetworkReached(event);
+		}
+	}
+
+	/**
+	 * Forward the Offered event to the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionOffered(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionOffered(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionOffered(event);
+		}
+	}
+
+	/**
+	 * Forward the queued event to the call control listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionQueued(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionQueued(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionQueued(event);
+		}
+	}
+
+	/**
+	 * Forward the unknown event to the CallControl listeners
+	 * @see javax.telephony.callcontrol.CallControlConnectionListener#connectionUnknown(javax.telephony.callcontrol.CallControlConnectionEvent)
+	 */
+	public void connectionUnknown(CallControlConnectionEvent event) {
+		Iterator it = this.getConnListeners();
+		while (it.hasNext()) {
+			Object o = it.next();
+			if (o instanceof CallControlConnectionListener)
+				((CallControlConnectionListener)o).connectionUnknown(event);
+		}
+	}
+
 }

@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.media;
 	of the copyright holder.
 */
 import javax.telephony.InvalidStateException;
-import java.net.URL;
 import javax.telephony.ResourceUnavailableException;
 import javax.telephony.Terminal;
 import javax.telephony.media.*;

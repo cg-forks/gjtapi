@@ -30,7 +30,9 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.events.*;
+import javax.telephony.callcontrol.*;
+
+import net.sourceforge.gjtapi.FreeCall;
 /**
  * A CallControl dropped event
  * Creation date: (2000-08-03 14:15:39)
@@ -49,6 +51,19 @@ public CCTermConnUnknownEv(int cause, net.sourceforge.gjtapi.FreeTerminalConnect
  * Return the id for the CallControl unknown event.
  */
 public int getID() {
-	return CallCtlTermConnUnknownEv.ID;
+	return CallControlTerminalConnection.UNKNOWN;
 }
+
+/**
+ * Define how an event dispatches itself to registered clients.
+ * Creation date: (2000-04-26 10:48:23)
+ * @author: Richard Deadman
+ */
+public void dispatch() {
+	super.dispatch();	// send to Observers
+
+	// now send to listeners
+	((CallControlTerminalConnectionListener)((FreeCall)this.getCall()).getListener()).terminalConnectionUnknown(this);
+}
+
 }

@@ -31,8 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import javax.telephony.*;
-import javax.telephony.events.TermConnActiveEv;
+
+import javax.telephony.TerminalConnection;
 /**
  * An Observer-style TermConnEv subclass
  * Creation date: (2000-02-15 14:51:24)
@@ -77,7 +77,7 @@ public void dispatch() {
  * Return the Observer identifier.
  */
 public int getID() {
-	return TermConnActiveEv.ID;
+	return TerminalConnection.ACTIVE;
 }
 /**
  * Does this active event signal the call going into talking state?

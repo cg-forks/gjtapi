@@ -33,6 +33,7 @@ package net.sourceforge.gjtapi.events;
 import javax.telephony.*;
 import net.sourceforge.gjtapi.*;
 import javax.telephony.callcontrol.events.*;
+import javax.telephony.callcontrol.CallControlTerminalConnectionEvent;
 /**
  * This is a parent class for all CallControl TerminalConnection events.
  * <P>These are parallel events to those generated for the base TerminalConnection.  These are sent
@@ -40,7 +41,7 @@ import javax.telephony.callcontrol.events.*;
  * Creation date: (2000-08-03 11:45:53)
  * @author: Richard Deadman
  */
-public abstract class CCTermConnEv extends CCCallEv implements CallCtlTermConnEv {
+public abstract class CCTermConnEv extends CCCallEv implements CallCtlTermConnEv, CallControlTerminalConnectionEvent {
 	private net.sourceforge.gjtapi.FreeTerminalConnection termConn = null;
 /**
  * Construct a CallControl TerminalConnection event.

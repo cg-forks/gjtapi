@@ -30,13 +30,25 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.events.*;
+import javax.telephony.callcontrol.*;
+
+import net.sourceforge.gjtapi.FreeCall;
 /**
  * A CallControl dropped event
  * Creation date: (2000-08-03 14:15:39)
  * @author: Richard Deadman
  */
 public class CCTermConnTalkingEv extends CCTermConnEv {
+/**
+ * Create a CallControl TerminalConnection Talking event for a snapshot.
+ * @param cause Cause identifier (see javax.telephony.Event)
+ * @param metaCode The Observer-style MetaCode ohigher-level description
+ * @param isNewMetaEvent Is this a MetaEvent?
+ * @param tc The terminal connection the event applies to
+ */
+public CCTermConnTalkingEv(int cause, int metaCode, boolean isNewMetaEvent, net.sourceforge.gjtapi.FreeTerminalConnection tc) {
+	super(cause, metaCode, isNewMetaEvent, tc);
+}
 /**
  * CCtermConnDroppedEv constructor comment.
  * @param cause int
@@ -49,6 +61,18 @@ public CCTermConnTalkingEv(int cause, net.sourceforge.gjtapi.FreeTerminalConnect
  * Return the id for the CallControl talking event.
  */
 public int getID() {
-	return CallCtlTermConnTalkingEv.ID;
+	return CallControlTerminalConnection.TALKING;
 }
+/**
+ * Define how an event dispatches itself to registered clients.
+ * Creation date: (2000-04-26 10:48:23)
+ * @author: Richard Deadman
+ */
+public void dispatch() {
+	super.dispatch();	// send to Observers
+
+	// now send to listeners
+	((CallControlTerminalConnectionListener)((FreeCall)this.getCall()).getListener()).terminalConnectionTalking(this);
+}
+
 }

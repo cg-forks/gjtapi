@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.util;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import java.util.*;
 /**
  * This is an interface that describes the event processing actions of an event.
  * The implementor should be re-entrant.

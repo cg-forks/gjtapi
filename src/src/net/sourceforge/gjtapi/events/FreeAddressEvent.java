@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.GenericProvider;
 
 /**
  * This is a base AddressEvent class.  It is created by service providers and passed to the
@@ -42,7 +41,6 @@ import net.sourceforge.gjtapi.GenericProvider;
 import javax.telephony.*;
 import javax.telephony.events.AddrEv;
 import net.sourceforge.gjtapi.FreeAddress;
-import net.sourceforge.gjtapi.events.*;
 
 public abstract class FreeAddressEvent extends FreeEv implements AddrEv, AddressEvent {
 	private FreeAddress address;

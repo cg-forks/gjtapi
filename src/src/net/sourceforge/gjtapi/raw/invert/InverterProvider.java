@@ -36,8 +36,6 @@ import javax.telephony.callcontrol.capabilities.CallControlTerminalConnectionCap
 import javax.telephony.capabilities.*;
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.capabilities.*;
-import net.sourceforge.gjtapi.media.*;
-import net.sourceforge.gjtapi.raw.FullJtapiTpi;
 import javax.telephony.*;
 import javax.telephony.media.*;
 import java.util.*;
@@ -70,7 +68,7 @@ public InverterProvider() {
 	super();
 
 	// read provider details and load the resources, if available
-	this.setProvProps(this.loadResources(this.RESOURCE_NAME));
+	this.setProvProps(this.loadResources(InverterProvider.RESOURCE_NAME));
 
 	this.setListener(new InverterListener(this.getCallMap()));
 }
@@ -464,15 +462,15 @@ public void initialize(java.util.Map props) throws ProviderUnavailableException 
 	// create an instance of the Jtapi Provider
 	JtapiPeer peer = null;
 	try {
-		peer = JtapiPeerFactory.getJtapiPeer((String)m.get(this.PEER_KEY));
+		peer = JtapiPeerFactory.getJtapiPeer((String)m.get(InverterProvider.PEER_KEY));
 	} catch (JtapiPeerUnavailableException jpue) {
 		throw new ProviderUnavailableException(jpue.getMessage());
 	}
-	Provider prov = peer.getProvider((String)m.get(this.PROV_KEY));
+	Provider prov = peer.getProvider((String)m.get(InverterProvider.PROV_KEY));
 	this.setJtapiProv(prov);
 	
 	// set the release property
-	String releaseMedia = (String)m.get(this.MEDIA_FREE_RELEASE);
+	String releaseMedia = (String)m.get(InverterProvider.MEDIA_FREE_RELEASE);
 	if ((releaseMedia != null) && (releaseMedia.length() > 0) && (releaseMedia.toLowerCase().charAt(0) == 't'))
 		this.setMediaFreeRelease(true);
 		
@@ -539,7 +537,7 @@ private Properties loadResources(String resName) {
 	// We must be able to load the properties file
 	Properties props = new Properties();
 	try {
-		props.load(this.getClass().getResourceAsStream("/" + this.RESOURCE_NAME));
+		props.load(this.getClass().getResourceAsStream("/" + InverterProvider.RESOURCE_NAME));
 	} catch (java.io.IOException ioe) {
 		// eat and hope that the initialize method sets my required properties
 	} catch (NullPointerException npe) {

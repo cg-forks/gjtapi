@@ -346,6 +346,9 @@ protected Terminal toDropped(int cause) {
 		// dispatch any events
 		prov.dispatch(new FreeTermConnDroppedEv(cause, this));
 
+		// dispatch any call control events
+		prov.dispatch(new CCTermConnDroppedEv(cause, this));
+
 		// return the dropped terminal
 		return term;
 	} else
@@ -368,7 +371,7 @@ protected void toHeld(int cause) {
 
 		// Create and dispatch the common event
 		GenericProvider prov = this.getGenProvider();
-		prov.dispatch(new FreeTermConnHeldEv(cause, this));
+		prov.dispatch(new CCTermConnHeldEv(cause, this));
 		if (oldState != CallControlTerminalConnection.TALKING)
 			prov.dispatch(new FreeTermConnActiveEv(cause, this, false));
 	}
@@ -385,7 +388,11 @@ void toRinging(int cause) {
 		this.setState(CallControlTerminalConnection.RINGING);
 
 		// Create and dispatch the common event
-		this.getGenProvider().dispatch(new FreeTermConnRingingEv(cause, this));
+		GenericProvider prov = this.getGenProvider();
+		prov.dispatch(new FreeTermConnRingingEv(cause, this));
+
+		// dispatch any call control events
+		prov.dispatch(new CCTermConnRingingEv(cause, this));
 	}
 }
 /**
@@ -404,7 +411,7 @@ protected void toTalking(int cause) {
 
 		// Create and dispatch the common event
 		GenericProvider prov = this.getGenProvider();
-		prov.dispatch(new FreeTermConnTalkingEv(cause, this));
+		prov.dispatch(new CCTermConnTalkingEv(cause, this));
 		if (oldState != CallControlTerminalConnection.HELD)
 			prov.dispatch(new FreeTermConnActiveEv(cause, this, true));
 	}

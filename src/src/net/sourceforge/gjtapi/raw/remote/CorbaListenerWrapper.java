@@ -33,8 +33,6 @@ package net.sourceforge.gjtapi.raw.remote;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import javax.telephony.media.Symbol;
-import net.sourceforge.gjtapi.media.*;
-import java.rmi.RemoteException;
 import net.sourceforge.gjtapi.*;
 /**
  * This wraps a CorbaListener and makes it look like a TelephonyListener again. The TelephonyProvider can then

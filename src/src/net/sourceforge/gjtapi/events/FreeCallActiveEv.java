@@ -31,7 +31,7 @@ package net.sourceforge.gjtapi.events;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.*;
+import javax.telephony.Call;
 import javax.telephony.events.*;
 import net.sourceforge.gjtapi.FreeCall;
 /**
@@ -59,6 +59,6 @@ public void dispatch() {
  * Return the observer ID for this event.
  */
 public int getID() {
-	return CallActiveEv.ID;
+	return Call.ACTIVE;
 }
 }

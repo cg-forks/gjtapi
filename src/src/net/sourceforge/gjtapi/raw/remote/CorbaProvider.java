@@ -40,7 +40,6 @@ import java.io.*;
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.*;
 import javax.telephony.*;
-import java.rmi.RemoteException;
 import net.sourceforge.gjtapi.*;
 import java.util.*;
 /**
@@ -256,40 +255,40 @@ private GenericResourceEvent createEvent(String terminal, net.sourceforge.gjtapi
 	switch (ru.discriminator().value()) {
 		case ResourceType._player: {
 			net.sourceforge.gjtapi.raw.remote.corba.PlayerEvent pe = ru.playEv();
-			return new GenericPlayerEvent(this.createSymbol(re.eventId),
+			return new GenericPlayerEvent(CorbaProvider.createSymbol(re.eventId),
 				terminal,
-				this.createSymbol(re.error),
-				this.createSymbol(re.qualifier),
-				this.createSymbol(re.trigger),
-				this.createSymbol(pe.change),
+				CorbaProvider.createSymbol(re.error),
+				CorbaProvider.createSymbol(re.qualifier),
+				CorbaProvider.createSymbol(re.trigger),
+				CorbaProvider.createSymbol(pe.change),
 				pe.index,
 				pe.offset);
 		}
 		case ResourceType._recorder: {
 			net.sourceforge.gjtapi.raw.remote.corba.RecorderEvent rec = ru.recEv();
-			return new GenericRecorderEvent(this.createSymbol(re.eventId),
+			return new GenericRecorderEvent(CorbaProvider.createSymbol(re.eventId),
 				terminal,
-				this.createSymbol(re.error),
-				this.createSymbol(re.qualifier),
-				this.createSymbol(re.trigger),
+				CorbaProvider.createSymbol(re.error),
+				CorbaProvider.createSymbol(re.qualifier),
+				CorbaProvider.createSymbol(re.trigger),
 				rec.duration);
 		}
 		case ResourceType._sigDetector: {
 			net.sourceforge.gjtapi.raw.remote.corba.SigDetectorEvent sde = ru.sdEv();
-			return new GenericSignalDetectorEvent(this.createSymbol(re.eventId),
+			return new GenericSignalDetectorEvent(CorbaProvider.createSymbol(re.eventId),
 				terminal,
-				this.createSymbol(re.error),
-				this.createSymbol(re.qualifier),
-				this.createSymbol(re.trigger),
+				CorbaProvider.createSymbol(re.error),
+				CorbaProvider.createSymbol(re.qualifier),
+				CorbaProvider.createSymbol(re.trigger),
 				sde.index,
-				this.toSymbolArray(sde.buffer));
+				CorbaProvider.toSymbolArray(sde.buffer));
 		}
 		case ResourceType._sigGenerator: {
-			return new GenericSignalGeneratorEvent(this.createSymbol(re.eventId),
+			return new GenericSignalGeneratorEvent(CorbaProvider.createSymbol(re.eventId),
 				terminal,
-				this.createSymbol(re.error),
-				this.createSymbol(re.qualifier),
-				this.createSymbol(re.trigger));
+				CorbaProvider.createSymbol(re.error),
+				CorbaProvider.createSymbol(re.qualifier),
+				CorbaProvider.createSymbol(re.trigger));
 		}
 	}
 	// should never get here
@@ -422,7 +421,7 @@ private org.omg.CORBA.ORB getOrb() {
 public Object getPrivateData(CallId call, String address, String terminal) {
 	try {
 		Any res = this.getRemote().getPrivateData((int)((SerializableCallId)call).getId(), address, terminal);
-		return this.convertAny(res);
+		return CorbaProvider.convertAny(res);
 	} catch (NotSerializableEx nse) {
 		throw new PlatformException("sendPrivateData result not serializable through remote proxy");
 	}
@@ -650,7 +649,7 @@ public RawSigDetectEvent retrieveSignals(String terminal,
 	RTC[] rtcs,
 	Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	try {
-		DetectEvent de = this.getRemote().retrieveSignals(terminal, num, this.toLongArray(patterns), this.toLongEntryArray(rtcs), this.toLongEntryArray(optArgs));
+		DetectEvent de = this.getRemote().retrieveSignals(terminal, num, CorbaProvider.toLongArray(patterns), this.toLongEntryArray(rtcs), this.toLongEntryArray(optArgs));
 		return RawSigDetectEvent.create(terminal, de.event.qualifier, de.sigs, de.pattern, de.event.trigger, de.event.error);
 	} catch (MediaResourceEx mre) {
 		throw new MediaResourceException(mre.reason,
@@ -665,7 +664,7 @@ public Object sendPrivateData(CallId call, String address, String terminal, Obje
 		throw new PlatformException("sendPrivateData data is not serializable through remote proxy");
 
 	try {
-		return this.convertAny(this.getRemote().sendPrivateData((int)((SerializableCallId)call).getId(), address, terminal, this.convertAny(data)));
+		return CorbaProvider.convertAny(this.getRemote().sendPrivateData((int)((SerializableCallId)call).getId(), address, terminal, this.convertAny(data)));
 	} catch (NotSerializableException nsx) {
 		throw new PlatformException("sendPrivateData data not serializable through remote proxy" + nsx.getMessage());
 	} catch (NotSerializableEx nse) {
@@ -680,7 +679,7 @@ public void sendSignals(String terminal,
 	RTC[] rtcs,
 	Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	try {
-		this.getRemote().sendSignals(terminal, this.toLongArray(syms), this.toLongEntryArray(rtcs), this.toLongEntryArray(optArgs));
+		this.getRemote().sendSignals(terminal, CorbaProvider.toLongArray(syms), this.toLongEntryArray(rtcs), this.toLongEntryArray(optArgs));
 	} catch (MediaResourceEx mre) {
 		throw new MediaResourceException(mre.reason,
 			this.createEvent(terminal, mre.event));

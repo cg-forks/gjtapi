@@ -32,8 +32,6 @@ package net.sourceforge.gjtapi.capabilities;
 */
 import java.util.*;
 import java.io.*;
-import javax.telephony.callcontrol.capabilities.*;
-import javax.telephony.capabilities.*;
 /**
  * This is a holder for all the capabilities of the system.
  * Creation date: (2000-03-14 13:29:07)
@@ -91,7 +89,7 @@ public Capabilities() {
 	this.rawCap = new RawCapabilities();
 	
 	// initialize
-	this.loadCapabilities(this.RESOURCE_NAME);
+	this.loadCapabilities(Capabilities.RESOURCE_NAME);
 }
 /**
  * Return my static set of Address Capabilities
@@ -204,7 +202,7 @@ public void setCapabilities(Properties props) {
 				Object oval = props.get(key);
 				boolean confTransChanged = false;
 				if (oval instanceof Boolean || oval instanceof String) {
-					boolean val = this.resolve(oval);
+					boolean val = Capabilities.resolve(oval);
 					if (key.equals(ANSWER)) {
 						this.getTerminalConnectionCapabilities().setAnswerCapability(val);
 					} else if (key.equals(CREATE)) {

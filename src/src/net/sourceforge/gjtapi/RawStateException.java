@@ -54,9 +54,9 @@ public class RawStateException extends InvalidStateException {
 public RawStateException(String name, int type, int state) {
 	super(null, type, state);
 
-	if (type == this.ADDRESS_OBJECT)
+	if (type == RawStateException.ADDRESS_OBJECT)
 		this.initialize(null, name, null);
-	if (type == this.TERMINAL_OBJECT)
+	if (type == RawStateException.TERMINAL_OBJECT)
 		this.initialize(null, null, name);
 }
 /**

@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.util;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import java.util.*;
 /**
  * This is a queue that accepts objects manages a collection of event handlers.
  * A user will create and instance of the EventHandler and pass it into this event collector.

@@ -31,7 +31,6 @@ package net.sourceforge.gjtapi.raw.mux;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import java.util.*;
 /**
  * This is a simple holder for a low-level CallId that describes which TPI the CallId belongs
  * to.  The MuxCallId holds onto a set of these holders.

@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi;
 */
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.*;
-import java.io.Serializable;
 /**
  * This is a convenience class to allow RawProviders to create mobile SignalDetectorEvents synchronous
  * return values using convenience static methods.

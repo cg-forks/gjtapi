@@ -31,7 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
-import javax.telephony.*;
+
+import javax.telephony.Connection;
 import javax.telephony.events.*;
 /**
  * A connection disconnection event.
@@ -80,6 +81,6 @@ public void dispatch() {
  * Return the observer-style ConnEv subtype id.
  */
 public int getID() {
-	return ConnDisconnectedEv.ID;
+	return Connection.DISCONNECTED;
 }
 }

@@ -30,7 +30,10 @@ package net.sourceforge.gjtapi.media;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Dictionary;
+
 import javax.telephony.media.*;
+
 import net.sourceforge.gjtapi.*;
 /**
  * This is the base media event class.
@@ -133,4 +136,55 @@ private void setMediaService(MediaService service) {
 private void setTerminal(java.lang.String newTerminal) {
 	terminal = newTerminal;
 }
+	/* Get the error Symbol that caused the event
+	 * @see javax.telephony.media.MediaEvent#getError()
+	 * @since JTAPI 1.4
+	 */
+	public Symbol getError() {
+		// TODO Auto-generated method stub
+		Symbol sym = this.getEventID();
+		
+		return ErrSym.e_OK;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.telephony.media.MediaEvent#getException()
+	 */
+	public Exception getException() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.telephony.media.MediaEvent#getPayload()
+	 */
+	public Dictionary getPayload() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.telephony.media.MediaEvent#getQualifier()
+	 */
+	public Symbol getQualifier() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.telephony.media.MediaEvent#getSubError()
+	 */
+	public int getSubError() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.telephony.media.MediaEvent#getWarning()
+	 */
+	public Symbol getWarning() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -32,9 +32,6 @@ package net.sourceforge.gjtapi.test;
 */
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.*;
-import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
 /**
  * Test class for trying out the media commands

@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.util;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import java.util.*;
 /**
  * This is a class that encapsulates how to handle thread running exceptions.
  * <P>The implementation eats any exception.
