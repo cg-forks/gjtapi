@@ -131,10 +131,12 @@ FreeAddress(String num, Provider prov, boolean local){
 	this.setLocal(local);
 }    
   public synchronized void addAddressListener(AddressListener l) {
+	if (l == null)
+		return;
+
 	Vector v = addressListeners == null ? new Vector(2) : (Vector) addressListeners.clone();
-	// test if we should protect the Address
-	if (l != null)
-		this.protect();
+	// protect the Address from garbage collection
+	this.protect();
 
 	// add the listener
 	if (!v.contains(l)) {
@@ -197,9 +199,10 @@ FreeAddress(String num, Provider prov, boolean local){
  **/
 public void addObserver(AddressObserver observer) throws javax.telephony.ResourceUnavailableException, javax.telephony.MethodNotSupportedException {
 	// check if we need protection
-	if (observer != null)
+	if (observer != null) {
 		this.protect();
-	observers.addObserver(observer);
+		observers.addObserver(observer);
+	}
   }            
   /**
    * this is an atypical fire method - in that it only fires on a single
