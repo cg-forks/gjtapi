@@ -145,11 +145,12 @@ protected FreeTerminal(String n,Provider p) {
 	setName(n);
 	setProvider(p);
 }
-  public synchronized void addCallListener(CallListener l) {
+  public synchronized void addCallListener(CallListener l) throws MethodNotSupportedException, ResourceUnavailableException {
 	Vector v = (Vector) callListeners.clone();
 	if (!v.contains(l)) {
 	  v.addElement(l);
 	  callListeners = v;
+          this.startEvents();
 	}
 	TerminalConnection [] tc = this.getTerminalConnections();
 	if (tc != null) {
@@ -168,7 +169,8 @@ protected FreeTerminal(String n,Provider p) {
  * addCallObserver method comment.
  */
 public void addCallObserver(CallObserver observer) throws MethodNotSupportedException, ResourceUnavailableException {
-  this.callObservers.add(observer);
+    this.callObservers.add(observer);
+    this.startEvents();
 
   // add to calls currently attached to the terminal
   	TerminalConnection [] tc = this.getTerminalConnections();
