@@ -30,7 +30,6 @@ package net.sourceforge.gjtapi.raw.emulator;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.media.Symbol;
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.CallId;
 import javax.telephony.Event;
@@ -136,7 +135,7 @@ public void connected() {
  * consult method comment.
  */
 public boolean consult() {
-	this.setState(this.CONSULT);
+	this.setState(PhoneModel.CONSULT);
 	this.getListener().consult();
 	return true;
 }
@@ -148,10 +147,10 @@ public boolean createCall() {
 	boolean res = this.add(new Leg(new RawCall(pm), this, pm.getListener(), Leg.IDLE));
 	if (res) {
 		int state = this.getState();
-		if (state == this.IDLE)
-			this.setState(this.DIALTONE);
-		if (state == this.HOLD)
-			this.setState(this.CONSULT);
+		if (state == PhoneModel.IDLE)
+			this.setState(PhoneModel.DIALTONE);
+		if (state == PhoneModel.HOLD)
+			this.setState(PhoneModel.CONSULT);
 	}
 	return res;
 }
@@ -162,20 +161,20 @@ public void dial(String digits) throws javax.telephony.InvalidPartyException, Ra
 	int state = this.getState();
 	Leg leg = this.getActiveLeg();
 		// test if we are on hold with no idle leg
-	if (state == this.HOLD && leg == null) {
+	if (state == PhoneModel.HOLD && leg == null) {
 		this.getManager().createCall(this, digits);
 		this.consult();
 		return;
 	}
 		// test if we are dialing on a idle leg
-	if (state == this.DIALTONE && leg.getState() == Leg.IDLE) {
+	if (state == PhoneModel.DIALTONE && leg.getState() == Leg.IDLE) {
 		leg.inProgress();
 		leg.getCall().dial(this, digits);
 		this.getListener().dialing();
 		return;
 	}
 		// test if we are sending on a connected leg
-	if ((state == this.ACTIVE || state == this.CONSULT || state == this.BRIDGED) && leg.getState() == Leg.CONNECTED) {
+	if ((state == PhoneModel.ACTIVE || state == PhoneModel.CONSULT || state == PhoneModel.BRIDGED) && leg.getState() == Leg.CONNECTED) {
 		this.sendDTMF(digits);
 		return;
 	}
@@ -332,7 +331,7 @@ public boolean hold() {
  * idle method comment.
  */
 public void idle() {
-	this.setState(this.IDLE);
+	this.setState(PhoneModel.IDLE);
 	this.getListener().idle();
 }
 /**
@@ -341,16 +340,16 @@ public void idle() {
 public void inCall(Leg newLeg) {
 	switch (newLeg.getState()) {
 		case Leg.ALERTING: {
-			this.setState(this.RINGING);
+			this.setState(PhoneModel.RINGING);
 			break;
 		}
 		case Leg.INPROGRESS:
 		case Leg.CONNECTED: {
-			this.setState(this.ACTIVE);
+			this.setState(PhoneModel.ACTIVE);
 			break;
 		}
 		case Leg.IDLE: {
-			this.setState(this.DIALTONE);
+			this.setState(PhoneModel.DIALTONE);
 			break;
 		}
 		default: {
@@ -364,7 +363,7 @@ public void inCall(Leg newLeg) {
  * onHold method comment.
  */
 public boolean onHold() {
-	this.setState(this.HOLD);
+	this.setState(PhoneModel.HOLD);
 	// notify framework
 	String endpoint = this.getAddress();
 	this.getManager().getListener().terminalConnectionHeld(this.getHeldLeg().getCall(),
@@ -374,7 +373,7 @@ public boolean onHold() {
 	return this.getListener().onHold();
 }
 /**
- * receiveDTMF method comment.
+ * Act on incoming DTMF signals
  */
 public void receiveDTMF(String digits) {
 	// store them for future retrieval
@@ -445,7 +444,7 @@ public String reportDTMF(int num) {
  * ringing method comment.
  */
 public void ringing() {
-	this.setState(this.RINGING);
+	this.setState(PhoneModel.RINGING);
 	this.getListener().ringing();
 }
 /**
@@ -458,12 +457,13 @@ public void sendDetectedDtmf(boolean flag) {
 	this.sendDtmf = flag;
 }
 /**
- * sendDTMF method comment.
+ * Send the DTMF out to all legs of the call.
  */
 public void sendDTMF(java.lang.String msg) {
 	this.getActiveLeg().getCall().sendDTMF(msg);
 	this.getListener().sending();
 }
+
 /**
  * sending method comment.
  */
@@ -569,13 +569,13 @@ public Leg swap(RawCall newCall, Leg oldLeg, TelephonyListener sink) {
 		l = held;
 		this.setActiveLeg(l);
 		this.setHeldLeg(null);
-		this.setState(this.ACTIVE);
+		this.setState(PhoneModel.ACTIVE);
 	}
 	// test if we need to merge the active and held calls
 	if (active != null && active.getCall().equals(newCall)) {
 		l = active;
 		this.setHeldLeg(null);
-		this.setState(this.ACTIVE);
+		this.setState(PhoneModel.ACTIVE);
 	}
 	if (l == null)
 		l = new Leg(newCall, oldLeg, sink);

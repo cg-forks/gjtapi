@@ -56,7 +56,7 @@ public class RawCall implements CallId {
  */
 public RawCall(PhoneManager pm) {
 	super();
-	this.setState(this.IDLE);
+	this.setState(RawCall.IDLE);
 	this.setManager(pm);
 }
 /**
@@ -283,6 +283,7 @@ public void sendDTMF(String digits) {
 		phone.receiveDTMF(digits);
 	}
 }
+
 /**
  * Set the collection of legs
  * Creation date: (2000-02-09 10:20:37)

@@ -367,13 +367,14 @@ private Properties loadResources(String resName) {
  * Since I don't have any real playing resources, I just pause and then report success.
  */
 public void play(String terminal, String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
-	PhoneModel pm = ((TestPhone)this.getPhone(terminal)).getModel();
+	TestPhone phone = (TestPhone)this.getPhone(terminal);
+	PhoneModel pm = phone.getModel();
 	try {
 		// ask the terminal to pretend to play the file
 		StringBuffer sb = new StringBuffer("Playing files:");
 		for (int i = 0; i < streamIds.length; i++)
 			sb.append(" ").append(streamIds[i]);
-		pm.sendDTMF(sb.toString());
+		phone.setStatus(sb.toString());
 		pm.setPlayThread(Thread.currentThread());
 		java.applet.AudioClip ac = null;
 		for (int i = 0; i < streamIds.length; i++) {
