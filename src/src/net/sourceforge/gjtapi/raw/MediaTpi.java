@@ -77,7 +77,8 @@ boolean freeMedia(String terminal, int type);
  */
 boolean isMediaTerminal(String terminal);
 	 /**
-	  * Start playing a set of audio streams named by the streamIds (may be urls).
+	  * Playing a set of audio streams named by the streamIds (may be urls). This method is synchronous
+	  * and returns once all the streams have been played or play has halted for some other reason.
 	  *
 	  * @param terminal The terminal to play the audio on.
 	  * @param streamIds The ids for the audi streams to play, usually URLs
@@ -89,7 +90,8 @@ boolean isMediaTerminal(String terminal);
 	  **/
 	 void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException; 
 /**
-  * Start recording an audio streams named by the streamId (may be urls).
+  * Recording an audio streams named by the streamId (may be urls). This method is synchronous.
+  * The method returns once recording has stopped.
   *
   * @param terminal The terminal to record the audio from.
   * @param streamId The id for the audio streams to create, usually a URL
