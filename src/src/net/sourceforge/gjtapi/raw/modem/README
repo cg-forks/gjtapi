@@ -5,7 +5,7 @@ should be straightforward.
 
 What you need to have to use it:
     1) A voice capable modem which you know works.
-    2) JTAPI/JAIN/GJTAPI 
+    2) JTAPI/GJTAPI (JAIN Jcc optional)
     3) This code
     4) Java 1.4.1
     5) Java Comm
@@ -26,7 +26,7 @@ Caveats:
 
 How to use it:
    Compile the lot.
-   edit the Modem.props file to describe the device you have, and
+   edit the Modem.props file in the base directory to describe the device you have, and
       the telephone numbers you have.
 
 raytran@users.sourceforge.net
