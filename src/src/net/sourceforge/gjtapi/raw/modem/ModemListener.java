@@ -32,6 +32,7 @@ public interface ModemListener {
      */
     public void modemDialing(CallId id, String dest);
     public void modemConnected(CallId id, String dest);
+	public void modemFailed(CallId id, String dest);
     public void modemConnected(CallId id);
     public void modemDisconnected(CallId id);
     public void modemFailed(CallId id);

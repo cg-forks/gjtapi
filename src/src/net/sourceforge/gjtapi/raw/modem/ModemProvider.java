@@ -480,4 +480,14 @@ public class ModemProvider implements MediaTpi, ModemListener {
 		}
 	}
 
+	/**
+	 * Note that an alerting connection failed (i.e. was busy)
+	 * @see net.sourceforge.gjtapi.raw.modem.ModemListener#modemFailed(net.sourceforge.gjtapi.CallId, java.lang.String)
+	 */
+	public void modemFailed(CallId id, String remoteLeg) {
+		if (listener != null){
+			listener.connectionFailed(id, remoteLeg, ConnectionEvent.CAUSE_DEST_NOT_OBTAINABLE);
+		}
+	}
+
 }

@@ -7,7 +7,7 @@
 // CREATED
 //      $Date$
 // COPYRIGHT
-//      Westhawk Ltd
+//      Deadman Consulting
 // TO DO
 //
 
@@ -18,9 +18,9 @@ import java.io.*;
 import net.sourceforge.gjtapi.CallId;
 
 /**
- * A concrete implementation of Modem for the Hayes Accura V92 external modem
+ * A concrete implementation of Modem for the Zoom 3049C V92 external modem
  *
- * @author <a href="mailto:ray@westhawk.co.uk">Ray Tran</a>
+ * @author <a href="mailto:rdeadman@deadman.ca">Richard Deadman</a>
  * @version $Revision$ $Date$
  */
 public class Zoom3049Conexant extends AbstractModem {
@@ -29,7 +29,7 @@ public class Zoom3049Conexant extends AbstractModem {
 
     //Temporary values for using the modem.
     //todo - read these from a props file or similar.
-    private static final String INIT = "ATZ";
+    private static final String INIT = "ATZE1V1";
     private static final String INIT_OK = "OK";
     private static final String INIT_ERR = "ERROR";
     private static final String DIAL = "ATD";
@@ -75,6 +75,7 @@ public class Zoom3049Conexant extends AbstractModem {
                 }
             }
             catch (IOException ex) {
+ex.printStackTrace();
                 state = INVALID;
                 //result = false;
                 System.err.println("Modem initialization failed");
@@ -131,7 +132,7 @@ public class Zoom3049Conexant extends AbstractModem {
                 //Need to loop until terminal is answered, line is busy
                 //or call is dropped
                 do{
-                    matchState = io.match(1000, DIAL_OK, DIAL_ERR);
+                    matchState = io.match(20000, DIAL_OK, DIAL_ERR);
                 }while (matchState == ModemIO.TIMEOUT | state == DROPPING);
             }
             if (matchState == ModemIO.GOOD_MATCH){
@@ -140,14 +141,24 @@ public class Zoom3049Conexant extends AbstractModem {
                 listener.modemConnected(id, dest);
                 currId = id;
                 result = true;
-            }else{
+            } else {
                 state = INVALID;
-                System.err.print("Modem could not call number: ");
-                if (matchState == ModemIO.TIMEOUT){
-                    System.err.println("Timeout");
-                }else{
-                    System.err.println(io.getMatch());
-                }
+                // test if we have a busy end-point
+                String resultMsg = io.getMatch();
+                if (resultMsg.equals(DIAL_ERR)) {
+                	listener.modemFailed(id, dest);
+                	result = false;
+                } else {
+	                if (matchState == ModemIO.TIMEOUT){
+	                    // well, we tried...
+	                    System.err.println("timed out...");
+	                }else {
+	                	listener.modemFailed(id, dest);
+	                    System.err.println("Modem could not call number: " + resultMsg);
+	                }
+				}
+				// drop the call
+				this.drop(id);
             }
         }catch(IOException ex){
             state = INVALID;
@@ -205,7 +216,8 @@ public class Zoom3049Conexant extends AbstractModem {
 
     public void play(InputStream is){
         try {
-            io.writeLine("AT+VSM=131,8000");
+//io.writeLine("AT+VSM=?");
+            io.writeLine("AT+VSM: 130,8000,0,0");
             int matchState = io.match(1000, "OK", "ERROR");
             if (matchState == ModemIO.GOOD_MATCH){
                 io.writeLine("AT+VTX");
@@ -213,6 +225,7 @@ public class Zoom3049Conexant extends AbstractModem {
             }
             if (matchState == ModemIO.GOOD_MATCH){
                 int val;
+System.out.println("Sending file...");
                 while ((val = is.read()) != -1){
                     io.write(val);
                 }
@@ -252,6 +265,7 @@ public class Zoom3049Conexant extends AbstractModem {
         if ((shielded >= '0' && shielded <= '9')
             || shielded == '*' || shielded == '#'){
              synchronized (digitBucket){
+System.out.println("Placing character in digitbucket: " + shielded);
                  digitBucket.append(shielded);
              }
         }else{
