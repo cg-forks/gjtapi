@@ -126,13 +126,18 @@ FreeConnection(FreeCall fca,FreeAddress fad){
 		terminalConnections.remove(c.getTerminalName());
 	}
 /**
- * disconnect our call
+ * disconnect our call.
+ * This blocks until the connection is in a disconnected state.
  */
 public void disconnect() throws InvalidStateException, PrivilegeViolationException, MethodNotSupportedException, ResourceUnavailableException {
 
 		GenericProvider gp = (GenericProvider) call.getProvider();
 		try {
+			// this should block until the connection is released.
 			gp.getRaw().release(this.getAddress().getName(), call.getCallID());
+			
+			// now update the state
+			this.toDisconnected(Event.CAUSE_NORMAL);
 		} catch (RawStateException re) {
 			throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
 		}

@@ -983,20 +983,24 @@ public void transfer(Call otherCall) throws MethodNotSupportedException, Resourc
 	transfer(tc, otherCall);
 }
 /**
- * transfer by conferencing and then dropping off the call
+ * transfer by conferencing and then dropping off the call.
+ * Note that this will drop the whole Connection off the call, and not just the TerminalConnection.
  */
 private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSupportedException, ResourceUnavailableException, InvalidArgumentException, InvalidPartyException, InvalidStateException, PrivilegeViolationException {
 	
 	// join the calls - don't use my conference method, since it uses the conference controller
 	TelephonyProvider rp = ((GenericProvider)this.getProvider()).getRaw();
 	CallId id = this.getCallID();
-	String tcAddress = tc.getConnection().getAddress().getName();
+	FreeConnection tcConn = (FreeConnection)tc.getConnection();
+	String tcAddress = tcConn.getAddress().getName();
 	String tcTerminal = tc.getTerminal().getName();
 	
 	rp.join(id, ((FreeCall)otherCall).getCallID(), tcAddress, tcTerminal);
 
-	// now drop a terminal connection off the call
+	// now drop the connection off the call
 	rp.release(tcAddress, id);
+	// and note that the old Connection is disconnected
+	tcConn.toDisconnected(Event.CAUSE_NORMAL);
 }
 
 	/**
