@@ -42,7 +42,7 @@ import javax.telephony.*;
  * Creation date: (2000-02-04 15:04:19)
  * @author: Richard Deadman
  */
-public class EmProvider implements net.sourceforge.gjtapi.raw.FullJtapiTpi {
+public class EmProvider implements FullJtapiTpi {
 	// property to note if I should replace properties loaded from resource file during initialization
 	public final static String REPLACE = "replace";
 	// property to note that I shoould operate headless
@@ -62,7 +62,7 @@ public EmProvider() {
 	super();
 
 	// read provider details and load the resources, if available
-	this.setProvProps(this.loadResources("/" + this.RESOURCE_NAME));
+	this.setProvProps(this.loadResources("/" + EmProvider.RESOURCE_NAME));
 }
 /**
  * Set the event listener.
@@ -307,7 +307,7 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	Iterator it = m.keySet().iterator();
 	while (it.hasNext()) {
 		String key = (String)it.next();
-		if (key.startsWith(this.ADDRESS_PREFIX)) {
+		if (key.startsWith(EmProvider.ADDRESS_PREFIX)) {
 			adds.add(m.get(key));
 		}
 	}
@@ -324,7 +324,7 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	}
 
 	// add myself to the global set of provider
-	this.universe.add(this);
+	EmProvider.universe.add(this);
 
 }
 /**
@@ -498,12 +498,50 @@ public net.sourceforge.gjtapi.CallId reserveCallId(String address) throws Invali
  */
 public RawSigDetectEvent retrieveSignals(String terminal, int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs)
 		throws MediaResourceException {
-		// we should wait until num is met or a pattern is met or a rtc tells us to stop...
-	String sigs = this.getMgr().getPhone(terminal).reportDTMF(num);
+	//---------------------------------------------------------------------------
+	// Bugs remaining - don't allow -1
+	//                  dont check patterns or rtcs,
+	//                  timouts - only obey p_Duration in the LOCAL dictionary
+	//---------------------------------------------------------------------------
+	String sigs = "";
 
-	// now turn the found characters into a GenericSugnalDetectorEvent
+ 
+	//---------------------------------------------------------------------------
+	// Get the local p_Duration (if any).
+	//---------------------------------------------------------------------------
+	Object lTimeoutVal = null;
+
+	if (optArgs != null) {
+		Object lTimeoutKey = SignalDetectorConstants.p_Duration;
+		lTimeoutVal = optArgs.get(lTimeoutKey);
+	}
+
+	boolean lTimed = (lTimeoutVal != null);
+	int ltmout = (lTimed ? ((Integer) lTimeoutVal).intValue() : 0);
+	int ltmdone = 0;
+
+	while ((sigs.length() < num)
+		&& ((!lTimed) || (ltmdone < ltmout))) {
+		sigs += this.getMgr().getPhone(terminal).reportDTMF(num - sigs.length());
+		ltmdone += 100;
+		try {
+			Thread.sleep(100);
+		} catch (Exception e) {
+		}
+	}
+
+	//---------------------------------------------------------------------------
+	// Check for timeout
+	//---------------------------------------------------------------------------
+	if (sigs.length() < num) {
+		return RawSigDetectEvent.timeout(
+			terminal,
+			SymbolConvertor.convert(sigs));
+	}
+	//	now turn the found characters into a GenericSignalDetectorEvent
 	return RawSigDetectEvent.maxDetected(terminal, SymbolConvertor.convert(sigs));
-}
+ }					// we should wait until num is met or a pattern is met or a rtc tells us to stop...
+
 /**
  * Send the passed data to a terminal, if one indicated.
  * This is just simple testing.
@@ -560,7 +598,7 @@ public void shutdown() {
 	this.setMgr(null);
 
 	// remove myself from the universe
-	this.universe.remove(this);
+	EmProvider.universe.remove(this);
 }
 /**
  * stop method comment.

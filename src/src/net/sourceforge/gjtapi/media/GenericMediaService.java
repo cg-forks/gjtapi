@@ -191,10 +191,10 @@ public GenericMediaService() throws JtapiPeerUnavailableException, ProviderUnava
 		TerminalConnection[] tcs = conns[i].getTerminalConnections();
 		if (tcs != null) {
 			for (int j = 0; j < tcs.length; j++) {
-				if (tc == null && tcs[i] instanceof CallControlTerminalConnection)
-					tc = (CallControlTerminalConnection)tcs[i];
-				if (tcs[i].getTerminal() instanceof MediaTerminal) {
-					mt = (MediaTerminal)tcs[0].getTerminal();
+				if (tc == null && tcs[j] instanceof CallControlTerminalConnection)
+					tc = (CallControlTerminalConnection)tcs[j];
+				if (tcs[j].getTerminal() instanceof MediaTerminal) {
+					mt = (MediaTerminal)tcs[j].getTerminal();
 					mediaConn = conns[i];
 					break;
 				}
@@ -486,7 +486,7 @@ public ConfigSpec getConfiguration() throws NotBoundException {
  * @return An iterator over MediaListeners attached to me.
  */
 public Iterator getListeners() {
-	return this.theListeners.iterator();
+	return GenericMediaService.theListeners.iterator();
 }
 /**
  * Insert the method's description here.
