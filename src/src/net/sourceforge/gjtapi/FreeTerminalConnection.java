@@ -360,10 +360,10 @@ protected Terminal toDropped(int cause) {
  */
 protected void toHeld(int cause) {
 	int oldState = this.getCallControlState();
-	if (oldState == CallControlTerminalConnection.IDLE &&
-		oldState == CallControlTerminalConnection.RINGING &&
-		oldState == CallControlTerminalConnection.TALKING &&
-		oldState == CallControlTerminalConnection.UNKNOWN) {
+	if (oldState != CallControlTerminalConnection.HELD &&
+            oldState != CallControlTerminalConnection.INUSE &&
+            oldState != CallControlTerminalConnection.BRIDGED &&
+            oldState != CallControlTerminalConnection.DROPPED) {
 		// Update the connection state
 		this.setState(CallControlTerminalConnection.HELD);
 
