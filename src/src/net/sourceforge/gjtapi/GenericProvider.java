@@ -129,7 +129,7 @@ public Call createCall() throws InvalidStateException, PrivilegeViolationExcepti
  * Dispatch an event off to its registered listeners.
  * Creation date: (2000-05-02 12:36:08)
  * @author: Richard Deadman
- * @param The event to dispatch.
+ * @param ev The event to dispatch.
  */
 void dispatch(FreeCallEvent ev) {
 	this.getEventHandler().dispatch(ev);

@@ -1,10 +1,10 @@
 package net.sourceforge.gjtapi;
-
+
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
-
+
 	All rights reserved. 
-
+
 	Permission is hereby granted, free of charge, to any person obtaining a 
 	copy of this software and associated documentation files (the 
 	"Software"), to deal in the Software without restriction, including 
@@ -14,7 +14,7 @@ package net.sourceforge.gjtapi;
 	copyright notice(s) and this permission notice appear in all copies of 
 	the Software and that both the above copyright notice(s) and this 
 	permission notice appear in supporting documentation. 
-
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
 	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
@@ -24,7 +24,7 @@ package net.sourceforge.gjtapi;
 	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
 	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
 	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
-
+
 	Except as contained in this notice, the name of a copyright holder 
 	shall not be used in advertising or otherwise to promote the sale, use 
 	or other dealings in this Software without prior written authorization 
@@ -48,7 +48,7 @@ import net.sourceforge.gjtapi.util.*;
  * @author: Richard Deadman
  */
 class RawEventHandler implements TelephonyListener {
-
+
 	// define a common block for sending events observers and listeners
 	private class ClientNotifier implements EventHandler {
 		private Dispatchable event = null;
@@ -59,18 +59,18 @@ class RawEventHandler implements TelephonyListener {
 			this.event.dispatch();
 		}
 	}
-
+
 	// define a Synchronous Block manager for (paradoxically) processing events synchronously
 	// this is a test of synchronout event processing to see if it fixes race conditions
 	private class SynchronousBlockManager extends BlockManager{
 		private GenericProvider prov;
-
+
 		SynchronousBlockManager(GenericProvider gp) {
 			super(null);	// we don't need an exception handler
-
+
 			this.prov = gp;
 		}
-
+
 		private GenericProvider getGenProvider() {
 			return this.prov;
 		}
@@ -101,7 +101,7 @@ RawEventHandler(GenericProvider prov) {
 	// Create the event pool with an Exception handler that rethrows exception -- we want these
 	//this.eventPool = new OrderedBlockManager(prov, "Raw Event Queue", new ExceptionHandler());
 	this.eventPool = new SynchronousBlockManager(prov);
-
+
 	// Create the client output event pool
 	this.dispatchPool = new OrderedBlockManager(null, "JTAPI Event Dispatch Queue");	// it doesn't need a visitor and by default exceptions are swallowed
 }
@@ -122,16 +122,16 @@ public void addressPrivateData(final String address, final Serializable data, fi
 				
 				// Create the event
 				GenPrivateAddrEv pae = new GenPrivateAddrEv(addr, cause, data);
-
+
 				// dispatch the event
 				addr.sendToObservers(pae);
-
+
 			} catch (InvalidArgumentException iae) {
 				// address is unknown -- eat this event
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -152,7 +152,7 @@ public void callActive(final CallId id, final int cause) {
 			call.toActive(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -174,7 +174,7 @@ public void callInvalid(final CallId id, final int cause) {
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -193,7 +193,7 @@ public void callOverloadCeased(final String address) {
 				prov.callOverloadCeased(gp.getDomainMgr().getLazyAddress(address));
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -212,7 +212,7 @@ public void callOverloadEncountered(final String address) {
 				prov.callOverloadEncountered(gp.getDomainMgr().getLazyAddress(address));
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -229,15 +229,15 @@ public void callPrivateData(final CallId id, final Serializable data, final int 
 		public void process(Object o) {
 			// Fetch or create the call
 			FreeCall call = ((GenericProvider)o).getCallMgr().getLazyCall(id);
-
+
 			// Create the event
 			GenPrivateCallEv pce = new GenPrivateCallEv(call, cause, data);
-
+
 			// dispatch the event
 			call.sendToObservers(pce);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -252,7 +252,7 @@ public void connectionAddressAnalyse(final CallId id, final String address, fina
 			GenericProvider gp = (GenericProvider)o;
 			FreeConnection conn = gp.getCallMgr().getLazyConnection(id, address);
 			conn.toAlerting(cause);
-
+
 				// notify each CallListenerAdapter we find
 			CallListener[] cls = conn.getCall().getCallListeners();
 			int size = cls.length;
@@ -263,7 +263,7 @@ public void connectionAddressAnalyse(final CallId id, final String address, fina
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -278,7 +278,7 @@ public void connectionAddressCollect(final CallId id, final String address, fina
 			GenericProvider gp = (GenericProvider)o;
 			FreeConnection conn = gp.getCallMgr().getLazyConnection(id, address);
 			conn.toAlerting(cause);
-
+
 				// notify each CallListenerAdapter we find
 			CallListener[] cls = conn.getCall().getCallListeners();
 			int size = cls.length;
@@ -289,7 +289,7 @@ public void connectionAddressCollect(final CallId id, final String address, fina
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -308,7 +308,7 @@ public void connectionAlerting(final CallId id, final String address, final int 
 			((GenericProvider)o).getCallMgr().getLazyConnection(id, address).toAlerting(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -323,7 +323,7 @@ public void connectionAuthorizeCallAttempt(final CallId id, final String address
 			GenericProvider gp = (GenericProvider)o;
 			FreeConnection conn = gp.getCallMgr().getLazyConnection(id, address);
 			conn.toAlerting(cause);
-
+
 				// notify each CallListenerAdapter we find
 			CallListener[] cls = conn.getCall().getCallListeners();
 			int size = cls.length;
@@ -334,7 +334,7 @@ public void connectionAuthorizeCallAttempt(final CallId id, final String address
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -349,7 +349,7 @@ public void connectionCallDelivery(final CallId id, final String address, final 
 			GenericProvider gp = (GenericProvider)o;
 			FreeConnection conn = gp.getCallMgr().getLazyConnection(id, address);
 			conn.toAlerting(cause);
-
+
 				// notify each CallListenerAdapter we find
 			CallListener[] cls = conn.getCall().getCallListeners();
 			int size = cls.length;
@@ -360,7 +360,7 @@ public void connectionCallDelivery(final CallId id, final String address, final 
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -379,7 +379,7 @@ public void connectionConnected(final CallId id, final String address, final int
 			((GenericProvider)o).getCallMgr().getLazyConnection(id, address).toConnected(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -401,7 +401,7 @@ public void connectionDisconnected(final CallId id, final String address, final 
 				conn.toDisconnected(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -422,7 +422,7 @@ public void connectionFailed(final CallId id, final String address, final int ca
 				conn.toFailed(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -441,7 +441,7 @@ public void connectionInProgress(final CallId id, final String address, final in
 			((GenericProvider)o).getCallMgr().getLazyConnection(id, address).toInProgress(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -456,7 +456,7 @@ public void connectionSuspended(final CallId id, final String address, final int
 			GenericProvider gp = (GenericProvider)o;
 			FreeConnection conn = gp.getCallMgr().getLazyConnection(id, address);
 			conn.toAlerting(cause);
-
+
 				// notify each CallListenerAdapter we find
 			CallListener[] cls = conn.getCall().getCallListeners();
 			int size = cls.length;
@@ -467,7 +467,7 @@ public void connectionSuspended(final CallId id, final String address, final int
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -475,7 +475,6 @@ public void connectionSuspended(final CallId id, final String address, final int
  * Accept a FreeCallEvent and dispatch off to registered clients.
  * Creation date: (2000-05-02 12:48:36)
  * @author: Richard Deadman
- * @param call The call the event is attachd to.
  * @param ev The event to dispatch
  */
 void dispatch(FreeCallEvent ev) {
@@ -509,7 +508,7 @@ public void mediaPlayPause(final String terminal, final int index, final int off
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericPlayerEvent ev = new GenericPlayerEvent(PlayerConstants.ev_Pause,
 				lms.getMediaService(),
@@ -529,7 +528,7 @@ public void mediaPlayPause(final String terminal, final int index, final int off
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -543,7 +542,7 @@ public void mediaPlayResume(final String terminal, final javax.telephony.media.S
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericPlayerEvent ev = new GenericPlayerEvent(PlayerConstants.ev_Resume,
 				lms.getMediaService(),
@@ -563,7 +562,7 @@ public void mediaPlayResume(final String terminal, final javax.telephony.media.S
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -577,7 +576,7 @@ public void mediaRecorderPause(final String terminal, final int duration, final 
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericRecorderEvent ev = new GenericRecorderEvent(RecorderConstants.ev_Pause,
 				lms.getMediaService(),
@@ -597,7 +596,7 @@ public void mediaRecorderPause(final String terminal, final int duration, final 
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -611,7 +610,7 @@ public void mediaRecorderResume(final String terminal, final javax.telephony.med
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericRecorderEvent ev = new GenericRecorderEvent(RecorderConstants.ev_Resume,
 				lms.getMediaService(),
@@ -631,7 +630,7 @@ public void mediaRecorderResume(final String terminal, final javax.telephony.med
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -645,7 +644,7 @@ public void mediaSignalDetectorDetected(final String terminal, final Symbol[] si
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericSignalDetectorEvent ev = new GenericSignalDetectorEvent(SignalDetectorConstants.ev_SignalDetected,
 				lms.getMediaService(),
@@ -665,7 +664,7 @@ public void mediaSignalDetectorDetected(final String terminal, final Symbol[] si
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -679,7 +678,7 @@ public void mediaSignalDetectorOverflow(final String terminal, final Symbol[] si
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			final MediaServiceHolder lms = provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericSignalDetectorEvent ev = new GenericSignalDetectorEvent(SignalDetectorConstants.ev_Overflow,
 				lms.getMediaService(),
@@ -699,7 +698,7 @@ public void mediaSignalDetectorOverflow(final String terminal, final Symbol[] si
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -707,14 +706,14 @@ public void mediaSignalDetectorOverflow(final String terminal, final Symbol[] si
  * mediaSignalDetectorPatternMatched method comment.
  */
 public void mediaSignalDetectorPatternMatched(final String terminal, final Symbol[] sigs, final int index) {
-
+
 	// define action block
 	EventHandler eh = new EventHandler() {
 		public void process(Object o) {
 			// Fetch or create the call
 			GenericProvider provider = (GenericProvider)o;
 			GenericMediaService ms = (GenericMediaService)provider.getMediaMgr().findForTerminal(terminal);
-
+
 			// Create the common event
 			final GenericSignalDetectorEvent ev = new GenericSignalDetectorEvent(SignalDetectorConstants.ev_Pattern[index],
 				ms,
@@ -734,7 +733,7 @@ public void mediaSignalDetectorPatternMatched(final String terminal, final Symbo
 			});
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -752,12 +751,12 @@ public void providerPrivateData(final Serializable data, final int cause) {
 			
 			// Create the event
 			GenPrivateProvEv ppe = new GenPrivateProvEv(prov, cause, data);
-
+
 			// dispatch the event
 			prov.sendToObservers(ppe);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -777,7 +776,7 @@ public void terminalConnectionCreated(final CallId id, final String address, fin
 			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -799,7 +798,7 @@ public void terminalConnectionDropped(final CallId id, final String address, fin
 				tc.toDropped(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -818,7 +817,7 @@ public void terminalConnectionHeld(final CallId id, final String address, final 
 			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal).toHeld(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -838,7 +837,7 @@ public void terminalConnectionRinging(final CallId id, final String address, fin
 			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal).toRinging(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -857,7 +856,7 @@ public void terminalConnectionTalking(final CallId id, final String address, fin
 			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal).toTalking(cause);
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }
@@ -878,16 +877,16 @@ public void terminalPrivateData(final String terminal, final Serializable data, 
 				
 				// Create the event
 				GenPrivateTermEv pte = new GenPrivateTermEv(term, cause, data);
-
+
 				// dispatch the event
 				term.sendToObservers(pte);
-
+
 			} catch (InvalidArgumentException iae) {
 				// terminal is unknown -- eat this event
 			}
 		}
 	};
-
+
 	// dispatch for processing
 	this.getEventPool().put(eh);
 }

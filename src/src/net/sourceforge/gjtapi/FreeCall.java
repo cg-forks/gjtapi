@@ -886,15 +886,19 @@ void toInvalid(int cause) {
 	// set state
 	this.setState(Call.INVALID);
 
-	// notify any listeners
-	GenericProvider prov = this.getGenProvider();
-	prov.dispatch(new FreeCallInvalidEv(cause, this));
+	// notify any listeners right away without the GenericProvider's dispatcher
+	// so that we won't run into race conditions where the Listener set is being
+	// iterated over while removeAll() is being performed on it (throwing
+	// a ConcurrentModificationException).
+	// Thanks to Ulf Licht for finding this.
+	new FreeCallInvalidEv(cause, this).dispatch();
 
 	// unregister any remaining listeners
 	this.getListenerMgr().removeAll();
 
 	// tell the raw TelephonyProvider that it may now recycle the CallId
-	this.getGenProvider().getRaw().releaseCallId(this.getCallID());
+	GenericProvider prov = this.getGenProvider();
+	prov.getRaw().releaseCallId(this.getCallID());
 
 	// remove from framework
 	prov.getCallMgr().removeCall(this);
