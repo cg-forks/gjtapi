@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,14 +30,22 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.HashSet;
+import java.util.Set;
+
 import net.sourceforge.gjtapi.*;
 import javax.csapi.cc.jcc.*;
+import javax.jcat.JcatAddress;
+import javax.jcat.JcatAddressListener;
+import javax.jcat.JcatTerminal;
+import javax.telephony.Connection;
+import javax.telephony.Terminal;
 /**
  * A Jain Jcc address adapter for a Generic JTAPI Address object.
  * Creation date: (2000-10-10 14:17:06)
  * @author: Richard Deadman
  */
-public class GenAddress implements JccAddress {
+public class GenAddress implements JccAddress, JcatAddress {
 	private Provider provider;
 	private FreeAddress frameAddr;
 	private int type;	// look up lazily
@@ -126,4 +134,119 @@ private void setProvider(Provider prov) {
 public String toString() {
 	return "Jain Jcc Address adapter for: " + this.getFrameAddr().toString();
 }
+	/**
+	 * Add a JcatAddressListener with a filter.
+	 * @see javax.jcat.JcatAddress#addAddressListener(javax.jcat.JcatAddressListener, javax.csapi.cc.jcc.EventFilter)
+	 */
+	public void addAddressListener(
+		JcatAddressListener addrListener,
+		EventFilter eventFilter) {
+			this.getFrameAddr().addAddressListener(new AddressListenerAdapter((Provider)this.getProvider(), addrListener, eventFilter));
+
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatAddress#deregisterTerminal(javax.jcat.JcatTerminal)
+	 */
+	public void deregisterTerminal(JcatTerminal term)
+		throws
+			InvalidPartyException,
+			MethodNotSupportedException,
+			PrivilegeViolationException {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * Get the connections currently associated with this
+	 * address.
+	 * @see javax.jcat.JcatAddress#getConnections()
+	 */
+	public Set getConnections() {
+		// Get the array or GJTAPI connections
+		Connection[] conns = this.getFrameAddr().getConnections();
+		if (conns == null) 
+			return null;
+			
+		// now go through the Connections and create wrappers
+		Set results = new HashSet();
+		int len = conns.length;
+		Provider prov = this.provider;
+		for (int i = 0; i < len; i++) {
+			results.add(prov.findConnection((FreeConnection)conns[i]));
+		}
+		return results;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatAddress#getDisplayAllowed()
+	 */
+	public boolean getDisplayAllowed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatAddress#getDisplayText()
+	 */
+	public String getDisplayText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * Get the set of terminals currently mapped to this
+	 * address.
+	 * <P>Unlike JTAPI, under Jcat Terminals can be registered
+	 * and deregistered dynamically with an Address.
+	 * @see javax.jcat.JcatAddress#getTerminals()
+	 */
+	public Set getTerminals() {
+		// Get the array or GJTAPI connections
+		Terminal[] terms = this.getFrameAddr().getTerminals();
+		if (terms == null) 
+			return null;
+			
+		// now go through the Terminals and create wrappers
+		Set results = new HashSet();
+		int len = terms.length;
+		Provider prov = this.provider;
+		for (int i = 0; i < len; i++) {
+			results.add(prov.findTerminal((FreeTerminal)terms[i]));
+		}
+		return results;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatAddress#registerTerminal(javax.jcat.JcatTerminal)
+	 */
+	public void registerTerminal(JcatTerminal term)
+		throws
+			InvalidPartyException,
+			MethodNotSupportedException,
+			PrivilegeViolationException {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * Remove an AddressListener.
+	 * <P>This creates an "equality" tested listener and removes it from
+	 * the GJTAPI Address.
+	 * @see javax.jcat.JcatAddress#removeAddressListener(javax.jcat.JcatAddressListener)
+	 */
+	public void removeAddressListener(JcatAddressListener addrListener) {
+		this.getFrameAddr().removeAddressListener(new AddressListenerAdapter((Provider)this.getProvider(), addrListener, null));
+
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatAddress#setDisplayText(java.lang.String, boolean)
+	 */
+	public void setDisplayText(String text, boolean displayAllowed)
+		throws InvalidArgumentException {
+		// TODO Auto-generated method stub
+
+	}
+
 }

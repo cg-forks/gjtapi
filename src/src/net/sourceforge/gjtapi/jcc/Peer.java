@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 

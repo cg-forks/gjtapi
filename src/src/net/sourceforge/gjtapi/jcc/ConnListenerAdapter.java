@@ -1,10 +1,10 @@
 package net.sourceforge.gjtapi.jcc;
-
+
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
-
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
+
 	All rights reserved. 
-
+
 	Permission is hereby granted, free of charge, to any person obtaining a 
 	copy of this software and associated documentation files (the 
 	"Software"), to deal in the Software without restriction, including 
@@ -14,7 +14,7 @@ package net.sourceforge.gjtapi.jcc;
 	copyright notice(s) and this permission notice appear in all copies of 
 	the Software and that both the above copyright notice(s) and this 
 	permission notice appear in supporting documentation. 
-
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
 	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
@@ -24,7 +24,7 @@ package net.sourceforge.gjtapi.jcc;
 	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
 	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
 	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
-
+
 	Except as contained in this notice, the name of a copyright holder 
 	shall not be used in advertising or otherwise to promote the sale, use 
 	or other dealings in this Software without prior written authorization 
@@ -32,8 +32,10 @@ package net.sourceforge.gjtapi.jcc;
 */
 import net.sourceforge.gjtapi.FreeConnection;
 import javax.csapi.cc.jcc.*;
+import javax.jcat.JcatConnection;
+import javax.jcat.JcatConnectionEvent;
+import javax.jcat.JcatConnectionListener;
 import javax.telephony.*;
-import javax.telephony.callcontrol.*;
 /**
  * This is a simple adapter that listens for JTAPI Connection events and translates
  * them into JccConnection events.
@@ -50,7 +52,7 @@ public ConnListenerAdapter(Provider prov,
 		JccConnectionListener listener,
 		EventFilter filter) {
 	super(prov, listener);
-
+
 	this.setRealConnectionListener(listener);
 	this.setConnFilter(filter);
 }
@@ -65,7 +67,7 @@ public void connectionAddressAnalyse(net.sourceforge.gjtapi.FreeConnection conn,
 	GenConnection gc = this.getProv().findConnection(conn);
 	if (gc != null)
 		gc.setJccState(JccConnection.ADDRESS_ANALYZE);
-
+
 	EventFilter filter = this.getConnFilter();
 	JccConnectionEvent ce = new ExtraConnEvent(gc,
 									JccConnectionEvent.CONNECTION_ADDRESS_ANALYZE,
@@ -90,7 +92,7 @@ public void connectionAddressCollect(net.sourceforge.gjtapi.FreeConnection conn,
 	GenConnection gc = this.getProv().findConnection(conn);
 	if (gc != null)
 		gc.setJccState(JccConnection.ADDRESS_COLLECT);
-
+
 	EventFilter filter = this.getConnFilter();
 	JccConnectionEvent ce = new ExtraConnEvent(gc,
 									JccConnectionEvent.CONNECTION_ADDRESS_COLLECT,
@@ -129,7 +131,7 @@ public void connectionAuthorizeCallAttempt(net.sourceforge.gjtapi.FreeConnection
 	GenConnection gc = this.getProv().findConnection(conn);
 	if (gc != null)
 		gc.setJccState(JccConnection.AUTHORIZE_CALL_ATTEMPT);
-
+
 	EventFilter filter = this.getConnFilter();
 	JccConnectionEvent ce = new ExtraConnEvent(gc,
 									JccConnectionEvent.CONNECTION_AUTHORIZE_CALL_ATTEMPT,
@@ -154,7 +156,7 @@ public void connectionCallDelivery(net.sourceforge.gjtapi.FreeConnection conn, i
 	GenConnection gc = this.getProv().findConnection(conn);
 	if (gc != null)
 		gc.setJccState(JccConnection.CALL_DELIVERY);
-
+
 	EventFilter filter = this.getConnFilter();
 	JccConnectionEvent ce = new ExtraConnEvent(gc,
 									JccConnectionEvent.CONNECTION_CALL_DELIVERY,
@@ -176,7 +178,7 @@ public void connectionConnected(ConnectionEvent event) {
 	GenConnection gc = this.getProv().findConnection((FreeConnection)event.getConnection());
 	if (gc != null)
 		gc.setJccState(JccConnection.CONNECTED);
-
+
 	EventFilter filter = this.getConnFilter();
 	JccConnectionEvent ce = new GenConnEvent(this.getProv(), event);
 	int disposition = EventFilter.EVENT_NOTIFY;
@@ -236,14 +238,33 @@ public void connectionInProgress(ConnectionEvent event) {
 	// Jcc no longer supports this event
 }
 /**
- * Send an Address_Analyze event off to the listener, and have the listener update the Jcc
+ * Send an connectionSuspended event off to the listener, and have the listener update the Jcc
  * state flag.
  * Creation date: (2000-11-15 13:53:10)
  * @param conn net.sourceforge.gjtapi.FreeConnection
  * @param cause int
  */
 public void connectionSuspended(net.sourceforge.gjtapi.FreeConnection conn, int cause) {
-	// Jcc no longer supports suspended events
+	// Jcc no longer supports suspended events, but Jcat does
+	if (this.getRealConnectionListener() instanceof JcatConnectionListener) {
+		GenConnection gc = this.getProv().findConnection(conn);
+		if (gc != null)
+			gc.setJccState(JcatConnection.SUSPENDED);
+
+		EventFilter filter = this.getConnFilter();
+		JcatConnectionEvent ce = new ExtraConnEvent(gc,
+										JcatConnectionEvent.CONNECTION_SUSPENDED,
+										cause);
+		int disposition = EventFilter.EVENT_NOTIFY;
+		if (filter != null)
+			disposition = filter.getEventDisposition(ce);
+		if (disposition != EventFilter.EVENT_DISCARD) {
+			((JcatConnectionListener)this.getRealConnectionListener()).connectionSuspended(ce);
+		}
+		if (disposition == EventFilter.EVENT_BLOCK)
+			((GenConnection)ce.getConnection()).setBlocked(true);
+		
+	}
 }
 /**
  * connectionAlerting method comment.

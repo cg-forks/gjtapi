@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc.filter;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Richard Deadman, Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,6 +30,9 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.csapi.cc.jcc.*;
 /**
  * This requires a complete ordering of values in JCPAddress. The ordering is arranged by defining the order to be by JCPAddress.getName()'s string order.
@@ -43,6 +46,7 @@ are matched, then return nomatchDisposition.
  */
 public class AddressREFilter implements EventFilter {
 	private String regEx = null;
+	private Pattern pattern = null; 
 	private int match = -1;
 	private int noMatch = -1;
 /**
@@ -80,8 +84,8 @@ public int getEventDisposition(JccEvent e) {
 		JccConnection[] conns = ((JccCallEvent)e).getCall().getConnections();
 		for (int i = 0; i < conns.length; i++) {
 			String addr = conns[i].getAddress().getName();
-
-			if (this.match(this.getRegEx(), addr)) {
+			Matcher m = this.pattern.matcher(addr);
+			if (m.matches()) {
 					return this.getMatch();
 				}
 		}
@@ -89,7 +93,7 @@ public int getEventDisposition(JccEvent e) {
 	return this.getNoMatch();
 }
 /**
- * Insert the method's description here.
+ * Get the disposition value to return on a match.
  * Creation date: (2000-11-08 13:00:10)
  * @return int
  */
@@ -97,7 +101,7 @@ private int getMatch() {
 	return match;
 }
 /**
- * Insert the method's description here.
+ * Get the no-match disposition flag to return on no match.
  * Creation date: (2000-11-08 13:00:10)
  * @return int
  */
@@ -105,7 +109,7 @@ private int getNoMatch() {
 	return noMatch;
 }
 /**
- * Insert the method's description here.
+ * Get the Regular expression for the match.
  * Creation date: (2000-11-08 13:00:10)
  * @return java.lang.String
  */
@@ -123,17 +127,7 @@ public int hashCode() {
 	return this.getRegEx().hashCode() + this.getMatch() + this.getNoMatch();
 }
 /**
- * Determine if item matches the "pattern" regular expression.
- * Creation date: (2000-11-08 14:23:56)
- * @return true on a successful match.
- * @param pattern A regular expression pattern to match
- * @param item java.lang.String
- */
-protected boolean match(String pattern, String item) {
-	throw new RuntimeException("Regular Expression package not defined.");
-}
-/**
- * Insert the method's description here.
+ * Set the match return value.
  * Creation date: (2000-11-08 13:00:10)
  * @param newMatch int
  */
@@ -141,7 +135,7 @@ private void setMatch(int newMatch) {
 	match = newMatch;
 }
 /**
- * Insert the method's description here.
+ * Set the value to return if no match is found
  * Creation date: (2000-11-08 13:00:10)
  * @param newNoMatch int
  */
@@ -149,12 +143,13 @@ private void setNoMatch(int newNoMatch) {
 	noMatch = newNoMatch;
 }
 /**
- * Insert the method's description here.
+ * Set the Regular Expression I match on.
  * Creation date: (2000-11-08 13:00:10)
  * @param newRegEx java.lang.String
  */
 private void setRegEx(java.lang.String newRegEx) {
 	regEx = newRegEx;
+	this.pattern = Pattern.compile(newRegEx);
 }
 /**
  * Describe myself

@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,9 +30,16 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.Address;
 import net.sourceforge.gjtapi.*;
 import javax.csapi.cc.jcc.*;
+import javax.jcat.JcatAddress;
+import javax.jcat.JcatCall;
+import javax.jcat.JcatConnection;
+import javax.jcat.JcatTerminal;
+import javax.jcat.JcatTerminalConnection;
+import javax.jcat.JcatTerminalConnectionListener;
+import javax.telephony.Connection;
+
 import java.util.*;
 /**
  * Wrapper for a Generic JTAPI Framework Call object to make it Jain Jcc compliant.
@@ -43,7 +50,7 @@ import java.util.*;
  * Creation date: (2000-10-10 12:42:59)
  * @author: Richard Deadman
  */
-public class GenCall implements JccCall {
+public class GenCall implements JccCall, JcatCall {
 
 	/**
 	 * Supervisor alarm.
@@ -364,16 +371,16 @@ public JccProvider getProvider() {
 public int getState() {
 	switch (this.getFrameCall().getState()) {
 		case javax.telephony.Call.IDLE: {
-			return this.IDLE;
+			return JccCall.IDLE;
 		}
 		case javax.telephony.Call.ACTIVE: {
-			return this.ACTIVE;
+			return JccCall.ACTIVE;
 		}
 		case javax.telephony.Call.INVALID: {
-			return this.INVALID;
+			return JccCall.INVALID;
 		}
 	}
-	return this.INVALID;
+	return JccCall.INVALID;
 }
 /**
  * Return the set of Supervisor Runnables that are invoked on a call when if goes active.
@@ -551,4 +558,302 @@ public void superviseCall(JccCallListener cl, double time, int treatment) throws
 public String toString() {
 	return "Jcc Call for: " + this.getFrameCall().toString();
 }
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatCall#addTerminalConnectionListener(javax.jcat.JcatTerminalConnectionListener)
+	 */
+	public void addTerminalConnectionListener(JcatTerminalConnectionListener termConnListener)
+		throws MethodNotSupportedException, ResourceUnavailableException {
+		this.getFrameCall().addCallListener(new TerminalConnectionListenerAdapter((Provider)this.getProvider(), termConnListener));
+
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatCall#blindTransfer(java.lang.String)
+	 */
+	public JcatConnection blindTransfer(String dialledDigits)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			InvalidPartyException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * Conference two calls together.
+	 * @see javax.jcat.JcatCall#conference(javax.jcat.JcatCall)
+	 */
+	public void conference(JcatCall otherCall)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+		try {
+			this.getFrameCall().conference(((GenCall)otherCall).getFrameCall());
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			throw new PrivilegeViolationException(pve.getType());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+	}
+
+	/**
+	 * Connect a call from the local address/terminal pair
+	 * to a remote set of digits.
+	 * @see javax.jcat.JcatCall#connect(javax.jcat.JcatTerminal, javax.jcat.JcatAddress, java.lang.String)
+	 */
+	public JcatConnection[] connect(
+		JcatTerminal term,
+		JcatAddress addr,
+		String dialedDigits)
+		throws
+			ResourceUnavailableException,
+			PrivilegeViolationException,
+			InvalidPartyException,
+			InvalidStateException,
+			MethodNotSupportedException {
+		Provider prov = this.provider;
+		JcatConnection[] jconns = null;
+		try {
+			Connection[] conns = this.getFrameCall().connect(((GenTerminal)term).getFrameTerm(),
+									((GenAddress)addr).getFrameAddr(),
+									dialedDigits);
+			int len = conns.length;
+			jconns = new JcatConnection[len];
+			for (int i = 0; i < len; i++) {
+				jconns[i] = prov.findConnection((FreeConnection)conns[i]);
+			}
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			throw new PrivilegeViolationException(pve.getType());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			//throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidPartyException ipe) {
+			throw new InvalidPartyException(ipe.getType());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+		return jconns;
+	}
+
+	/**
+	 * Consult with another address while puting the first call on hold.
+	 * @see javax.jcat.JcatCall#consult(javax.jcat.JcatTerminalConnection, java.lang.String)
+	 */
+	public JcatConnection[] consult(
+		JcatTerminalConnection termconn,
+		String dialedDigits)
+		throws
+			InvalidArgumentException,
+			InvalidPartyException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+		Provider prov = this.provider;
+		JcatConnection[] jconns = null;
+		try {
+			Connection[] conns = this.getFrameCall().consult(((GenTerminalConnection)termconn).getFrameTC(),
+									dialedDigits);
+			int len = conns.length;
+			jconns = new JcatConnection[len];
+			for (int i = 0; i < len; i++) {
+				jconns[i] = prov.findConnection((FreeConnection)conns[i]);
+			}
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			throw new PrivilegeViolationException(pve.getType());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidPartyException ipe) {
+			throw new InvalidPartyException(ipe.getType());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+		return jconns;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatCall#consultTransfer(javax.jcat.JcatCall)
+	 */
+	public void consultTransfer(JcatCall otherCall)
+		throws
+			InvalidArgumentException,
+			InvalidPartyException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+		try {
+			// TODO How do we map this?
+			this.getFrameCall().conference(((GenCall)otherCall).getFrameCall());
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			throw new PrivilegeViolationException(pve.getType());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatCall#getConferenceController()
+	 */
+	public JcatTerminalConnection getConferenceController() {
+		return this.provider.findTerminalConnection((FreeTerminalConnection)this.getFrameCall().getConferenceController());
+	}
+
+	/** Is conferencing allowed on this call?
+	 * @see javax.jcat.JcatCall#getConferenceEnable()
+	 */
+	public boolean getConferenceEnable() {
+		return this.getFrameCall().getConferenceEnable();
+	}
+
+	/**
+	 * Get the TerminalConnection set as the transfer controller.
+	 * This is found by looking for the GJTAPI conference controller
+	 * and then finding the wrapper from the provider.
+	 * @see javax.jcat.JcatCall#getTransferController()
+	 */
+	public JcatTerminalConnection getTransferController() {
+		return this.provider.findTerminalConnection((FreeTerminalConnection)this.getFrameCall().getTransferController());
+	}
+
+	/**
+	 * Test if transfer is supported on the JTAPI terminal connection I wrap.
+	 * @see javax.jcat.JcatCall#getTransferEnable()
+	 */
+	public boolean getTransferEnable() {
+		return this.getFrameCall().getTransferEnable();
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.jcat.JcatCall#removeTerminalConnectionListener(javax.jcat.JcatTerminalConnectionListener)
+	 */
+	public void removeTerminalConnectionListener(JcatTerminalConnectionListener terminalConnectionListener) {
+		this.getFrameCall().removeCallListener(new TerminalConnectionListenerAdapter((Provider)this.getProvider(), terminalConnectionListener));
+
+	}
+
+	/**
+	 * Set the Conference controller by looking under the
+	 * wrappers.
+	 * @see javax.jcat.JcatCall#setConferenceController(javax.jcat.JcatTerminalConnection)
+	 */
+	public void setConferenceController(JcatTerminalConnection tc)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			ResourceUnavailableException {
+		try {
+			this.getFrameCall().setTransferController(((GenTerminalConnection)tc).getFrameTC());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+	}
+
+	/**
+	 * Set the ConferenceEnabled flag for the underlying system.
+	 * @see javax.jcat.JcatCall#setConferenceEnable(boolean)
+	 */
+	public void setConferenceEnable(boolean enabled)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			ResourceUnavailableException {
+		try {
+			this.getFrameCall().setConferenceEnable(enabled);
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			// type descrepency...
+			throw new ResourceUnavailableException(pve.getType());
+		}
+
+	}
+
+	/**
+	 * Set the TransferController that the framework uses.
+	 * @see javax.jcat.JcatCall#setTransferController(javax.jcat.JcatTerminalConnection)
+	 */
+	public void setTransferController(JcatTerminalConnection termconn)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			ResourceUnavailableException {
+		try {
+			this.getFrameCall().setTransferController(((GenTerminalConnection)termconn).getFrameTC());
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.ResourceUnavailableException rue) {
+			throw new ResourceUnavailableException(rue.getType());
+		}
+
+	}
+
+	/**
+	 * Set the flag for if transfer is enabled.
+	 * @see javax.jcat.JcatCall#setTransferEnable(boolean)
+	 */
+	public void setTransferEnable(boolean enabled)
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			ResourceUnavailableException {
+		try {
+			this.getFrameCall().setTransferEnable(enabled);
+		} catch (javax.telephony.InvalidArgumentException iae) {
+			throw new InvalidArgumentException(iae.getMessage());
+		} catch (javax.telephony.InvalidStateException ise) {
+			throw new InvalidStateException(ise.getObject(), ise.getObjectType(), ise.getState(), ise.getMessage());
+		} catch (javax.telephony.MethodNotSupportedException mnse) {
+			throw new MethodNotSupportedException(mnse.getMessage());
+		} catch (javax.telephony.PrivilegeViolationException pve) {
+			// type descrepency...
+			throw new ResourceUnavailableException(pve.getType());
+		}
+
+	}
+
 }

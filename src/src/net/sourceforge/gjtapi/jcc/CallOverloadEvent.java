@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -52,7 +52,7 @@ public CallOverloadEvent(JccAddress addr, int evId) {
  * getCause method comment.
  */
 public int getCause() {
-	return this.CAUSE_NETWORK_CONGESTION;
+	return JccEvent.CAUSE_NETWORK_CONGESTION;
 }
 /**
  * getID method comment.

@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc.filter;
 
 /*
-	Copyright (c) 2002 Richard Deadman, Deadman Consulting (www.deadman.ca) 
+	Copyright (c) 2003 Richard Deadman, Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,29 +30,34 @@ package net.sourceforge.gjtapi.jcc.filter;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.csapi.cc.jcc.*;
+import javax.jcat.JcatCallEvent;
+import javax.jcat.JcatConnection;
+import javax.jcat.JcatTerminalConnection;
 /**
- * This requires a complete ordering of values in JCPAddress. The ordering is arranged by defining the order to be by JCPAddress.getName()'s string order.
-For each address in the call obtained by event.getCall(), apply the following. Obtain a string using address.getName(). If
-this string matches the regular expression addressRE, the filter returns the value matchDisposition. If no such addresses
+ * 
+For each terminal in the call obtained by event.getCall(), apply the following. Obtain a string using terminal.getName(). If
+this string matches the regular expression terminalRE, the filter returns the value matchDisposition. If no such terminals
 are matched, then return nomatchDisposition.
  *
  * <P>I haven't got a regular expression package yet, so getEventDisposition() throws a RuntimeException.
- * Creation date: (2000-11-08 12:59:01)
+ * Creation date: (2003-11-04 12:59:01)
  * @author: Richard Deadman
  */
-public class OrigAddressREFilter implements EventFilter {
+public class TerminalREFilter implements EventFilter {
 	private String regEx = null;
-	private Pattern pattern = null;
+	private Pattern pattern = null; 
 	private int match = -1;
 	private int noMatch = -1;
 /**
- * AddressREFilter constructor comment.
+ * TerminalREFilter constructor comment.
  */
-public OrigAddressREFilter(String addressRE, int matchDisposition, int noMatchDisposition) {
+public TerminalREFilter(String addressRE, int matchDisposition, int noMatchDisposition) {
 	super();
 
 	this.setRegEx(addressRE);
@@ -68,8 +73,8 @@ public OrigAddressREFilter(String addressRE, int matchDisposition, int noMatchDi
  * @see java.util.Hashtable
  */
 public boolean equals(Object obj) {
-	if (obj instanceof OrigAddressREFilter) {
-		OrigAddressREFilter af = (OrigAddressREFilter)obj;
+	if (obj instanceof TerminalREFilter) {
+		TerminalREFilter af = (TerminalREFilter)obj;
 		return this.getRegEx().equals(af.getRegEx()) &&
 			(this.getMatch() == af.getMatch()) &&
 			(this.getNoMatch() == af.getNoMatch());
@@ -80,22 +85,28 @@ public boolean equals(Object obj) {
  * getEventDisposition method comment.
  */
 public int getEventDisposition(JccEvent e) {
-	if (e instanceof JccCallEvent) {
-		JccConnection[] conns = ((JccCallEvent)e).getCall().getConnections();
+	if (e instanceof JcatCallEvent) {
+		JcatConnection[] conns = (JcatConnection[])((JcatCallEvent)e).getCall().getConnections();
 		for (int i = 0; i < conns.length; i++) {
-			JccConnection jc = (JccConnection)conns[i];
-			String addr = jc.getOriginatingAddress().getName();
-			Matcher m = this.pattern.matcher(addr);
-			if (m.matches()) {
-				return this.getMatch();
+			// now look for each TerminalConnection
+			JcatConnection conn = conns[i];
+			Set tcSet = conn.getTerminalConnections();
+			Iterator it = tcSet.iterator();
+			while (it.hasNext()) {
+				JcatTerminalConnection tc = (JcatTerminalConnection)it.next();
+				String termName = tc.getTerminal().getName();
+				Matcher m = this.pattern.matcher(termName);
+				if (m.matches()) {
+					return this.getMatch();
+				}
 			}
 		}
 	}
 	return this.getNoMatch();
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-11-08 13:00:10)
+ * Get the match disposition.
+ * Creation date: (2003-11-08 13:00:10)
  * @return int
  */
 private int getMatch() {
@@ -103,7 +114,7 @@ private int getMatch() {
 }
 /**
  * Insert the method's description here.
- * Creation date: (2000-11-08 13:00:10)
+ * Creation date: (2003-11-08 13:00:10)
  * @return int
  */
 private int getNoMatch() {
@@ -111,7 +122,7 @@ private int getNoMatch() {
 }
 /**
  * Insert the method's description here.
- * Creation date: (2000-11-08 13:00:10)
+ * Creation date: (2003-11-08 13:00:10)
  * @return java.lang.String
  */
 private java.lang.String getRegEx() {
@@ -129,7 +140,7 @@ public int hashCode() {
 }
 /**
  * Insert the method's description here.
- * Creation date: (2000-11-08 13:00:10)
+ * Creation date: (2003-11-08 13:00:10)
  * @param newMatch int
  */
 private void setMatch(int newMatch) {
@@ -137,15 +148,15 @@ private void setMatch(int newMatch) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (2000-11-08 13:00:10)
+ * Creation date: (2003-11-08 13:00:10)
  * @param newNoMatch int
  */
 private void setNoMatch(int newNoMatch) {
 	noMatch = newNoMatch;
 }
 /**
- * Store the regular expression and its compiled version.
- * Creation date: (2000-11-08 13:00:10)
+ * Set the Regular Expression I match on.
+ * Creation date: (2003-11-08 13:00:10)
  * @param newRegEx java.lang.String
  */
 private void setRegEx(java.lang.String newRegEx) {
@@ -157,6 +168,6 @@ private void setRegEx(java.lang.String newRegEx) {
  * @return a string representation of the receiver
  */
 public String toString() {
-	return "Originating Regular Expression Filter for: " + this.getRegEx();
+	return "Regular Expression Filter for: " + this.getRegEx();
 }
 }

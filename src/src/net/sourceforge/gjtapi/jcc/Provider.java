@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
+	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -33,15 +33,23 @@ package net.sourceforge.gjtapi.jcc;
 import net.sourceforge.gjtapi.*;
 import net.sourceforge.gjtapi.jcc.filter.*;
 import javax.csapi.cc.jcc.*;
-import javax.telephony.*;
+import javax.jcat.JcatAddress;
+import javax.jcat.JcatProvider;
+import javax.telephony.Call;
+import javax.telephony.CallListener;
+import javax.telephony.Connection;
+import javax.telephony.Terminal;
+
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.lang.ref.WeakReference;
 /**
  * Provider of JAIN Call Control services as a layer on the Generic JTAPI Framework.
  * Creation date: (2000-10-10 12:33:24)
  * @author: Richard Deadman
  */
-public class Provider implements JccProvider {
+public class Provider implements JccProvider, JcatProvider {
 
 	/**
 	 * Support class for tracking Generic JTAPI object associations back to
@@ -75,6 +83,8 @@ public class Provider implements JccProvider {
 	private DoubleWeakMap addrMap = new DoubleWeakMap();
 	private DoubleWeakMap callMap = new DoubleWeakMap();
 	private DoubleWeakMap connMap = new DoubleWeakMap();
+	private DoubleWeakMap termMap = new DoubleWeakMap();
+	private DoubleWeakMap termConnMap = new DoubleWeakMap();
 /**
  * Provider constructor comment.
  */
@@ -219,7 +229,7 @@ public void callOverloadCeased(FreeAddress addr) {
 			EventFilter filter = (EventFilter)entry.getValue();
 			CallLoadControlEvent event = new CallOverloadEvent(this.findAddress(addr),
 						CallLoadControlEvent.PROVIDER_CALL_OVERLOAD_CEASED);
-			if ((filter == null) || (filter.getEventDisposition(event) != filter.EVENT_DISCARD))
+			if ((filter == null) || (filter.getEventDisposition(event) != EventFilter.EVENT_DISCARD))
 				listener.providerCallOverloadCeased(event);
 		}
 	}
@@ -239,7 +249,7 @@ public void callOverloadEncountered(FreeAddress addr) {
 			EventFilter filter = (EventFilter)entry.getValue();
 			CallLoadControlEvent event = new CallOverloadEvent(this.findAddress(addr),
 						CallLoadControlEvent.PROVIDER_CALL_OVERLOAD_ENCOUNTERED);
-			if ((filter == null) || (filter.getEventDisposition(event) != filter.EVENT_DISCARD))
+			if ((filter == null) || (filter.getEventDisposition(event) != EventFilter.EVENT_DISCARD))
 				listener.providerCallOverloadEncountered(event);
 		}
 	}
@@ -391,6 +401,43 @@ GenAddress findAddress(FreeAddress jtapiAddr) {
 		return addr;
 	}
 }
+
+/**
+ * Find the JcatTerminalConnection object that wraps the given JTAPI TerminalConnection object.
+ * Creation date: (2000-10-31 15:17:00)
+ * @return net.sourceforge.gjtapi.jcc.GenTerminalConnection
+ * @param jtapiAddr javax.telephony.TerminalConnection
+ */
+GenTerminalConnection findTerminalConnection(FreeTerminalConnection jtapiTermConn) {
+	DoubleWeakMap termConnMap = this.getTermConnMap();
+	synchronized(termConnMap) {
+		GenTerminalConnection termConn = (GenTerminalConnection)termConnMap.get(jtapiTermConn);
+		if (termConn == null) {
+			termConn = new GenTerminalConnection(this, jtapiTermConn);
+			addrMap.put(jtapiTermConn, termConn);
+		}
+		return termConn;
+	}
+}
+
+/**
+ * Find the JccAddress object that wraps the given JTAPI Address object.
+ * Creation date: (2000-10-31 15:17:00)
+ * @return net.sourceforge.gjtapi.jcc.GenCall
+ * @param jtapiAddr javax.telephony.Address
+ */
+GenTerminal findTerminal(FreeTerminal jtapiTerm) {
+	DoubleWeakMap termMap = this.getTermMap();
+	synchronized(termMap) {
+		GenTerminal term = (GenTerminal)termMap.get(jtapiTerm);
+		if (term == null) {
+			term = new GenTerminal(this, jtapiTerm);
+			addrMap.put(jtapiTerm, term);
+		}
+		return term;
+	}
+}
+
 /**
  * Find the JccCall object that wraps the given JTAPI call object.
  * Creation date: (2000-10-31 15:17:00)
@@ -438,12 +485,30 @@ public JccAddress getAddress(String number) throws javax.csapi.cc.jcc.InvalidPar
 	}
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-31 15:15:21)
+ * Get the weak map to the set of Addresses, indexed by JTAPI Addresses
+ * Creation date: (2002-10-31 15:15:21)
  * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
  */
 private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getAddrMap() {
 	return addrMap;
+}
+
+/**
+ * Get the weak map to the set of Terminals, indexed by JTAPI Terminals
+ * Creation date: (2003-10-31 15:15:21)
+ * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
+ */
+private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getTermMap() {
+	return termMap;
+}
+
+/**
+ * Get the weak map to the set of TerminalConnections, indexed by JTAPI TerminalConnections
+ * Creation date: (2003-10-31 15:15:21)
+ * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
+ */
+private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getTermConnMap() {
+	return termConnMap;
 }
 /**
  * Return the map of listeners to adapters for calls.
@@ -683,4 +748,86 @@ public String toString() {
 			gjtapiCall.addCallListener((CallListener)it.next());
 		}
 	}
+	/**
+	 * This method returns a standard EventFilter which is implemented by
+	 * the JCAT platform. For all events that require filtering by this
+	 * EventFilter, apply the following:
+	 * <ul>
+	 *  <li>If the terminal name is matched, the filter returns the value matchDisposition.
+	 *  <li>If the terminal name is not matched, then return nomatchDisposition.
+	 * </ul>
+	 * @see javax.jcat.JcatProvider#createEventFilterRegistration(java.lang.String, int, int)
+	 */
+	public EventFilter createEventFilterRegistration(
+		String terminalNameRegex,
+		int matchDisposition,
+		int nomatchDisposition)
+		throws ResourceUnavailableException, InvalidArgumentException {
+			return new net.sourceforge.gjtapi.jcc.filter.TerminalREFilter(terminalNameRegex, matchDisposition, nomatchDisposition);
+	}
+
+	/**
+	 * Returns a Set of JcatCall objects in which the JcatAddress participates.
+     * The call are currently associated with the JcatProvider. When a JcatCall
+     * moves into the JccCall.INVALID state, the JcatProvider loses its reference
+     * to this JcatCall. Therefore, all Calls returned by this method must either
+     * be in the JccCall.ACTIVE state. This method returns an empty Set if zero calls match the request.
+     * 
+	 * @see javax.jcat.JcatProvider#getCalls(javax.jcat.JcatAddress)
+	 */
+	public Set getCalls(JcatAddress address) {
+		String addrName = address.getName();
+		Set results = new HashSet();
+		// get all the calls on the GJTAPI provider
+		try {
+			Call[] calls = this.getGenProv().getCalls();
+			if ((calls == null) || (calls.length == 0))
+				return results;
+			int len = calls.length;
+			for (int i = 0; i < len; i++) {
+				Call call = calls[i];
+				Connection[] conns = call.getConnections();
+				int connLen = conns.length;
+				for (int j = 0; j < connLen; j++) {
+					Connection conn = conns[j];
+					if (conn.getAddress().getName().equals(addrName)) {
+						results.add(new GenCall(this, (FreeCall)call));
+						j = connLen;	// don't need to check any more connections
+					}
+				}
+			}
+		} catch (javax.telephony.ResourceUnavailableException ruex) {
+			// I guess we return an empty set!
+			System.err.println("ResourceUnavailableException on getCalls(" + address + ") -- returning empty set.");
+		}
+		return results;
+	}
+
+	/**
+	 * Returns a Set of JcatTerminal objects administered by the JcatProvider
+	 * who's name satisfies the regular expression.
+	 * <P>Note that the underlying system may throw a ResourceUnavailableException
+	 * when trying to get all Terminals for matching, but we cannot. For now we log and eat the exception.
+	 * @see javax.jcat.JcatProvider#getTerminals(java.lang.String)
+	 */
+	public Set getTerminals(String nameRegex) {
+		Set results = new HashSet();
+		try {
+			Terminal[] terms = this.getGenProv().getTerminals();
+			if ((terms == null) || (terms.length == 0))
+				return results;
+			Pattern p = Pattern.compile(nameRegex);
+			int len = terms.length;
+			for (int i = 0; i < len; i++) {
+				Matcher m = p.matcher(terms[i].getName());
+				if (m.matches())
+					results.add(new GenTerminal(this, (FreeTerminal)terms[i]));
+			}
+		} catch (javax.telephony.ResourceUnavailableException ruex) {
+			// I guess we return an empty set!
+			System.err.println("ResourceUnavailableException on getTerminals(" + nameRegex + ") -- returning empty set.");
+		}
+		return results;
+	}
+
 }

@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
+	Copyright (c) 2003, Richard Deadman, Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,55 +30,31 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.csapi.cc.jcc.*;
+import javax.csapi.cc.jcc.EventFilter;
+import javax.jcat.JcatAddressEvent;
+import javax.jcat.JcatAddressListener;
 import javax.telephony.*;
 /**
- * This is a simple adapter that listens for JTAPI Call events and translates
- * them into JccCall events.
- * Creation date: (2000-10-11 15:09:31)
+ * This is a simple adapter that listens for JTAPI Address events and translates
+ * them into JcatAddress events.
+ * Creation date: (2003-10-11 15:09:31)
  * @author: Richard Deadman
  */
-public class CallListenerAdapter implements CallListener {
+public class AddressListenerAdapter implements AddressListener {
 	private Provider prov = null;
-	private JccCallListener realCallListener = null;
+	private JcatAddressListener realAddressListener = null;
+	private EventFilter filter = null;
 /**
  * EventConnectionAdapter constructor comment.
  */
-public CallListenerAdapter(Provider prov,
-			JccCallListener listener) {
+public AddressListenerAdapter(Provider prov,
+		JcatAddressListener listener,
+		EventFilter filter) {
 	super();
 
 	this.setProv(prov);
-	this.setRealCallListener(listener);
-}
-/**
- * Forward the event if the filter doesn't tell me to shut the event down.
- */
-public void callActive(CallEvent event) {
-	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	this.getRealCallListener().callActive(ce);
-}
-/**
- * Forward the event if the filter doesn't tell me to shut the event down.
- * <P> This is used in Provider.createCall() to notify Listeners of new calls they are
- * registered with.
- */
-void callCreated(JccCallEvent event) {
-	this.getRealCallListener().callCreated(event);
-}
-/**
- * Forward the event if the filter doesn't tell me to shut the event down.
- */
-public void callEventTransmissionEnded(CallEvent event) {
-	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	this.getRealCallListener().callEventTransmissionEnded(ce);
-}
-/**
- * Forward the event if the filter doesn't tell me to shut the event down.
- */
-public void callInvalid(CallEvent event) {
-	JccCallEvent ce = new GenCallEvent(this.getProv(), event);
-	this.getRealCallListener().callInvalid(ce);
+	this.setRealAddressListener(listener);
+	this.setFilter(filter);
 }
 /**
  * Compares two objects for equality. Returns a boolean that indicates
@@ -89,26 +65,27 @@ public void callInvalid(CallEvent event) {
  * @see java.util.Hashtable
  */
 public boolean equals(Object obj) {
-	if (obj instanceof CallListenerAdapter)
-		return this.getRealCallListener().equals(((CallListenerAdapter)obj).getRealCallListener());
-	else
-		return false;
+	if (obj instanceof AddressListenerAdapter) {
+		// test that they have the same real Listener
+		return this.getRealAddressListener().equals(((AddressListenerAdapter)obj).getRealAddressListener());
+	}
+	return false;
 }
 /**
  * Get the provider that I am attached to
- * Creation date: (2000-10-30 10:43:58)
+ * Creation date: (2003-10-30 10:43:58)
  * @return com.uforce.jain.generic.Provider
  */
 Provider getProv() {
 	return prov;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:27:59)
+ * Getter for the Jcat AddressListener I wrap
+ * Creation date: (2003-10-30 10:27:59)
  * @return jain.application.services.jcc.JccCallListener
  */
-private JccCallListener getRealCallListener() {
-	return realCallListener;
+private JcatAddressListener getRealAddressListener() {
+	return this.realAddressListener;
 }
 /**
  * Generates a hash code for the receiver.
@@ -118,61 +95,60 @@ private JccCallListener getRealCallListener() {
  * @see java.util.Hashtable
  */
 public int hashCode() {
-	return this.getRealCallListener().hashCode();
+	return this.getRealAddressListener().hashCode();
 }
 /**
- * Not supported by Jcc
- */
-public void multiCallMetaMergeEnded(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void multiCallMetaMergeStarted(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void multiCallMetaTransferEnded(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void multiCallMetaTransferStarted(MetaEvent event) {}
-/**
  * Insert the method's description here.
- * Creation date: (2000-10-30 10:43:58)
+ * Creation date: (2003-10-30 10:43:58)
  * @param newProv com.uforce.jain.generic.Provider
  */
 private void setProv(Provider newProv) {
 	prov = newProv;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:27:59)
+ * Setter for the Jcat AddressListener I wrap
+ * Creation date: (2003-10-30 10:27:59)
  * @param newRealCallListener jain.application.services.jcc.JccCallListener
  */
-private void setRealCallListener(JccCallListener newRealCallListener) {
-	realCallListener = newRealCallListener;
+private void setRealAddressListener(JcatAddressListener newRealAddressListener) {
+	this.realAddressListener = newRealAddressListener;
 }
-/**
- * Not supported by Jcc
- */
-public void singleCallMetaProgressEnded(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void singleCallMetaProgressStarted(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void singleCallMetaSnapshotEnded(MetaEvent event) {}
-/**
- * Not supported by Jcc
- */
-public void singleCallMetaSnapshotStarted(MetaEvent event) {}
 /**
  * Returns a String that represents the value of this object.
  * @return a string representation of the receiver
  */
 public String toString() {
-	return "Listener adapter for Jcc Call Listener: " + this.getRealCallListener();
+	return "Listener adapter for Jcc Address Listener: " + this.getRealAddressListener();
 }
+	/**
+	 * Forward on the listening ended event from JTAPI to Jcc
+	 * @see javax.telephony.AddressListener#addressListenerEnded(javax.telephony.AddressEvent)
+	 */
+	public void addressListenerEnded(AddressEvent event) {
+		JcatAddressEvent ev = new GenAddressEvent(this.getProv(), event);
+		EventFilter ef = this.getFilter();
+		int disposition = EventFilter.EVENT_NOTIFY;
+		if (ef != null)
+			disposition = ef.getEventDisposition(ev);
+		if (disposition == EventFilter.EVENT_NOTIFY)
+			this.getRealAddressListener().addressEventTransmissionEnded(ev);
+
+	}
+
+	/**
+	 * Get the filter for my events.
+	 * @return an EventFilter that determines how events are propagated.
+	 */
+	private EventFilter getFilter() {
+		return filter;
+	}
+
+	/**
+	 * Set my filter that determines if events are propagated
+	 * @param filter The event filter.
+	 */
+	private void setFilter(EventFilter filter) {
+		this.filter = filter;
+	}
+
 }

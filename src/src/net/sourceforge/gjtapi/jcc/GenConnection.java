@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 8x8 Inc. (www.8x8.com)
+	Copyright (c) 2002 Richard Deadman, Deadman Consulting (www.deadman.ca)
 
 	All rights reserved.
 
@@ -30,11 +30,16 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.media.*;
-import javax.telephony.media.*;
+import java.util.HashSet;
+import java.util.Set;
+
 import net.sourceforge.gjtapi.*;
 import javax.csapi.cc.jcc.*;
-import javax.telephony.*;
+import javax.jcat.JcatConnection;
+import javax.telephony.Address;
+import javax.telephony.Connection;
+import javax.telephony.Terminal;
+import javax.telephony.TerminalConnection;
 /**
  * Jain Jcc Connection adapter for a Generic JTAPI Connection.
  *
@@ -44,7 +49,7 @@ import javax.telephony.*;
  * Creation date: (2000-10-10 13:48:56)
  * @author: Richard Deadman
  */
-public class GenConnection implements JccConnection {
+public class GenConnection implements JccConnection, JcatConnection {
 	private Provider prov = null;
 	private Connection frameConn;
 	/**
@@ -691,4 +696,65 @@ public String toString() {
 		.append(this.getFrameConn().toString())
 		.toString();
 }
+	/**
+	 * Create the TerminalConnections for the Connection.
+	 * These must be tested using equality, since more than one wrapper may
+	 * exist for a TerminalConnection.
+	 * @see javax.jcat.JcatConnection#getTerminalConnections()
+	 */
+	public Set getTerminalConnections() {
+		Set results = new HashSet();
+		TerminalConnection[] tcs = this.getFrameConn().getTerminalConnections();
+		// now create the wrappers and add to the set
+		if (tcs != null) {
+			int len = tcs.length;
+			for (int i = 0; i < len; i++) {
+				results.add(new GenTerminalConnection(this.getProv(), (FreeTerminalConnection)tcs[i]));
+			}
+		}
+		return results;
+	}
+
+	/**
+	 * park is not currently supported by GJTAPI
+	 * @see javax.jcat.JcatConnection#park(java.lang.String)
+	 */
+	public JcatConnection park(String destinationAddress)
+		throws
+			InvalidPartyException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+		throw new MethodNotSupportedException("Park not currently supported by GJTAPI");
+	}
+
+	/**
+	 * Not currently supported by GJTAPI
+	 * @see javax.jcat.JcatConnection#reconnect()
+	 */
+	public void reconnect()
+		throws
+			InvalidArgumentException,
+			InvalidStateException,
+			MethodNotSupportedException,
+			PrivilegeViolationException,
+			ResourceUnavailableException {
+				throw new MethodNotSupportedException("Connection Suspend/Reconnect not supported by GJTAPI");
+
+	}
+
+	/**
+	 * Not currently implemented by GJTAPI
+	 * @see javax.jcat.JcatConnection#suspendConnection()
+	 */
+	public void suspendConnection()
+		throws
+			InvalidStateException,
+			MethodNotSupportedException,
+			ResourceUnavailableException {
+		throw new MethodNotSupportedException("Connection Suspend not supported by GJTAPI");
+
+	}
+
 }

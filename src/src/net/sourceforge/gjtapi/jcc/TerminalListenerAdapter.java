@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
+	Copyright (c) 2003, Richard Deadman, Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,24 +30,28 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.csapi.cc.jcc.*;
+import javax.jcat.JcatTerminalEvent;
+import javax.jcat.JcatTerminalListener;
 import javax.telephony.*;
 /**
- * An adapter that converts JTAPI Provider events into Jcp ProviderEvents.
- * Creation date: (2000-10-30 13:36:16)
+ * This is a simple adapter that listens for JTAPI Terminal events and translates
+ * them into JccTerminal events.
+ * Creation date: (2003-10-11 15:09:31)
  * @author: Richard Deadman
  */
-public class ProviderListenerAdapter implements ProviderListener {
-	private Provider prov;
-	private JccProviderListener realListener;
+public class TerminalListenerAdapter implements TerminalListener {
+	private Provider prov = null;
+	private JcatTerminalListener realTerminalListener = null;
 /**
- * ProviderListenerAdapter constructor comment.
+ * Create an adapter for a Jcat TerminalListener so that it
+ * can receive JTAPI events.
  */
-public ProviderListenerAdapter(Provider prov, JccProviderListener listener) {
+public TerminalListenerAdapter(Provider prov,
+			JcatTerminalListener listener) {
 	super();
 
 	this.setProv(prov);
-	this.setRealListener(listener);
+	this.setRealTerminalListener(listener);
 }
 /**
  * Compares two objects for equality. Returns a boolean that indicates
@@ -58,26 +62,27 @@ public ProviderListenerAdapter(Provider prov, JccProviderListener listener) {
  * @see java.util.Hashtable
  */
 public boolean equals(Object obj) {
-	if (obj instanceof ProviderListenerAdapter)
-		return this.getRealListener().equals(((ProviderListenerAdapter)obj).getRealListener());
-	else
-		return false;
+	if (obj instanceof TerminalListenerAdapter) {
+		// test if they have the same real Listener
+		return this.getRealTerminalListener().equals(((TerminalListenerAdapter)obj).getRealTerminalListener());
+	}
+	return false;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 13:40:03)
+ * Get the provider that I am attached to
+ * Creation date: (2003-10-30 10:43:58)
  * @return com.uforce.jain.generic.Provider
  */
-private Provider getProv() {
+Provider getProv() {
 	return prov;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 13:40:03)
- * @return jain.application.services.jcp.JcpProviderListener
+ * Getter for the Jcat TerminalListener I wrap
+ * Creation date: (2003-10-30 10:27:59)
+ * @return javax.jcat.JcatTerminalListener
  */
-private JccProviderListener getRealListener() {
-	return realListener;
+private JcatTerminalListener getRealTerminalListener() {
+	return this.realTerminalListener;
 }
 /**
  * Generates a hash code for the receiver.
@@ -87,59 +92,39 @@ private JccProviderListener getRealListener() {
  * @see java.util.Hashtable
  */
 public int hashCode() {
-	return this.getRealListener().hashCode();
-}
-/**
- * providerEventTransmissionEnded method comment.
- */
-public void providerEventTransmissionEnded(ProviderEvent event) {
-	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	this.getRealListener().providerEventTransmissionEnded(ce);
-}
-/**
- * providerEventTransmissionEnded method comment.
- */
-public void providerInService(ProviderEvent event) {
-	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	this.getRealListener().providerInService(ce);
-}
-/**
- * providerEventTransmissionEnded method comment.
- */
-public void providerOutOfService(ProviderEvent event) {
-	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	this.getRealListener().providerOutOfService(ce);
-}
-/**
- * providerEventTransmissionEnded method comment.
- */
-public void providerShutdown(ProviderEvent event) {
-	JccProviderEvent ce = new GenProviderEvent(this.getProv(), event);
-	this.getRealListener().providerShutdown(ce);
+	return this.getRealTerminalListener().hashCode();
 }
 /**
  * Insert the method's description here.
- * Creation date: (2000-10-30 13:40:03)
+ * Creation date: (2003-10-30 10:43:58)
  * @param newProv com.uforce.jain.generic.Provider
  */
 private void setProv(Provider newProv) {
 	prov = newProv;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 13:40:03)
- * @param newRealListener jain.application.services.jcp.JcpProviderListener
+ * Setter for the Jcat TerminalListener I wrap
+ * Creation date: (2003-10-30 10:27:59)
+ * @param newRealTerminalListener javax.jcat.JcatTerminalListener
  */
-private void setRealListener(JccProviderListener newRealListener) {
-	realListener = newRealListener;
+private void setRealTerminalListener(JcatTerminalListener newRealTerminalListener) {
+	this.realTerminalListener = newRealTerminalListener;
 }
 /**
  * Returns a String that represents the value of this object.
  * @return a string representation of the receiver
  */
 public String toString() {
-	// Insert code to print the receiver here.
-	// This implementation forwards the message to super. You may replace or supplement this.
-	return super.toString();
+	return "Listener adapter for Jcat Terminal Listener: " + this.getRealTerminalListener();
 }
+	/**
+	 * This is the only TerminalListener method supported by GJTAPI
+	 * @see javax.telephony.TerminalListener#terminalListenerEnded(javax.telephony.TerminalEvent)
+	 */
+	public void terminalListenerEnded(TerminalEvent event) {
+		JcatTerminalEvent te = new GenTerminalEvent(this.getProv(), event);
+		this.getRealTerminalListener().eventTransmissionEnded(te);
+
+	}
+
 }

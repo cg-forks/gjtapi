@@ -1,7 +1,7 @@
 package net.sourceforge.gjtapi.jcc;
 
 /*
-	Copyright (c) 2002 Deadman Consulting (www.deadman.ca) 
+	Copyright (c) 2003 Richard Deadman, Deadman Consulting (www.deadman.ca) 
 
 	All rights reserved. 
 
@@ -30,15 +30,17 @@ package net.sourceforge.gjtapi.jcc;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.FreeCall;
-import javax.csapi.cc.jcc.*;
+import net.sourceforge.gjtapi.FreeTerminal;
+import javax.jcat.JcatAddress;
+import javax.jcat.JcatTerminal;
+import javax.jcat.JcatTerminalEvent;
 import javax.telephony.*;
 /**
- * This is a wrapper event that makes a JTAPI CallEvent appear as a JccCallEvent.
- * Creation date: (2000-10-30 10:41:18)
+ * This is a wrapper event that makes a JTAPI TerminalEvent appear as a JcatTerminalEvent.
+ * Creation date: (2003-10-30 10:41:18)
  * @author: Richard Deadman
  */
-public class GenCallEvent implements JccCallEvent {
+public class GenTerminalEvent implements JcatTerminalEvent {
 	/**
 	 * The provider that ccan be used to translate the call object
 	 **/
@@ -46,11 +48,11 @@ public class GenCallEvent implements JccCallEvent {
 	/**
 	 * The real JTAPI event I am wrapping
 	 **/
-	private CallEvent realEvent = null;
+	private TerminalEvent realEvent = null;
 /**
  * GenCallEvent constructor comment.
  */
-public GenCallEvent(Provider prov, CallEvent event) {
+public GenTerminalEvent(Provider prov, TerminalEvent event) {
 	super();
 
 	this.setProv(prov);
@@ -65,16 +67,16 @@ public GenCallEvent(Provider prov, CallEvent event) {
  * @see java.util.Hashtable
  */
 public boolean equals(Object obj) {
-	if (obj instanceof GenCallEvent)
-		return this.getRealEvent().equals(((GenCallEvent)obj).getRealEvent());
+	if (obj instanceof GenTerminalEvent)
+		return this.getRealEvent().equals(((GenTerminalEvent)obj).getRealEvent());
 	else
 		return false;
 }
 /**
  * Ask the Provider to find the call, lazily if necessary, that wraps the JTAPI call.
  */
-public JccCall getCall() {
-	return this.getProv().findCall((FreeCall)this.getRealEvent().getCall());
+public JcatTerminal getTerminal() {
+	return this.getProv().findTerminal((FreeTerminal)this.getRealEvent().getTerminal());
 }
 /**
  * getCause method comment.
@@ -83,42 +85,20 @@ public int getCause() {
 	int jCause = this.getRealEvent().getCause();
 
 	switch (jCause) {
-			// must use JcpCallEvent constants due to error in Jcc 1.0b
-		case CallEvent.CAUSE_CALL_CANCELLED: {
-			return JccCallEvent.CAUSE_CALL_CANCELLED;
+		case TerminalEvent.CAUSE_NORMAL: {
+			return JcatTerminalEvent.CAUSE_NORMAL;
 		} 
-		case CallEvent.CAUSE_DEST_NOT_OBTAINABLE: {
-			return JccCallEvent.CAUSE_DEST_NOT_OBTAINABLE;
+		case TerminalEvent.CAUSE_RESOURCES_NOT_AVAILABLE: {
+			return JcatTerminalEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
 		} 
-		case CallEvent.CAUSE_INCOMPATIBLE_DESTINATION: {
-			return JccCallEvent.CAUSE_INCOMPATIBLE_DESTINATION;
+		case TerminalEvent.CAUSE_SNAPSHOT: {
+			return JcatTerminalEvent.CAUSE_SNAPSHOT;
 		} 
-		case CallEvent.CAUSE_LOCKOUT: {
-			return JccCallEvent.CAUSE_LOCKOUT;
-		} 
-		case CallEvent.CAUSE_NETWORK_CONGESTION: {
-			return JccCallEvent.CAUSE_NETWORK_CONGESTION;
-		} 
-		case CallEvent.CAUSE_NETWORK_NOT_OBTAINABLE: {
-			return JccCallEvent.CAUSE_NETWORK_NOT_OBTAINABLE;
-		} 
-		case CallEvent.CAUSE_NEW_CALL: {
-			return JccCallEvent.CAUSE_NEW_CALL;
-		} 
-		case CallEvent.CAUSE_NORMAL: {
-			return JccCallEvent.CAUSE_NORMAL;
-		} 
-		case CallEvent.CAUSE_RESOURCES_NOT_AVAILABLE: {
-			return JccCallEvent.CAUSE_RESOURCES_NOT_AVAILABLE;
-		} 
-		case CallEvent.CAUSE_SNAPSHOT: {
-			return JccCallEvent.CAUSE_SNAPSHOT;
-		} 
-		case CallEvent.CAUSE_UNKNOWN: {
-			return JccCallEvent.CAUSE_UNKNOWN;
+		case TerminalEvent.CAUSE_UNKNOWN: {
+			return JcatTerminalEvent.CAUSE_UNKNOWN;
 		} 
 		default: {
-			return JccCallEvent.CAUSE_UNKNOWN;
+			return JcatTerminalEvent.CAUSE_UNKNOWN;
 		}
 	}
 }
@@ -128,38 +108,35 @@ public int getCause() {
 public int getID() {
 	int jId = this.getRealEvent().getID();
 	switch (jId) {
-		case CallEvent.CALL_ACTIVE: {
-			return JccCall.ACTIVE;
-		} 
-		case CallEvent.CALL_INVALID: {
-			return JccCall.INVALID;
+		case TerminalEvent.TERMINAL_EVENT_TRANSMISSION_ENDED: {
+			return JcatTerminalEvent.TERMINAL_EVENT_TRANSMISSION_ENDED;
 		} 
 		default: {
-			return JccCall.INVALID;
+			return JcatTerminalEvent.TERMINAL_EVENT_TRANSMISSION_ENDED;
 		}
 	}
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:46:28)
+ * Package-protected accessor for the Jcat Provider implementation.
+ * Creation date: (2003-10-30 10:46:28)
  * @return com.uforce.jain.generic.Provider
  */
 protected Provider getProv() {
 	return prov;
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:48:06)
- * @return javax.telephony.CallEvent
+ * Get the real event that I wrap.
+ * Creation date: (2003-10-30 10:48:06)
+ * @return javax.telephony.TerminalEvent
  */
-private javax.telephony.CallEvent getRealEvent() {
+private javax.telephony.TerminalEvent getRealEvent() {
 	return realEvent;
 }
 /**
  * getSource method comment.
  */
 public Object getSource() {
-	return this.getCall();
+	return this.getTerminal();
 }
 /**
  * Generates a hash code for the receiver.
@@ -172,19 +149,19 @@ public int hashCode() {
 	return this.getRealEvent().hashCode();
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-10-30 10:46:28)
+ * Set the provider that manages me.
+ * Creation date: (2003-10-30 10:46:28)
  * @param newProv com.uforce.jain.generic.Provider
  */
 private void setProv(Provider newProv) {
 	prov = newProv;
 }
 /**
- * Set the real JTAPI CallEvent that I wrap.
- * Creation date: (2000-10-30 10:48:06)
+ * Set the real TerminalEvent that I wrap.
+ * Creation date: (2003-10-30 10:48:06)
  * @param newRealEvent javax.telephony.CallEvent
  */
-private void setRealEvent(javax.telephony.CallEvent newRealEvent) {
+private void setRealEvent(javax.telephony.TerminalEvent newRealEvent) {
 	realEvent = newRealEvent;
 }
 /**
@@ -192,6 +169,15 @@ private void setRealEvent(javax.telephony.CallEvent newRealEvent) {
  * @return a string representation of the receiver
  */
 public String toString() {
-	return "Jcc wrapper for a JTAPI event: " + this.getRealEvent();
+	return "Jcat wrapper for a JTAPI event: " + this.getRealEvent();
 }
+	/**
+	 * Get the address that caused the event on the Terminal
+	 * @see javax.jcat.JcatTerminalEvent#getAddress()
+	 */
+	public JcatAddress getAddress() {
+		// TODO
+		return null;
+	}
+
 }
