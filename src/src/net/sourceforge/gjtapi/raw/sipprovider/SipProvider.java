@@ -416,7 +416,7 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
             
             while (st.hasMoreTokens())
             {
-                pFile = new File("/root/"+st.nextToken());
+                pFile = new File(st.nextToken());
                 pIS = new FileInputStream(pFile);
                 //Properties sipProperties = new Properties();
                 properties.load(pIS);
