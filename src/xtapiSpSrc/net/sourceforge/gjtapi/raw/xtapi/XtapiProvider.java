@@ -841,6 +841,8 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 		// register the call with the line
 		                this.lineToCalls.put(new Integer(ai.line), callId); 
                                 //end sf
+						// and register the call with a terminal
+						this.termToCalls.put(ai.terminal, callId);
                                 
 	                	// get the calling connection and notify of new connection
 	                	this.gjListener.connectionAlerting(callId, ai.getName(), Event.CAUSE_NORMAL);
