@@ -14,8 +14,11 @@ package net.sourceforge.gjtapi.raw.modem;
 //
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.security.ProviderException;
 import java.util.*;
 import javax.telephony.*;
 import javax.telephony.media.*;
@@ -40,6 +43,9 @@ public class ModemProvider implements MediaTpi, ModemListener {
     private final static String ADDRESS_PREFIX = "Address";
     private final static String SERIAL = "Serial";//used as a key to select the
                                                 //serial port used by the modem
+	// The plugged in Modem interface implementation lookup key
+	private final static String MODEM_PROVIDER_CLASS = "ModemClass";
+	private final static String DEFAULT_MODEM_PROVIDER = "net.sourceforge.gjtapi.raw.modem.AccuraV92";
 
     private Properties provProps;
     private List addresses;
@@ -131,11 +137,37 @@ public class ModemProvider implements MediaTpi, ModemListener {
      */
     public void initialize(Map props) throws ProviderUnavailableException {
         if(provProps != null){
+        	// first allow passed in props to override my defaults
+        	if (props != null)	
+        		provProps.putAll(props);
+        		
             Object obj = provProps.get(SERIAL);
             if((obj != null) && (obj instanceof String)){
                 String portname = (String) obj;
+                // get the class name for the plugged in Modem adapter
+                String modemClassName = (String)provProps.get(this.MODEM_PROVIDER_CLASS);
+                if (modemClassName == null)
+                	modemClassName = this.DEFAULT_MODEM_PROVIDER;
+                // now try to instantiate
+               
                 //TODO: need to get the modem by reflection or similar
-                modem = new AccuraV92(this);
+                try {
+                	// set the parameter type
+                	Class[] paramTypes = {ModemListener.class};
+                	Constructor constructor = Class.forName(modemClassName).getConstructor(paramTypes);
+                	Object[] params = {this};
+                	modem = (Modem)constructor.newInstance(params);
+                } catch (ClassNotFoundException cnfe) {
+                	throw new ProviderUnavailableException("Modem implementation not found: " + modemClassName);
+                } catch (NoSuchMethodException e) {
+                	throw new ProviderUnavailableException("Incorrect Constructor: " + modemClassName);
+				} catch (InvocationTargetException e) {
+                	throw new ProviderUnavailableException("Incorrect target: " + modemClassName);
+				} catch (IllegalAccessException iae) {
+                	throw new ProviderUnavailableException("Could not access: " + modemClassName);					
+                } catch (InstantiationException e) {
+                	throw new ProviderUnavailableException("Could not instantiate: " + modemClassName);
+				}
                 if (modem.initialize(portname) == false){
                     modem = null;
                     throw new ProviderUnavailableException(

@@ -146,6 +146,9 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 
 	// look up provider in loaded Properties
 	String providerFileName = (String) this.getProviders().get(provName);
+	// if the name is not in the resources list
+	if (providerFileName == null)
+		providerFileName = provName;
 	String providerClassName = null;
 	
 	// See if this is a Property file or a call name

@@ -1,3 +1,7 @@
+ProviderClass = net.sourceforge.gjtapi.raw.modem.ModemProvider
+## The following should be set to the concrete "Modem" implementation specific to a modem
+ModemClass=net.sourceforge.gjtapi.raw.modem.AccuraV92
+
 # These are the true capabilities
 answer = t
 create = t
