@@ -37,7 +37,7 @@ import java.util.Vector;
 import javax.telephony.events.Ev;
 /**
  * stupid class to re-implement JTAPI's idea of observer/observable
- * made abstract to get correct types returned and correct methosd called
+ * made abstract to get correct types returned and correct methods called
  */
 abstract class ObservableHelper {
 	private Vector obs = new Vector(2);
@@ -56,17 +56,24 @@ abstract class ObservableHelper {
 		}
 		return ret;
 	}
-	/**
-	 * make an array of the appropriate size of the correct sort of Observers
-	 */
-	abstract Object[] mkObserverArray(int sz);
+
 	/** 2 methods you must implement
 	*/
 
 	/**
-	 * call the appropriate Evmethod
+	 * make an array of the appropriate size of the correct sort of Observers
+	 */
+	abstract Object[] mkObserverArray(int sz);
+	
+	/**
+	 * call the appropriate Ev method
 	 */
 	abstract void notifyObserver(Object observer, Ev [] e);
+
+	/**
+	 * Remove an Observer from this Observable.
+	 * <P>Note that the observer type is Object, since AddressObserver, ProviderObserver and TerminalObserver do
+	 * not extend java.util.Observer	 * @param o The observer to remove	 * @return true if the Observer was removed, false otherwise.	 */
 	boolean removeObserver(Object o) {
 		return obs.removeElement(o);
 	}
