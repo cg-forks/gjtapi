@@ -581,6 +581,9 @@ void loadAddresses() {
 	// Get the Address names and map them to our localAddress set.
 	try {
 		String[] addresses = raw.getAddresses();
+		if (addresses == null)
+			throw new ResourceUnavailableException(Event.CAUSE_RESOURCES_NOT_AVAILABLE);
+
 		for (int i = 0; i < addresses.length; i++) {
 			FreeAddress a = new FreeAddress(addresses[i], prov, true);
 
@@ -611,6 +614,9 @@ void loadTerminals() {
 	// Get the Terminal names and map them to our localAddress set.
 	try {
 		TermData[] terminals = raw.getTerminals();
+		if (terminals == null)
+			throw new ResourceUnavailableException(Event.CAUSE_RESOURCES_NOT_AVAILABLE);
+
 		for (int i = 0; i < terminals.length; i++) {
 			FreeTerminal t = this.createTerminal(terminals[i].terminal, terminals[i].isMedia);
 		}
