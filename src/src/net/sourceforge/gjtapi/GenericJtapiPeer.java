@@ -32,7 +32,7 @@ package net.sourceforge.gjtapi;
 */
 
 /**
- * This is UForce's implementation of the JTAPI peer.  It's main capabilities
+ * This is the GJTAPI implementation of the JTAPI peer.  It's main capabilities
  * are its abilities to plug in the appropriate low-level proxy (delegate)
  */
 
@@ -78,7 +78,8 @@ public String getName() {
 	return this.getClass().getName();
 }
 /**
- * Insert the method's description here.
+ * Return a Property set for the Peer that maps provider names to class names and
+ * details the default provider.
  * Creation date: (2000-02-04 10:29:21)
  * @author: 
  * @return java.util.Properties
@@ -188,6 +189,8 @@ private java.util.Hashtable getProviders() {
 }
 /**
  * Return the list of known raw provider names
+ * 
+ * @return An array or known provider names.
  **/
 public String[] getServices() {
 		return (String[])this.getProviders().keySet().toArray(new String[0]);
@@ -234,7 +237,7 @@ private Map parse(String[] parts, int index) {
 	for (int i = index; i < parts.length; i++) {
 		StringTokenizer tok = new StringTokenizer(parts[i], "=");
 		if (tok.countTokens() > 1) {
-			tab.put(tok.nextToken(), tok.nextToken());
+			tab.put(tok.nextToken().trim(), tok.nextToken().trim());
 		}
 	}
 	return tab;
@@ -252,7 +255,7 @@ String parseService(String args) {
 			ret = args.substring(start + 1, end);
 		}
 	}
-	return ret;
+	return ret.trim();
 }
 /**
  * Set the properties file
@@ -272,7 +275,7 @@ private String[] split(String line) {
 	StringTokenizer tok = new StringTokenizer(line, ";");
 	String ret[] = new String[tok.countTokens()];
 	for (int i = 0; i < ret.length; i++) {
-		ret[i] = tok.nextToken();
+		ret[i] = tok.nextToken().trim();
 	}
 	return ret;
 }
