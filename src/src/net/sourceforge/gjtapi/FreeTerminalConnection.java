@@ -36,7 +36,6 @@ import javax.telephony.*;
 import javax.telephony.capabilities.*;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.*;
-import javax.telephony.privatedata.PrivateData;
 import net.sourceforge.gjtapi.media.*;
 import net.sourceforge.gjtapi.events.*;
 /**
@@ -333,7 +332,7 @@ protected Terminal toDropped(int cause) {
 				prov.getDispatchPool().put(new net.sourceforge.gjtapi.util.EventHandler() {
 					public void process(Object o) {	// ignore o -- will be null
 						Iterator it = lms.getListeners();
-						GenericMediaEvent me = new GenericMediaEvent(MediaEvent.ev_Disconnected, lms.getMediaService());
+						GenericMediaServiceEvent me = new GenericMediaServiceEvent(MediaEvent.ev_Disconnected, lms.getMediaService());
 						while (it.hasNext()) {
 							Object l = it.next();
 							if (l instanceof MediaServiceListener)
