@@ -144,6 +144,10 @@ JFrame show() {
 	return frame;
 }
 
+/**
+ * Dispose of the GUI frame and its screen resources.
+ *
+ */
 void close() {
 	JFrame frame = this.getFrame();
 	if (frame != null) {
