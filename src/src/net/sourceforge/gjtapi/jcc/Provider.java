@@ -82,6 +82,9 @@ public Provider(GenericProvider prov) {
 	super();
 
 	this.setGenProv(prov);
+	
+	// tell the GJTAPI provider about me
+	prov.hookupJainCallback(this);
 }
 /**
  * addCallListener method comment.
@@ -123,9 +126,33 @@ public void addCallListener(JccCallListener cl) throws javax.csapi.cc.jcc.Method
 		else
 			cla = new CallListenerAdapter(this, cl);
 
-			// now add the new adapter
+			// now add the new adapter to my list of JccCallListeners to add to later calls
 		listMap.put(cl, cla);
+		
+		// ask any current calls to add the adapter
+		this.addToAllCalls(cla);
 	}
+}
+
+/**
+ * Add a CallListenerAdapter to all existing calls on the GJTAPI domain, causing them to send
+ * snapshot messages.
+ * @param CallListener listener The CallListener to register against all calls.
+ * @author Richard Deadman */
+private void addToAllCalls(CallListener cl) {
+	try {
+		Call[] gCalls = this.getGenProv().getCalls();
+		if (gCalls != null)
+			for (int i = 0; i < gCalls.length; i++)
+			    try {
+					gCalls[i].addCallListener(cl);
+			    } catch (javax.telephony.MethodNotSupportedException mnse) {
+			    	// can't register with existing calls -- fail silently
+			    }
+	} catch (javax.telephony.ResourceUnavailableException rue) {
+		// can't find existing calls -- fail silently
+	}
+
 }
 /**
  * addCallLoadControlListener method comment.
@@ -153,6 +180,10 @@ public void addConnectionListener(JccConnectionListener cl, EventFilter filter) 
 					filter);
 			// now add the new adapter
 		listMap.put(cl, cla);
+		
+			// and add it to all existing calls
+		this.addToAllCalls(cla);
+
 	} else {
 		if (cla instanceof ConnListenerAdapter)
 			((ConnListenerAdapter)cla).setFilter(filter);
@@ -423,7 +454,7 @@ private Map getCallListeners() {
 	return callListeners;
 }
 /**
- * Insert the method's description here.
+ * Private accessor for the map between the JccCall and the GJTAPI Call object.
  * Creation date: (2000-10-31 15:15:21)
  * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
  */
@@ -431,7 +462,7 @@ private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getCallMap() {
 	return callMap;
 }
 /**
- * Insert the method's description here.
+ * Private accessor for the map between the JccConnectionl and the GJTAPI Connectionl object.
  * Creation date: (2000-10-31 15:15:21)
  * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
  */
@@ -638,4 +669,18 @@ public void shutdown() {
 public String toString() {
 	return "Jain Call Control Provider for the Generic JTAPI Framework.";
 }
+/**
+ * Register a GJTAPI Call with Jcc Listeners that have been registered using either
+ * Provider.addCallListener() or Provider.addConnectionListener().
+ * <P>This allows listeners to be registered with Jcc when they finally are visible to the Jcc Provider.
+ * @author rdeadman
+ *
+ */
+	public void registerCallListeners(FreeCall gjtapiCall) {
+		// now add the JccCallListeners that I have queued up, by adding their adapters to the real call.
+		Iterator it = this.getCallListeners().values().iterator();
+		while (it.hasNext()) {
+			gjtapiCall.addCallListener((CallListener)it.next());
+		}
+	}
 }
