@@ -1,0 +1,23 @@
+# These are the true capabilities
+answer = t
+create = t
+#ATD! is the same as pressing 'Recall' or 'Flash'
+hold = f
+join = f
+release = t
+# The following determine if we can reduce needless RawProvider calls
+# Should we throttle RawListener events?  'f' means that the RawProvider will report everything
+throttle = f
+# Is media supported at all
+media = t
+# Are all terminals media capable, or do we ask?
+allMediaTerminals = t
+# Do we need to make explicite media resource allocation requests?
+allocateMedia = f
+
+# Do we allow for dynamic terminal and address registration above the domain's static set?
+dynamicAddresses = f
+
+Serial = /dev/ttyS0
+Address1 = 14
+Address2 = 01612370664
