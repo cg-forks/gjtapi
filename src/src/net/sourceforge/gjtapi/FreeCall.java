@@ -118,7 +118,12 @@ FreeCall(CallData cd, GenericProvider prov) {
    * Store the Connection by its Address name
    **/
 void addConnection(FreeConnection c) {
+	int oldSize = connections.size();
 	connections.put(c.getAddressName(), c);
+	
+	// now update the call's state and cause the proper events to be published
+	if (oldSize == 0)
+		this.toActive(Event.CAUSE_NEW_CALL);
 }      
   public void addObserver(CallObserver observer) throws javax.telephony.ResourceUnavailableException, javax.telephony.MethodNotSupportedException {
 	this.getListenerMgr().add(observer);
@@ -582,7 +587,11 @@ public javax.telephony.Connection offHook(Address origaddress, Terminal origterm
 	this.getListenerMgr().remove(l);
   }          
   void removeConnection(Connection c) {
-		connections.remove(c.getAddress().getName());
+		Object conn = connections.remove(c.getAddress().getName());
+		
+		// now change state if necessary
+		if ((conn != null) && (connections.size() == 0))
+			this.toInvalid(Event.CAUSE_NORMAL);
   }          
   public void removeObserver(CallObserver observer) {
 	this.getListenerMgr().remove(observer);
