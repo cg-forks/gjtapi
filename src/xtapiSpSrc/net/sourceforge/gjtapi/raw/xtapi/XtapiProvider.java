@@ -577,7 +577,11 @@ public class XtapiProvider implements MediaTpi, IXTapiCallBack {
                 break;
                 
             case LINE_CALLINFO:
-                //this.realProvider.XTGetCallInfo(dwDevice);
+            	try {
+	                this.realProvider.XTGetCallInfo(dwDevice);
+	                } catch(Exception e) {
+						System.out.println("Exception " + e.toString() + " in callback()");
+					}
                 break;
                 
             case LINE_CALLSTATE:
