@@ -574,7 +574,7 @@ public javax.telephony.Connection offHook(Address origaddress, Terminal origterm
 	this.getListenerMgr().remove(l);
   }          
   void removeConnection(Connection c) {
-		connections.remove(c);
+		connections.remove(c.getAddress().getName());
   }          
   public void removeObserver(CallObserver observer) {
 	this.getListenerMgr().remove(observer);
