@@ -348,7 +348,9 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 	
 	// ensure the origination Connection is in the right initial state
 	origConn.toConnected(Event.CAUSE_NEW_CALL);
-	new FreeTerminalConnection(origConn, origterm).toTalking(Event.CAUSE_NEW_CALL);
+	// see if the provider has already created the connection
+	// and set it to talking
+	origConn.getLazyTermConn((FreeTerminal)origterm).toTalking(Event.CAUSE_NEW_CALL);
 	
 	// Now ensure the destination Connection is in the INPROGRESS state (no TerminalConnections yet)
 	destConn.toInProgress(Event.CAUSE_NEW_CALL);
