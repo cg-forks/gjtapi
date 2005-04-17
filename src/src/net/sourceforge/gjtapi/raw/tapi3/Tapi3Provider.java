@@ -67,26 +67,81 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.ConsoleLogger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.Logger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
 
+/**
+ * An implementation of a Jtapi provider which uses Microsoft TAPI 3.0
+ * @author Serban Iordache
+ */
 public class Tapi3Provider implements CCTpi, MediaTpi {
     private static Logger logger = new ConsoleLogger(); // new NullLogger();
 
+    /**
+     * Method identifier for <i>addressPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_ADDRESS_PRIVATE_DATA = 1;
+    /**
+     * Method identifier for <i>callActive</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CALL_ACTIVE = 2;
+    /**
+     * Method identifier for <i>callInvalid</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CALL_INVALID = 3;
+    /**
+     * Method identifier for <i>callPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CALL_PRIVATE_DATA = 4;
+    /**
+     * Method identifier for <i>connectionAlerting</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CONNECTION_ALERTING = 5;
+    /**
+     * Method identifier for <i>connectionConnected</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CONNECTION_CONNECTED = 6;
+    /**
+     * Method identifier for <i>connectionDisconnected</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CONNECTION_DISCONNECTED = 7;
+    /**
+     * Method identifier for <i>connectionFailed</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CONNECTION_FAILED = 8;
+    /**
+     * Method identifier for <i>connectionInProgress</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_CONNECTION_IN_PROGRESS = 9;
+    /**
+     * Method identifier for <i>providerPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_PROVIDER_PRIVATE_DATA = 10;
+    /**
+     * Method identifier for <i>terminalConnectionCreated</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_CONNECTION_CREATED = 11;
+    /**
+     * Method identifier for <i>terminalConnectionDropped</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_CONNECTION_DROPPED = 12;
+    /**
+     * Method identifier for <i>terminalConnectionHeld</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_CONNECTION_HELD = 13;
+    /**
+     * Method identifier for <i>terminalConnectionRinging</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_CONNECTION_RINGING = 14;
+    /**
+     * Method identifier for <i>terminalConnectionTalking</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_CONNECTION_TALKING = 15;
+    /**
+     * Method identifier for <i>terminalPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
+     */
     public static final int METHOD_TERMINAL_PRIVATE_DATA = 16;
 
+    /**
+     * Array of friendly names for the <i>METHOD_XXX</i> values
+     */
     private static final String[] METHOD_NAMES = {
             "METHOD_NONE",
             "METHOD_ADDRESS_PRIVATE_DATA",
@@ -107,21 +162,57 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
             "METHOD_TERMINAL_PRIVATE_DATA",
     };
 
+    /**
+     * Cause identifier for <i>CAUSE_UNKNOWN</i>; used as jniCause parameter for the {@link #callback} method.  
+     */
     public static final int JNI_CAUSE_UNKNOWN = -1;
+    /**
+     * Cause identifier for <i>CAUSE_NORMAL</i>; used as jniCause parameter for the {@link #callback} method.  
+     */
     public static final int JNI_CAUSE_NORMAL = 1;
+    /**
+     * Cause identifier for <i>CAUSE_NEW_CALL</i>; used as jniCause parameter for the {@link #callback} method.  
+     */
     public static final int JNI_CAUSE_NEW_CALL = 2;
+    /**
+     * Cause identifier for <i>CAUSE_SNAPSHOT</i>; used as jniCause parameter for the {@link #callback} method.  
+     */
     public static final int JNI_CAUSE_SNAPSHOT = 3;
+    /**
+     * Cause identifier for <i>CAUSE_DEST_NOT_OBTAINABLE</i>; used as jniCause parameter for the {@link #callback} method.  
+     */
     public static final int JNI_CAUSE_DEST_NOT_OBTAINABLE = 4;
 
+    /**
+     * The concrete Tapi3Native implementation
+     */
     private static Tapi3Native tapi3Native;
+    
+    /**
+     * The array of addresses
+     */
     private String[] addresses = new String[0];
+    /**
+     * The array of terminals
+     */
     private TermData[] terminals = new TermData[0];
+    /**
+     * The list of TelephonyListeners 
+     */
     private ArrayList listenerList = new ArrayList();
 
+    /**
+     * Return the logger
+     * @return The logger
+     */
     public static Logger getLogger() {
         return logger;
     }
 
+    /**
+     * Configure the logger
+     * @param props The name value properties map used to configure the logger 
+     */
     private static void configureLogger(Map props) {
         String tapi3LogOut = (String)props.get("tapi3.log.out");
         if(tapi3LogOut != null) {
@@ -149,6 +240,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         }
     }
 
+    /**
+     * Configure a concrete implementation of the {@link Tapi3Native} interface
+     * @param props The name value properties map used to configure the {@link Tapi3Native} implementation 
+     */
     private static void configureNative(Map props) {
         String tapi3ImplClass = (String)props.get("tapi3.impl.class");
         if(tapi3ImplClass == null) {
@@ -165,6 +260,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         logger.debug("tapi3Native successfully created.");
     }
 
+    /**
+     * Return the friendly name of the parameter methodID  
+     * @param methodID The identifier of the method parameter (as used in the {@link #callback} method)
+     * @return The friendly name of methodID
+     */
     private static String getMethodName(int methodID) {
         String name = "<UNKNOWN>";
         if(methodID >= 0 && methodID < METHOD_NAMES.length) {
@@ -173,6 +273,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         return name;
     }
 
+    /**
+     * Return the friendly name of the parameter jniCause 
+     * @param jniCause The identifier of the cause parameter (as used in the {@link #callback} method)
+     * @return The friendly name of jniCause
+     */
     private static int getEventCause(int jniCause) {
         switch(jniCause) {
             case JNI_CAUSE_NORMAL: return Event.CAUSE_NORMAL;
@@ -182,6 +287,15 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         }
         return Event.CAUSE_UNKNOWN;
     }
+    
+    /**
+     * Callback method typically called by the concrete implementation of the {@link Tapi3Native} interface
+     * @param methodID The identifier of the method (event) that should be notified. Must be one of the <i>METHOD_XXX</i> values.
+     * @param callID The identifier for the call
+     * @param address The address that defines the call
+     * @param jniCause The event cause. Must be one of the <i>JNI_CAUSE_XXX</i> values.
+     * @param callInfo Array of 4 elements used to initialize a {@link Tapi3PrivateData}
+     */
     public void callback(int methodID, int callID, String address, int jniCause, String[] callInfo) {
         Tapi3CallID tapi3CallID = new Tapi3CallID(callID);
         Iterator it = listenerList.iterator();
@@ -284,6 +398,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         logger.debug("Initialized");
     }
 
+    /**
+     * Replace ${<i>propertyName</i>} occurences with the actual value of the system property identified by <i>propertyName</i>  
+     * @param props The properties map whose values will be modified
+     */
     public static void configureProperties(Map props) {
     	Iterator it = props.entrySet().iterator();
     	while(it.hasNext()) {
@@ -339,7 +457,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
 //      caps.put(Capabilities.HOLD, "f");
 //      caps.put(Capabilities.JOIN, "f");
         caps.put(Capabilities.THROTTLE, "f");
-        caps.put(Capabilities.MEDIA, "f");
+//        caps.put(Capabilities.MEDIA, "f");
         caps.put(Capabilities.ALL_MEDIA_TERMINALS, "f");
         caps.put(Capabilities.ALLOCATE_MEDIA, "f");
 
@@ -505,7 +623,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
             }
         } else {
             logger.warn("Not a Tapi3CallID: " + call1 + ", " + call2);
-            throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
+           throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
         }
     }
 
@@ -561,7 +679,12 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
             throw new MediaResourceException("Failed to send DTMF tones: errorCode = 0x" + Integer.toHexString(retCode));
         }
     }
-    
+
+    /**
+     * Convert an array of {@link javax.telephony.media.Symbol}s to a String of DTMF digits 
+     * @param symbols The array of {@link javax.telephony.media.Symbol}s
+     * @return A String containing the corresponding DTMF digits
+     */
     public static String getSymbolsAsString(Symbol[] symbols) {
         StringBuffer sbuf = new StringBuffer(symbols.length);
         for(int i=0; i<symbols.length; i++) {
@@ -570,6 +693,12 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         }
         return sbuf.toString();
     }
+    
+    /**
+     * Convert a {@link javax.telephony.media.Symbol} to a DTMF digit
+     * @param symbol The {@link javax.telephony.media.Symbol} to be converted
+     * @return The corresponding DTMF digit
+     */
     public static char getSymbolAsChar(Symbol symbol) {
         if(symbol == SignalConstants.v_DTMF0) return '0';
         if(symbol == SignalConstants.v_DTMF1) return '1';
