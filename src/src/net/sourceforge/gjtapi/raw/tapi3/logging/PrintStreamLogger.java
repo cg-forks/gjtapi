@@ -34,6 +34,7 @@ import java.io.PrintStream;
 
 /**
  * An implementation of the {@link Logger} interface that logs events to a PrintStream
+ * @author Serban Iordache
  */
 public class PrintStreamLogger implements Logger {
     private final PrintStream logStream;

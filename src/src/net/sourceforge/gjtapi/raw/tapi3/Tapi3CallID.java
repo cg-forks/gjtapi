@@ -32,17 +32,36 @@ package net.sourceforge.gjtapi.raw.tapi3;
 
 import net.sourceforge.gjtapi.CallId;
 
+/**
+ * The Tapi3 implementation of the CallId interface, which uses an int identifier
+ * @author Serban Iordache
+ */
 public final class Tapi3CallID implements CallId {
+    /**
+     * The call identifier
+     */
     private final int callID;
 
+    /**
+     * Initialize the call identifier
+     * @param callID The call identifier
+     */
     public Tapi3CallID(int callID) {
         this.callID = callID;
     }
     
+    /**
+     * Describe myself
+     * @return A string representation of this Tapi3CallID instance
+     */
     public String toString(){
         return "Tapi3CallID: " + callID;
     }
     
+    /**
+     * Return the call identifier
+     * @return The call identifier
+     */
     public int getCallID(){
         return callID;
     }

@@ -30,6 +30,10 @@
 */
 package net.sourceforge.gjtapi.raw.tapi3.logging;
 
+/**
+ * A simple interface for logging  
+ * @author Serban Iordache
+ */
 public interface Logger {
     /**
      * Log a DEBUG message

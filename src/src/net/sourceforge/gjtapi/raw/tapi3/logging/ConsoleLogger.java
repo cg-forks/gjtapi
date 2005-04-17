@@ -32,6 +32,7 @@ package net.sourceforge.gjtapi.raw.tapi3.logging;
 
 /**
  * An implementation of the {@link Logger} interface that logs events to System.err
+ * @author Serban Iordache
  */
 public class ConsoleLogger implements Logger {
 
