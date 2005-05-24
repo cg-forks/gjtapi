@@ -69,6 +69,7 @@ public:
 
 	int reserveCall(wstring& address);
 	HRESULT MakeTheCall(int callID, wstring& address, wstring& destination);
+	HRESULT Dial(int callID, wstring& destination);
 	HRESULT AnswerTheCall(int callID);
 	HRESULT DisconnectTheCall(int callID);
 	HRESULT HoldTheCall(int callID);

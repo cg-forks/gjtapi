@@ -266,6 +266,35 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 	}
 }
 
+          /*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3CreateCall
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Dial(
+					JNIEnv* pEnv, jobject oObj, jint callID, jstring jNumberToDial) {
+	try{
+		logger->debug("Dial() called for callID=%d", callID);
+		jboolean isCopyDestination;
+		const unsigned short* wsDestination = pEnv->GetStringChars(jNumberToDial, &isCopyDestination);
+		wstring destination = wsDestination;
+		if(JNI_TRUE == isCopyDestination) {
+			pEnv->ReleaseStringChars(jNumberToDial, wsDestination);
+		}
+
+		logger->debug("Dialing with callID=%d to %S", callID, destination.c_str());
+    HRESULT hr = g_msTapi3->Dial(callID, destination);
+		if(SUCCEEDED(hr)) {
+			logger->debug("Dial() done for callID=%d to %S", callID, destination.c_str());
+		} else {
+			logger->error("Dial() failed for callID=%d to %S", callID, destination.c_str());
+		}
+		return hr;
+	} catch(...){
+		logger->fatal("Dial() failed.");
+		return E_FAIL;
+	}
+}
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
  * Method:    tapi3Hold

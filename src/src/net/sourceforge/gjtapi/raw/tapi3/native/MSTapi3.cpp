@@ -243,6 +243,37 @@ HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination)
 }
 
 /////////////////////////////////////////////////////////////////////
+// Dial a number on the call
+// This allows extra digits, such as long distance authorization codes, to
+// be dialed on a call.
+/////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::Dial(int callID, wstring& destination) {
+	logger->debug("Dial(%d, %S)", callID, destination.c_str());
+
+  // get a handle on the call control
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl == NULL) {
+    logger->warn("Error: Call is null.");
+		return S_FALSE;
+	} else {
+		logger->debug("Ok: empty entry found for callID=%d.", callID);
+	}
+
+  // Now dial the digits on the call
+  HRESULT hr = pCallControl->Dial(const_cast<unsigned short*>(destination.c_str()));
+
+  // test for success. Don't remove callcontrol on failure -- we didn't create it.
+  if (FAILED(hr)) {
+    logger->error("Could not dial the call to %S.", destination.c_str());
+    return hr;
+  } else {
+	  logger->info("Successfully dialed to %S.", destination.c_str());
+	}
+
+  return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////
 // Answer the call
 /////////////////////////////////////////////////////////////////////
 HRESULT MSTapi3::AnswerTheCall(int callID) {

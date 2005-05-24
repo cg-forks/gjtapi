@@ -84,9 +84,10 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					// check to see if we own the call
 					CALL_PRIVILEGE cp;
 					hr = pCall->get_Privilege( &cp );
-					if ( FAILED(hr) || (CP_OWNER != cp) ) {
+					if ( FAILED(hr) /* || (CP_OWNER != cp) */ ) {
 						// just ignore it if we don't own it
-						logger->debug("Ignored event (we don't own it): hr=%08X.", hr);
+						//logger->debug("Ignored event (we don't own it): hr=%08X.", hr);
+						logger->debug("Ignored event (failed to get privilege): hr=%08X.", hr);
 						pCall->Release();
 						return S_OK;
 					}

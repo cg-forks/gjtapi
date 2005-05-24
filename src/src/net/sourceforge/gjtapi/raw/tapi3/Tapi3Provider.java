@@ -63,6 +63,7 @@ import net.sourceforge.gjtapi.TermData;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
 import net.sourceforge.gjtapi.raw.CCTpi;
 import net.sourceforge.gjtapi.raw.MediaTpi;
+import net.sourceforge.gjtapi.raw.PrivateDataTpi;
 import net.sourceforge.gjtapi.raw.tapi3.logging.ConsoleLogger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.Logger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
@@ -71,7 +72,7 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
  * An implementation of a Jtapi provider which uses Microsoft TAPI 3.0
  * @author Serban Iordache
  */
-public class Tapi3Provider implements CCTpi, MediaTpi {
+public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     private static Logger logger = new ConsoleLogger(); // new NullLogger();
 
     /**
@@ -457,8 +458,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
 //      caps.put(Capabilities.HOLD, "f");
 //      caps.put(Capabilities.JOIN, "f");
         caps.put(Capabilities.THROTTLE, "f");
-//        caps.put(Capabilities.MEDIA, "f");
-        caps.put(Capabilities.ALL_MEDIA_TERMINALS, "f");
+        caps.put(Capabilities.MEDIA, "t");
+        caps.put(Capabilities.ALL_MEDIA_TERMINALS, "t");
         caps.put(Capabilities.ALLOCATE_MEDIA, "f");
 
         return caps;
@@ -654,7 +655,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
         return false;
     }
     public boolean isMediaTerminal(String terminal) {
-        return false;
+        return true;
     }
     public void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         throw new MediaResourceException("Not implemented.");
@@ -679,6 +680,38 @@ public class Tapi3Provider implements CCTpi, MediaTpi {
             throw new MediaResourceException("Failed to send DTMF tones: errorCode = 0x" + Integer.toHexString(retCode));
         }
     }
+    
+	/* (non-Javadoc)
+	 * This is used to get any private data
+	 * @see net.sourceforge.gjtapi.raw.PrivateDataTpi#getPrivateData(net.sourceforge.gjtapi.CallId, java.lang.String, java.lang.String)
+	 */
+	public Object getPrivateData(CallId call, String address, String terminal) {
+		// Don't have any private data
+		return null;
+	}
+	/* This is used to send in-call dialing information.
+	 * @see net.sourceforge.gjtapi.raw.PrivateDataTpi#sendPrivateData(net.sourceforge.gjtapi.CallId, java.lang.String, java.lang.String, java.lang.Object)
+	 */
+	public Object sendPrivateData(CallId call, String address, String terminal,
+			Object data) {
+		// If the data is a PrivateDialCommand, send it to the native level
+		if ((call instanceof Tapi3CallID) && (data instanceof PrivateDialCommand))
+		{
+			PrivateDialCommand dialCommand = (PrivateDialCommand)data;
+			int result = tapi3Native.tapi3Dial(((Tapi3CallID)call).getCallID(), dialCommand.getNumberToDial());
+			return new Integer(result);
+		}
+		return null;
+	}
+	/* (non-Javadoc)
+	 * @see net.sourceforge.gjtapi.raw.PrivateDataTpi#setPrivateData(net.sourceforge.gjtapi.CallId, java.lang.String, java.lang.String, java.lang.Object)
+	 */
+	public void setPrivateData(CallId call, String address, String terminal,
+			Object data) {
+		// Don't do anything with this
+
+	}
+
 
     /**
      * Convert an array of {@link javax.telephony.media.Symbol}s to a String of DTMF digits 

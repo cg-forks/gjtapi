@@ -124,6 +124,14 @@ public class Tapi3NativeImpl implements Tapi3Native {
     public native int tapi3CreateCall(int callID, String address, String dest); 
 
     /**
+     * Dial a number on an existing call.
+     * @param callID
+     * @param numberToDial
+     * @return 1 or a negative error code
+     */
+    public native int tapi3Dial(int callI, String numberToDial);
+    
+    /**
      * Put a call on hold 
      * @param callID The identifier for the call
      * @param address The address that defines the call to hold

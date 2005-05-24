@@ -7,7 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Inaccessible static: logger */
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_ADDRESS_PRIVATE_DATA
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_ADDRESS_PRIVATE_DATA 1L
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_CALL_ACTIVE
@@ -40,7 +39,6 @@ extern "C" {
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_TERMINAL_CONNECTION_TALKING 15L
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_TERMINAL_PRIVATE_DATA
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_TERMINAL_PRIVATE_DATA 16L
-/* Inaccessible static: METHOD_NAMES */
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_UNKNOWN
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_UNKNOWN -1L
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL
@@ -51,7 +49,6 @@ extern "C" {
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_SNAPSHOT 3L
 #undef net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_DEST_NOT_OBTAINABLE
 #define net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_DEST_NOT_OBTAINABLE 4L
-/* Inaccessible static: tapi3Native */
 #ifdef __cplusplus
 }
 #endif

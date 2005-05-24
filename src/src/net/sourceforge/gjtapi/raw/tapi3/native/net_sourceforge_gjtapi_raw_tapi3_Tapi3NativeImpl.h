@@ -7,8 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* Inaccessible static: logger */
-/* Inaccessible static: instance */
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
  * Method:    tapi3Init
@@ -64,6 +62,14 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3CreateCall
   (JNIEnv *, jobject, jint, jstring, jstring);
+
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
+ * Method:    tapi3Dial
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Dial
+  (JNIEnv *, jobject, jint, jstring);
 
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
