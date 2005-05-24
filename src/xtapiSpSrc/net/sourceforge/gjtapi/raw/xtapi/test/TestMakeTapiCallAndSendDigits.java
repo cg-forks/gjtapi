@@ -39,7 +39,7 @@ import net.sourceforge.gjtapi.media.GenericMediaService;
 
 import javax.telephony.*;
 /**
- * Simple test script for the emulator raw provider
+ * Simple test script for the Xtapi bridge to TAPI provider
  * Creation date: (2000-02-03 15:40:58)
  * @author: Richard Deadman
  */
@@ -55,7 +55,7 @@ public static void main(java.lang.String[] args) {
 		System.exit(1);
 	}
 
-	test("net.sourceforge.gjtapi.raw.xtapi.XtapiProvider; XtapiSp = TAPI", args[0], args[1]);
+	test("Xtapi; XtapiSp = TAPI", args[0], args[1]);
 }
 /**
  * Prompt for user input.
