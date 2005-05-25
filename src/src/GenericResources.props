@@ -6,6 +6,7 @@ PROVIDER_Emulator6 = Emulator6.props
 PROVIDER_DialogicGC = DialogicGC.props
 PROVIDER_Corba = net.sourceforge.gjtapi.raw.remote.CorbaProvider
 PROVIDER_Modem = Modem.props
+PROVIDER_Sip = net.sourceforge.gjtapi.raw.sipprovider.SipProvider
 PROVIDER_Tapi3 = Tapi3.props
 PROVIDER_Xtapi = net.sourceforge.gjtapi.raw.xtapi.XtapiProvider
 
