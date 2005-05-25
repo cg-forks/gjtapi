@@ -238,7 +238,9 @@ implements Serializable
             DataSource mergeDs = Manager.createMergingDataSource(dsTab);
             mergeDs.connect();
             mergeDs.start();
-            dest = new MediaLocator("file:/"+ url );
+            	// append "file:/" to URL if it is not already there
+            String fullUrl = (url.indexOf("file:") == 0) ? url : "file:/"+ url;
+            dest = new MediaLocator(fullUrl);
             sink = Manager.createDataSink(ds, dest);
             sink.open();
             sink.start();
