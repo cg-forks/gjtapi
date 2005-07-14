@@ -1,63 +1,73 @@
-/*
-Copyright (c) 2005 Deadman Consulting Inc. (www.deadman.ca) 
-
-All rights reserved. 
-
-Permission is hereby granted, free of charge, to any person obtaining a 
-copy of this software and associated documentation files (the 
-"Software"), to deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, merge, publish, 
-distribute, and/or sell copies of the Software, and to permit persons 
-to whom the Software is furnished to do so, provided that the above 
-copyright notice(s) and this permission notice appear in all copies of 
-the Software and that both the above copyright notice(s) and this 
-permission notice appear in supporting documentation. 
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
-OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
-HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL 
-INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING 
-FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
-NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
-WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
-
-Except as contained in this notice, the name of a copyright holder 
-shall not be used in advertising or otherwise to promote the sale, use 
-or other dealings in this Software without prior written authorization 
-of the copyright holder.
-*/
-/*
- * Created on Mar 31, 2005
- *
- * mailto: rdeadman@deadman.ca
- */
-package net.sourceforge.gjtapi.raw.asterisk;
 
 import net.sourceforge.gjtapi.CallId;
 
+import java.util.*;
+
 /**
- * @author rdeadman
- *
- * This is a unique identifier class for Asterisk calls.
+ * 
+ * this is an identifier-class for calls
+ * @author J. Boesl, 21.06.2005
  */
-public class AsteriskCallId implements CallId {
 
-	/**
-	 * Create an instance of a call handle that identifies
-	 * an asterisk call.
-	 */
-	public AsteriskCallId() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
 
-	public boolean equals(Object other) {
-		return super.equals(other);	// replace
-	}
-	
-	public int hashCode() {
-		return super.hashCode();	// replace
-	}
+public class AsteriskCallId implements CallId
+{
+
+  private Map connections;
+
+  public AsteriskCallId()
+  {
+    super();
+    connections = new HashMap();
+  }
+
+  public boolean equals(Object other)
+  {
+    if(connections.isEmpty() || other == null)
+      return false;
+    if (other instanceof AsteriskCallId)
+    {
+      return other.hashCode() == hashCode();
+    }
+    return false;
+  }
+
+  public int hashCode()
+  {
+    return super.hashCode();
+  }
+
+  public String toString()
+  {
+    return "AsteriskCallId: " + hashCode();
+  }
+
+  /**
+   * delivers 'connections'-map with uniqueId as identifying key and AsteriskConnectionDetail as value
+   * @return the 'connections'-map
+   */
+  public Map getConnections()
+  {
+    return connections;
+  }
+
+  /**
+   * add a 'connection' to this call
+   * @param id
+   * @param detail
+   */
+  public void addConnection(String id, AsteriskConnectionDetail detail)
+  {
+    connections.put(id, detail);
+  }
+
+  /**
+   * remove a 'connection' from this call
+   * @param id
+   */
+  public void removeConnection(String id)
+  {
+    connections.remove(id);
+  }
+
 }
