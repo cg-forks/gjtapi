@@ -139,6 +139,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Method identifier for <i>terminalPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
      */
     public static final int METHOD_TERMINAL_PRIVATE_DATA = 16;
+    /**
+     * Method identifier for <i>mediaDigitReceived</i>; used as methodID parameter for the {@link #callback} method.  
+     */
+    public static final int METHOD_MEDIA_DIGIT_RECEIVED = 17;
 
     /**
      * Array of friendly names for the <i>METHOD_XXX</i> values
@@ -161,6 +165,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
             "METHODTERMINAL_CONNECTION_RINGING",
             "METHOD_TERMINAL_CONNECTION_TALKING",
             "METHOD_TERMINAL_PRIVATE_DATA",
+            "METHOD_MEDIA_DIGIT_RECEIVED",
     };
 
     /**
@@ -200,8 +205,17 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     /**
      * The list of TelephonyListeners 
      */
-    private ArrayList listenerList = new ArrayList();
+    private final ArrayList listenerList = new ArrayList();
 
+    /**
+     * The list of DigitListeners 
+     */
+    private final ArrayList digitListenerList = new ArrayList();
+
+    private static interface DigitListener {
+        public void receivedDigit(String terminal, char ch);
+    }
+    
     /**
      * Return the logger
      * @return The logger
@@ -288,7 +302,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         }
         return Event.CAUSE_UNKNOWN;
     }
-    
+
     /**
      * Callback method typically called by the concrete implementation of the {@link Tapi3Native} interface
      * @param methodID The identifier of the method (event) that should be notified. Must be one of the <i>METHOD_XXX</i> values.
@@ -299,7 +313,6 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public void callback(int methodID, int callID, String address, int jniCause, String[] callInfo) {
         Tapi3CallID tapi3CallID = new Tapi3CallID(callID);
-        Iterator it = listenerList.iterator();
         String terminal = address;  // !!!
 //        String terminal = getTerminals(address)[0].terminal;
         Tapi3PrivateData privateData = null;
@@ -310,6 +323,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         String methodName = getMethodName(methodID);
         logger.info("CALLBACK: " + methodID + " (" + methodName + ") on " + address +
                 ": callID=" + tapi3CallID.getCallID() + ", privateData: " + privateData);
+        Iterator it = listenerList.iterator();
         while(it.hasNext()) {
             TelephonyListener listener = (TelephonyListener)it.next();
             switch(methodID) {
@@ -362,6 +376,9 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                 case METHOD_TERMINAL_PRIVATE_DATA:
                     listener.terminalPrivateData(terminal, privateData, eventCause);
                     break;
+                case METHOD_MEDIA_DIGIT_RECEIVED:
+                    // Nothing to do here
+                    break;
                 default:
                     logger.error("CALLBACK: Unknown method: " + methodID + ", callID=" + callID +
                             ", address=" + address + ", jniCause=" + jniCause + ", callInfo=" +
@@ -371,6 +388,21 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
             if(privateData != null) {
                 listener.callPrivateData(tapi3CallID, privateData, eventCause);
             }
+        }
+        try {
+            if(methodID == METHOD_MEDIA_DIGIT_RECEIVED) {
+                char ch = (char)jniCause;
+                logger.debug("Character " + ch + " received on " + terminal);
+                synchronized(digitListenerList) {
+                    it = digitListenerList.iterator();
+                    while(it.hasNext()) {
+                        DigitListener listener = (DigitListener)it.next();
+                        listener.receivedDigit(terminal, ch);
+                    }
+                }
+            }
+        } catch(Exception e) {
+            logger.error("Failed to receive digit.", e);
         }
     }
 
@@ -646,7 +678,6 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         }
     }
 
-
     // *** MediaTpi ***    
     public boolean allocateMedia(String terminal, int type, Dictionary resourceArgs) {
         return false;
@@ -666,11 +697,51 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     public void stop(String terminal) {
         throw new MediaRuntimeException("Not implemented.") {};
     }
+    
     public void triggerRTC(String terminal, Symbol action) {
         throw new MediaRuntimeException("Not implemented.") {};
     }
-    public RawSigDetectEvent retrieveSignals(String terminal, int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
-        throw new MediaResourceException("Not implemented.");
+    public RawSigDetectEvent retrieveSignals(final String terminal, final int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
+        logger.debug("retrieveSignals('" + terminal + "', " + num + ")");
+        if(num <= 0) throw new MediaResourceException("Invalid number of signals: " + num);
+        
+        final Symbol[] symbols = new Symbol[num];
+        final int[] digitCount = {0};
+        
+        DigitListener listener = new DigitListener() {
+            public void receivedDigit(String term, char ch) {
+                if(term.equals(terminal)) {
+                    synchronized(symbols) {
+                        symbols[digitCount[0]++] = getSymbol(ch);
+                        if(digitCount[0] >= num) {
+                            symbols.notifyAll();
+                        }
+                    }
+                }
+            }
+        };
+        synchronized(digitListenerList) {
+            digitListenerList.add(listener);
+        }
+        try {
+            synchronized(symbols) {
+                while(digitCount[0] < num) {
+                    try {
+                        symbols.wait();
+                    } catch(InterruptedException e) {
+                        logger.warn("retrieveSignals() interrupted", e);
+                        throw new MediaResourceException("retrieveSignals() interrupted");
+                    }
+                }
+            }
+        } finally {
+            synchronized(digitListenerList) {
+                digitListenerList.remove(listener);
+            }
+        }
+        RawSigDetectEvent event = RawSigDetectEvent.maxDetected(terminal, symbols);
+        logger.debug("retrieveSignals() done.");
+        return event;
     }
     public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         logger.debug("sendSignals(" + terminal + ", " + Arrays.asList(syms) + ")");
@@ -750,5 +821,32 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         if(symbol == SignalConstants.v_DTMFHash) return '#';
         if(symbol == SignalConstants.v_DTMFStar) return '*';        
         return '\0';
+    }
+    
+    /**
+     * Convert a DTMF digit to a {@link javax.telephony.media.Symbol}
+     * @param ch The DTMF digit as char
+     * @return The corresponding {@link javax.telephony.media.Symbol}
+     */
+    public static Symbol getSymbol(char ch) {
+        switch(ch) {
+            case '0': return SignalConstants.v_DTMF0;
+            case '1': return SignalConstants.v_DTMF1;
+            case '2': return SignalConstants.v_DTMF2;
+            case '3': return SignalConstants.v_DTMF3;
+            case '4': return SignalConstants.v_DTMF4;
+            case '5': return SignalConstants.v_DTMF5;
+            case '6': return SignalConstants.v_DTMF6;
+            case '7': return SignalConstants.v_DTMF7;
+            case '8': return SignalConstants.v_DTMF8;
+            case '9': return SignalConstants.v_DTMF9;
+            case 'A': return SignalConstants.v_DTMFA;
+            case 'B': return SignalConstants.v_DTMFB;
+            case 'C': return SignalConstants.v_DTMFC;
+            case 'D': return SignalConstants.v_DTMFD;
+            case '#': return SignalConstants.v_DTMFHash;
+            case '*': return SignalConstants.v_DTMFStar;
+            default: return null;
+        }
     }
 }
