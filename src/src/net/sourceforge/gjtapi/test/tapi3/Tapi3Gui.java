@@ -40,6 +40,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -63,8 +64,10 @@ import javax.telephony.JtapiPeerUnavailableException;
 import javax.telephony.Provider;
 import javax.telephony.Terminal;
 import javax.telephony.TerminalConnection;
+import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.MediaProvider;
+import javax.telephony.media.SignalDetectorEvent;
 
 import net.sourceforge.gjtapi.media.GenericMediaService;
 
@@ -82,8 +85,11 @@ public class Tapi3Gui {
 	private JTextField txtCalledNumber;
 	private JButton butCall;
 
-	private JTextField txtDTMF;
-	private JButton butDTMF;
+	private JTextField txtDTMFOut;
+	private JButton butDTMFOut;
+
+    private JLabel lbDTMFIn;
+    private JTextField txtDTMFIn;
 
 	private JScrollPane callsScrollPane;
 	private JList lstCalls;
@@ -99,7 +105,7 @@ public class Tapi3Gui {
         Logger.getRootLogger().addAppender(new GuiAppender(this));
     }
     
-    private void initTapi3() throws Tapi3GuiException {
+    private void initTapi3(String providerName) throws Tapi3GuiException {
         try {
             this.peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");
             logger.debug("JTapi Peer successfully loaded.");
@@ -108,7 +114,6 @@ public class Tapi3Gui {
         }
 		obsListener = new CallListenerObserver();
 		
-		String providerName = "Tapi3";
         try {
             provider = peer.getProvider(providerName);
             logger.debug("Provider " + providerName + " successfully loaded.");
@@ -164,27 +169,38 @@ public class Tapi3Gui {
 	    txtCalledNumber = new JTextField(16);
 		inputPanel.add(txtCalledNumber, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 15, 10, 10), 0, 0));
+		        new Insets(40, 15, 20, 10), 0, 0));
 	    
 	    butCall = new JButton("Call");
 	    butCall.setEnabled(false);
 		inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 10, 10, 10), 0, 0));
+		        new Insets(40, 10, 20, 10), 0, 0));
         
         
-	    txtDTMF = new JTextField(16);
-		inputPanel.add(txtDTMF, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
+	    txtDTMFOut = new JTextField(16);
+		inputPanel.add(txtDTMFOut, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
 		        new Insets(10, 15, 10, 10), 0, 0));
 	    
-	    butDTMF = new JButton("DTMF");
-	    butDTMF.setEnabled(false);
-		inputPanel.add(butDTMF, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, 
+	    butDTMFOut = new JButton("DTMF");
+	    butDTMFOut.setEnabled(false);
+		inputPanel.add(butDTMFOut, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
 		        new Insets(10, 10, 10, 10), 0, 0));
-                
-		inputPanel.add(new JPanel(), new GridBagConstraints(2, 0, 1, 2, 1.0, 1.0, 
+
+        lbDTMFIn = new JLabel("Received digits");
+        inputPanel.add(lbDTMFIn, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 20, 10, 2), 0, 0));
+        
+        txtDTMFIn = new JTextField(32);
+        txtDTMFIn.setEditable(false);
+        inputPanel.add(txtDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 2, 10, 10), 0, 0));
+        
+        inputPanel.add(new JPanel(), new GridBagConstraints(4, 0, 1, 2, 1.0, 1.0, 
 		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
 		        new Insets(10, 10, 10, 10), 0, 0));
         
@@ -196,19 +212,19 @@ public class Tapi3Gui {
 	    callsScrollPane.setPreferredSize(new Dimension(480, 72));
 		callPanel.add(callsScrollPane, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 15, 20, 10), 0, 0));
+		        new Insets(10, 15, 20, 10), 0, 0));
 	    
 	    butAnswer = new JButton("Answer");
 	    butAnswer.setEnabled(false);
 		callPanel.add(butAnswer, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 10, 2, 10), 0, 0));
+		        new Insets(10, 10, 2, 10), 0, 0));
 
 	    butHold = new JButton("Hold");
 	    butHold.setEnabled(false);
 		callPanel.add(butHold, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 10, 2, 10), 0, 0));
+		        new Insets(10, 10, 2, 10), 0, 0));
 		
 	    butHangUp = new JButton("Hang up");
 	    butHangUp.setEnabled(false);
@@ -225,7 +241,7 @@ public class Tapi3Gui {
         
 		callPanel.add(new JPanel(), new GridBagConstraints(3, 0, 1, 2, 1.0, 1.0, 
 		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
-		        new Insets(40, 10, 20, 10), 0, 0));
+		        new Insets(10, 10, 20, 10), 0, 0));
         
         JPanel tracePanel = new JPanel(new BorderLayout());
         tracePanel.setBorder(new EmptyBorder(15, 15, 15, 15));
@@ -249,7 +265,7 @@ public class Tapi3Gui {
             }
         });
 		
-		butDTMF.addActionListener(new ActionListener() {
+		butDTMFOut.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     public void run() {
@@ -257,7 +273,7 @@ public class Tapi3Gui {
                             GenericMediaService ms = new GenericMediaService((MediaProvider)provider);
                             Terminal terminal = getSelectedTerminalConnection().getTerminal();
                             ms.bindToTerminal(null, terminal);
-                            ms.sendSignals(txtDTMF.getText(), null, null);
+                            ms.sendSignals(txtDTMFOut.getText(), null, null);
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e.getCause());
 		                    new MessageBox("DTMF error", "Cannot send DTMF.", e).show();
@@ -267,7 +283,7 @@ public class Tapi3Gui {
             }
         });
 		
-		butAnswer.addActionListener(new ActionListener() {
+        butAnswer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     public void run() {
@@ -278,13 +294,13 @@ public class Tapi3Gui {
                             }
                         } catch (Exception e) {
                             logger.error("Cannot answer.", e);
-		                    new MessageBox("Answer error", "Cannot answer.", e).show();
+                            new MessageBox("Answer error", "Cannot answer.", e).show();
                         }
                     }
                 }.start();
             }
         });
-		
+        
 		butHangUp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
@@ -367,7 +383,7 @@ public class Tapi3Gui {
             }            
         });
 		
-		txtDTMF.getDocument().addDocumentListener(new DocumentListener() {
+		txtDTMFOut.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 updateButDTMF();
             }
@@ -405,27 +421,75 @@ public class Tapi3Gui {
                 });
             }
         });		
-	    
-	    
+	            
 	    tapi3Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    tapi3Frame.pack();
     }
+
+    private DTMFThread dtmfThread = null;
+    private TerminalConnection dtmfTerminalConnection = null;
+    private void updateDTMFThread() {
+        TerminalConnection tcon = getSelectedTerminalConnection();
+        if(tcon != dtmfTerminalConnection) {
+            if(dtmfThread != null) {
+                dtmfThread.interrupt();
+                try {
+                    dtmfThread.join();
+                } catch(InterruptedException e) {
+                    logger.warn("Join interrupted", e);
+                }
+            }
+            if(tcon != null) {
+                dtmfThread = new DTMFThread(tcon.getTerminal());
+                dtmfThread.start();
+            } else {
+                dtmfThread = null;
+            }
+            dtmfTerminalConnection = tcon;
+        }
+    }
+    
+    private class DTMFThread extends Thread {
+        private final Terminal terminal; 
+        public DTMFThread(Terminal terminal) {
+            this.terminal = terminal;
+        }
+        
+        public void run() {
+            final GenericMediaService ms = new GenericMediaService((MediaProvider)provider);
+            try {
+                ms.bindToTerminal(null, terminal);
+                while(!isInterrupted()) {
+                    SignalDetectorEvent ev = ms.retrieveSignals(1, null, null, null);
+                    logger.debug("Retrieved digit: " + ev.getSignalString());
+                    txtDTMFIn.setText(txtDTMFIn.getText() + ev.getSignalString());
+                }
+            } catch(Exception e) {
+                if(e.getCause() == null || !(e.getCause() instanceof InterruptedException)) {
+                    logger.error("Failed to retrieve DTMF.", e);
+                }
+            }
+            logger.debug("DTMFThread terminated.");
+        }
+    };
+    
     
 	private void updateAllControls() {
 	    updateButCall();
 	    updateButDTMF();
 	    updateCallControls();
+        updateDTMFThread();
 	}
 	
     private void updateButCall() {
         int len = txtCalledNumber.getText().length();
         boolean enabled = (len > 0);
-        enabled &= (lstCalls.getModel().getSize() == 0); 
+//        enabled &= (lstCalls.getModel().getSize() == 0); 
         butCall.setEnabled(enabled);
     }
     
     private void updateButDTMF() {
-        int len = txtDTMF.getText().length();
+        int len = txtDTMFOut.getText().length();
         boolean enabled = (len > 0);
         TerminalConnection terminalConnection;
 		try {
@@ -436,7 +500,7 @@ public class Tapi3Gui {
 		}
 		int ccTermConnState = (terminalConnection != null) ? 
                 		TapiUtil.getTerminalConnectionState(terminalConnection) : CallControlTerminalConnection.UNKNOWN;        
-        butDTMF.setEnabled(enabled & ccTermConnState == CallControlTerminalConnection.TALKING);
+        butDTMFOut.setEnabled(enabled & ccTermConnState == CallControlTerminalConnection.TALKING);
     }
     
     private void updateCallControls() {
@@ -454,39 +518,39 @@ public class Tapi3Gui {
         boolean holdEnabled = (ccTermConnState == CallControlTerminalConnection.TALKING);
         // TODO - this should be used only for swapOnHold
         // allow hold only if there is a terminalConnection in state HELD
-        if(holdEnabled) {
-        	holdEnabled = false;
-        	for(int i=0; i<obsListener.size(); i++) {
-                if(i != lstCalls.getSelectedIndex()) {
-                    TerminalConnection heldTerminalConnection = 
-                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
-                    int currState = TapiUtil.getTerminalConnectionState(heldTerminalConnection);
-                    if(currState == CallControlTerminalConnection.HELD) {
-                    	holdEnabled = true;
-                    	break;
-                    }
-                }
-        	}
-        }
+//        if(holdEnabled) {
+//        	holdEnabled = false;
+//        	for(int i=0; i<obsListener.size(); i++) {
+//                if(i != lstCalls.getSelectedIndex()) {
+//                    TerminalConnection heldTerminalConnection = 
+//                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
+//                    int currState = TapiUtil.getTerminalConnectionState(heldTerminalConnection);
+//                    if(currState == CallControlTerminalConnection.HELD) {
+//                    	holdEnabled = true;
+//                    	break;
+//                    }
+//                }
+//        	}
+//        }
         butHold.setEnabled(holdEnabled);
 
         boolean unholdEnabled = (ccTermConnState == CallControlTerminalConnection.HELD);
         // TODO - this should be used only for swapOnHold
         // allow unhold only if there is a terminalConnection in state TALKING
-        if(unholdEnabled) {
-        	unholdEnabled = false;
-        	for(int i=0; i<obsListener.size(); i++) {
-                if(i != lstCalls.getSelectedIndex()) {
-                    TerminalConnection talkingTerminalConnection = 
-                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
-                    int currState = TapiUtil.getTerminalConnectionState(talkingTerminalConnection);
-                    if(currState == CallControlTerminalConnection.TALKING) {
-                    	unholdEnabled = true;
-                    	break;
-                    }
-                }
-        	}
-        }
+//        if(unholdEnabled) {
+//        	unholdEnabled = false;
+//        	for(int i=0; i<obsListener.size(); i++) {
+//                if(i != lstCalls.getSelectedIndex()) {
+//                    TerminalConnection talkingTerminalConnection = 
+//                        ((CallListenerObserver.Item)obsListener.get(i)).getTerminalConnection();
+//                    int currState = TapiUtil.getTerminalConnectionState(talkingTerminalConnection);
+//                    if(currState == CallControlTerminalConnection.TALKING) {
+//                    	unholdEnabled = true;
+//                    	break;
+//                    }
+//                }
+//        	}
+//        }
         butUnHold.setEnabled(unholdEnabled);
     }
     
@@ -545,8 +609,9 @@ public class Tapi3Gui {
 	
     public static void main(String[] args) {
         Tapi3Gui gui = new Tapi3Gui();
+        String providerName = (args.length > 0) ? args[0] : "Tapi3";
         try {
-            gui.initTapi3();
+            gui.initTapi3(providerName);
         } catch (Tapi3GuiException e) {
             logger.error("", e);
             new MessageBox("Tapi3 initialization error", "Tapi3 initialization failed.", e).show();
