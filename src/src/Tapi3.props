@@ -10,4 +10,6 @@ tapi3.log.class = net.sourceforge.gjtapi.test.tapi3.Tapi3Logger
 # tapi3.native.log.out = C:\\tapi3dll.log
 tapi3.native.log.out = ${user.dir}\\tapi3dll.log
 
-tapi3.native.swapOnHold = true
+tapi3.native.swapOnHold = false
+
+# tapi3.native.handoff = dialer.exe
