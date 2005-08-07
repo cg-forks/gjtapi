@@ -61,12 +61,15 @@ import javax.telephony.events.ConnEv;
 import javax.telephony.events.ConnFailedEv;
 import javax.telephony.events.ConnInProgressEv;
 import javax.telephony.events.ConnUnknownEv;
+import javax.telephony.events.Ev;
 import javax.telephony.events.TermConnActiveEv;
 import javax.telephony.events.TermConnCreatedEv;
 import javax.telephony.events.TermConnDroppedEv;
 import javax.telephony.events.TermConnEv;import javax.telephony.events.TermConnPassiveEv;
 import javax.telephony.events.TermConnRingingEv;
 import javax.telephony.events.TermConnUnknownEv;
+import javax.telephony.media.events.MediaTermConnAvailableEv;
+import javax.telephony.media.events.MediaTermConnUnavailableEv;
 import javax.telephony.privatedata.events.PrivateCallEv;
 
 import net.sourceforge.gjtapi.events.GenPrivateCallEv;
@@ -493,6 +496,8 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
             case CallCtlTermConnRingingEv.ID: event = "CallControlTerminalConnection ringing"; break;
             case CallCtlTermConnTalkingEv.ID: event = "CallControlTerminalConnection talking"; break;
             case CallCtlTermConnUnknownEv.ID: event = "CallControlTerminalConnection unknown"; break;
+            case MediaTermConnAvailableEv.ID: event = "MediaTerminalConnection available"; break;
+            case MediaTermConnUnavailableEv.ID: event = "MediaTerminalConnection unavailable"; break;
             default: event = "unknown: " + id; break;
         }
         logger.debug("Observer event: " + event);
@@ -514,7 +519,17 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
             }
         }
         if(connection != null) {
-            int state = connection.getState();
+            final int state;
+            if(ev.getCause() == Ev.CAUSE_CALL_CANCELLED || ev.getCause() == Ev.CAUSE_DEST_NOT_OBTAINABLE) {
+                state = Connection.DISCONNECTED;
+                try {
+                    connection.disconnect();
+                } catch(Exception e) {
+                    logger.error("Cannot disconnect", e);
+                }
+            } else {
+                state = connection.getState();
+            }
             logger.debug("Observer: connection state=" + state);
             if(state == Connection.DISCONNECTED || state == Connection.FAILED || state == Connection.UNKNOWN) {
                 logger.debug("Observer: Removing connection...");
