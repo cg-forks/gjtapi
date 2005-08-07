@@ -46,6 +46,7 @@ private:
 	TAPI3EventNotification* tapi3EventNotification;
 	ULONG gulAdvise;
 	bool swapOnHold;
+	wstring handoff;
 
 	typedef map<wstring, ITAddress*> AddressMap;
 	AddressMap addresses;
@@ -77,6 +78,9 @@ public:
 	HRESULT SendDigits(wstring terminal, wstring digits);
 	void ReleaseTheCall(int callID);
 	void setSwapOnHold(bool enabled) { swapOnHold = enabled; }
+    void setHandoff(wstring& appName) { handoff = appName; }
+
+    HRESULT getAddressName(ITAddress* pITAddress, wstring& strAddress);
 
 private:
 	HRESULT RegisterTapiEventInterface();
@@ -90,6 +94,8 @@ private:
 	HRESULT EnablePreview(ITAddress* pAddress, ITStream* pStream);
 	HRESULT GetTerminal(ITAddress* pAddress, ITStream* pStream, ITTerminal** ppTerminal);
 	HRESULT SelectTerminalsOnCall(ITAddress* pAddress, ITBasicCallControl* pCall);
+
+    HRESULT DetectDigits(ITBasicCallControl* pCallControl);
 
 	void UnregisterCallNotifications();
 

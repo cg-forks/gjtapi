@@ -81,13 +81,15 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 						logger->error("Cannot retrieve call: hr=%08X.", hr);
 						return hr;
 					}
+
 					// check to see if we own the call
 					CALL_PRIVILEGE cp;
 					hr = pCall->get_Privilege( &cp );
-					if ( FAILED(hr) /* || (CP_OWNER != cp) */ ) {
+//					if ( FAILED(hr) /* || (CP_OWNER != cp) */ ) {
+					if ( FAILED(hr) || (CP_OWNER != cp) ) {
 						// just ignore it if we don't own it
-						//logger->debug("Ignored event (we don't own it): hr=%08X.", hr);
-						logger->debug("Ignored event (failed to get privilege): hr=%08X.", hr);
+						logger->debug("Ignored event (we don't own it): hr=%08X.", hr);
+						// logger->debug("Ignored event (failed to get privilege): hr=%08X.", hr);
 						pCall->Release();
 						return S_OK;
 					}
@@ -102,7 +104,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					logger->debug("Call state: %08X.", callState);
 
 					wstring strAddress;
-					hr = getAddress<ITCallInfo>(logger, pCall, strAddress);
+					hr = getAddress<ITCallInfo>(logger, pTapi3, pCall, strAddress);
 					if(FAILED(hr)) {
 						pCall->Release();
 						return hr;
@@ -116,6 +118,20 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 						pCall->Release();
 						return hr;
 					}
+
+                    if(pTapi3->handoff.length() > 0) {
+                        BSTR bstrHandoff = SysAllocString(pTapi3->handoff.c_str());
+                        hr = pCallControl->HandoffDirect(bstrHandoff);
+	                    SysFreeString(bstrHandoff);
+                        if(FAILED(hr)) {
+					        logger->warn("HandoffDirect(%S) failed: hr=%08X", pTapi3->handoff.c_str(), hr);
+                        } else {
+					        logger->debug("HandoffDirect(%S) succeeded", pTapi3->handoff.c_str());
+						    pCall->Release();
+						    return hr;
+                        }
+                    }
+
 					int callID = pTapi3->getOrCreateCallID(pCallControl);
 					if(callID > 0) {
 						pCallControl->Release();
@@ -177,7 +193,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 				}
 
 				wstring strAddress;
-				hr = getAddress<ITCallInfo>(logger, pCall, strAddress);
+				hr = getAddress<ITCallInfo>(logger, pTapi3, pCall, strAddress);
 				if(FAILED(hr)) {
 					pCall->Release();
 					pCallStateEvent->Release();
@@ -195,6 +211,10 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 				}
 				int callID = pTapi3->getCallID(pCallControl);
 				pCallControl->Release();
+
+				wstring callInfo[4];
+				bool hasCallInfo = getCallInfo(logger, pCall, callInfo);
+
 				pCall->Release();
 				pCallStateEvent->Release();
 				logger->debug("CallState %d for callID %d.", cs, callID);
@@ -213,7 +233,8 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					logger->warn("No callback for cs=%d.", cs);
 				} else {
 					// logger->debug("Calling callback for %d on %S with callID=%d", methodID, strAddress.c_str(), callID);
-					callback(methodID, callID, strAddress, net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, NULL);
+//					callback(methodID, callID, strAddress, net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, NULL);
+					callback(methodID, callID, strAddress, net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, (hasCallInfo ? callInfo : NULL));                    
 				}
 				break;
 			}
@@ -227,7 +248,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 				else {
 
 					wstring strAddress;
-					hr = getAddress<ITAddressEvent>(logger, pAddressEvent, strAddress);
+					hr = getAddress<ITAddressEvent>(logger, pTapi3, pAddressEvent, strAddress);
 					if(FAILED(hr)) {
 						pAddressEvent->Release();
 						return hr;
@@ -316,7 +337,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					wstring callInfo[4];
 					if(getCallInfo(logger, pCall, callInfo)) {
 						wstring strAddress;
-						hr = getAddress<ITCallInfo>(logger, pCall, strAddress);
+						hr = getAddress<ITCallInfo>(logger, pTapi3, pCall, strAddress);
 						if(SUCCEEDED(hr)) {
 							callback(net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_CALL_PRIVATE_DATA, 
 								callID, strAddress, net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, callInfo);
@@ -392,7 +413,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					int callID = pTapi3->getCallID(pCallControl);
 
 					wstring strAddress;
-					hr = getAddress<ITCallInfo>(logger, pCallInfo, strAddress);
+					hr = getAddress<ITCallInfo>(logger, pTapi3, pCallInfo, strAddress);
 					pCallControl->Release();
 					if(FAILED(hr)) {
 						pCallInfo->Release();
@@ -402,7 +423,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					wstring callInfo[4];
 					if(getCallInfo(logger, pCallInfo, callInfo)) {
 						wstring strAddress;
-						hr = getAddress<ITCallInfo>(logger, pCallInfo, strAddress);
+						hr = getAddress<ITCallInfo>(logger, pTapi3, pCallInfo, strAddress);
 						if(SUCCEEDED(hr)) {
 							callback(net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_CALL_PRIVATE_DATA, 
 								callID, strAddress, net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, callInfo);
@@ -412,28 +433,52 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 				}
 				break;
 			}
-/*
-			case TE_TAPIOBJECT: {
-				logger->debug("TE_TAPIOBJECT");
-				ITTAPIObjectEvent* pTAPIObjectEvent;
-				hr = pEvent->QueryInterface( IID_ITTAPIObjectEvent, (void **)&pTAPIObjectEvent);
+			case TE_DIGITEVENT: {
+				logger->debug("TE_DIGITEVENT");
+				ITDigitDetectionEvent* pDigitEvent;
+				hr = pEvent->QueryInterface( IID_ITDigitDetectionEvent, (void **)&pDigitEvent);
 				if (FAILED(hr)) {
-					logger->error("TapiObject changed, but failed to get the interface");
+					logger->error("DigitDetection changed, but failed to get the interface");
 				}
 				else {
-					logger->debug("TapiObject event.");
-					ITTAPIObjectEvent2* pTAPIObjectEvent2;
-					hr = pEvent->QueryInterface( IID_ITTAPIObjectEvent2, (void **)&pTAPIObjectEvent2);
+					ITCallInfo* pCallInfo;
+					hr = pDigitEvent->get_Call(&pCallInfo);
 					if (FAILED(hr)) {
-						logger->error("TapiObject event 2 NOT available.");
-					} else {
-					logger->debug("TapiObject event 2 available !!!.");
-
+						logger->error("Failed to retrieve call info: hr=%08X.", hr);
+						pCallInfo->Release();
+						return hr;
 					}
+					wstring strAddress;
+					hr = getAddress<ITCallInfo>(logger, pTapi3, pCallInfo, strAddress);
+					if(FAILED(hr)) {
+						pCallInfo->Release();
+						return hr;
+					}
+
+                    unsigned char digit;
+                    hr = pDigitEvent->get_Digit(&digit);
+					if (FAILED(hr)) {
+						logger->error("Failed to retrieve digit: hr=%08X.", hr);
+						pCallInfo->Release();
+						return hr;
+					}
+                    logger->info("Digit received on address %S: '%c' (%d)", strAddress.c_str(), digit, digit);
+
+					ITBasicCallControl* pCallControl;
+					hr = pCallInfo->QueryInterface(IID_ITBasicCallControl, (void**)&pCallControl);
+					if (FAILED(hr)) {
+						logger->error("Interface ITBasicCallControl not supported: hr=%08X.", hr);
+						pCallInfo->Release();
+						return hr;
+					}
+					int callID = pTapi3->getCallID(pCallControl);
+					callback(net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_MEDIA_DIGIT_RECEIVED, 
+						callID, strAddress, digit, NULL);
+                    
+                    pCallInfo->Release();
 				}
 				break;
 			}
-*/
 			default:
 				logger->warn("tapiEvent=%08X", tapiEvent);
 				break;

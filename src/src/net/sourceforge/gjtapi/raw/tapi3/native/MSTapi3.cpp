@@ -37,6 +37,7 @@
 MSTapi3::MSTapi3() : tapi(NULL), tapi3EventNotification(NULL), currCallID(0), isDown(false) {
 	logger = new Logger("MSTapi3");
 	swapOnHold = false;
+    handoff = L"";
 }
 
 // destructor
@@ -46,7 +47,6 @@ MSTapi3::~MSTapi3() {
 	logger->debug("Deleting logger...");
 	delete logger;
 	logger = NULL;
-	logger->debug("Logger deleted.");
 }
 
 list<wstring> MSTapi3::getAddressNames() {
@@ -54,6 +54,7 @@ list<wstring> MSTapi3::getAddressNames() {
 	for (AddressMap::iterator it = addresses.begin(); it != addresses.end(); ++it) {
 		addressNames.push_back((*it).first);
 	}
+    addressNames.sort();
 	return addressNames;
 }
 
@@ -76,7 +77,7 @@ HRESULT MSTapi3::InitializeTapi(CallbackNotification aCallback) {
         logger->error("CoCreateInstance on TAPI failed: hr=%08X", hr);
         return hr;
     }
-	logger->debug("CoCreateInstance on TAPI succeeded.");
+	logger->debug("CoCreateInstance on TAPI succeeded. Initializing TAPI...");
 
 	callback = aCallback;
     // call initialize.  this must be called before
@@ -108,7 +109,7 @@ HRESULT MSTapi3::InitializeTapi(CallbackNotification aCallback) {
 	logger->debug("RegisterTapiEventInterface() succeeded.");
 
     // Set the Event filter to only give us the events we process
-    tapi->put_EventFilter(TE_ADDRESS | TE_CALLNOTIFICATION | TE_CALLSTATE | TE_CALLMEDIA | TE_CALLHUB | TE_CALLINFOCHANGE);
+    tapi->put_EventFilter(TE_ADDRESS | TE_CALLNOTIFICATION | TE_CALLSTATE | TE_CALLHUB | TE_CALLINFOCHANGE | TE_DIGITEVENT | TE_GENERATEEVENT);
 //    tapi->put_EventFilter(0x2FFFFFF);
 
     // find all address objects that we will use to listen for calls on
@@ -239,6 +240,8 @@ HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination)
     } else {
 		logger->info("Successfully connected to %S on %S.", destination.c_str(), address.c_str());
 	}
+
+    hr = DetectDigits(pCallControl);
     return S_OK;
 }
 
@@ -301,15 +304,12 @@ HRESULT MSTapi3::AnswerTheCall(int callID) {
 		logger->error("get_Address() failed. hr=%08X", hr);
         return hr;
     }
-	BSTR bstrAddrName;
-	hr = pAddress->get_AddressName(&bstrAddrName);
-	if(FAILED(hr)) {
-		logger->error("get_AddressName() failed: hr=%08X", hr);
-		pAddress->Release();
-		return hr;
-	}
-	wstring strAddress = bstrAddrName;
-	SysFreeString(bstrAddrName);
+	wstring strAddress;
+    hr = getAddressName(pAddress, strAddress);
+    if(FAILED(hr)) {
+        pAddress->Release();
+        return hr;
+    }
 
     // Select our terminals on the call; if any of the selections fail, we proceed without that terminal
     hr = SelectTerminalsOnCall(pAddress, callControl);
@@ -324,6 +324,7 @@ HRESULT MSTapi3::AnswerTheCall(int callID) {
 		logger->error("Answer() failed. hr=%08X", hr);
     } else {
 		logger->debug("Answer() successfully done.");
+        DetectDigits(callControl);
 
 		callback(net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_METHOD_TERMINAL_CONNECTION_TALKING, callID, strAddress, 
 				net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider_JNI_CAUSE_NORMAL, NULL);
@@ -446,6 +447,22 @@ HRESULT MSTapi3::UnHoldTheCall(int callID) {
 	}
 }
 
+HRESULT MSTapi3::DetectDigits(ITBasicCallControl* pCallControl) {
+	ITLegacyCallMediaControl* pLegacy;
+	HRESULT hr = pCallControl->QueryInterface(IID_ITLegacyCallMediaControl, (void **) &pLegacy);
+	if(FAILED(hr)) {
+		logger->error("Cannot retrieve legacy: hr=%08X.", hr);
+	} else {
+		hr = pLegacy->DetectDigits(LINEDIGITMODE_DTMF);
+		pLegacy->Release();
+		if(FAILED(hr)) {
+			logger->error("DetectDigits() failed: hr=%08X.", hr);
+		} else {
+			logger->debug("DetectDigits() succeeded.");
+		}
+	}
+    return hr;
+}
 
 HRESULT MSTapi3::SendDigits(wstring terminal, wstring digits) {
 	// using terminal as address !!!
@@ -633,7 +650,6 @@ HRESULT MSTapi3::RegisterTapiEventInterface() {
     IConnectionPointContainer   * pCPC;
     IConnectionPoint            * pCP;
     
-
     hr = tapi->QueryInterface(IID_IConnectionPointContainer, (void **)&pCPC);
 
     if ( FAILED(hr) ) {
@@ -699,6 +715,9 @@ HRESULT MSTapi3::ListenOnAddresses()
         return hr;
     }
 
+    typedef map<wstring, list<ITAddress*> > TempAddressMap;
+    TempAddressMap tempAddressMap;
+
     while (TRUE) {
         hr = pEnumAddress->Next( 1, &pAddress, NULL );
         if(FAILED(hr)) {
@@ -716,7 +735,9 @@ HRESULT MSTapi3::ListenOnAddresses()
 			logger->error("Cannot retrieve address name: hr=%08X.", hr);
 			continue;
 		}
-		addresses.insert(AddressMap::value_type(bstrAddrName, pAddress));
+
+        tempAddressMap[bstrAddrName].push_back(pAddress);
+
 		char addressName[256];
 		sprintf(addressName, "%S", bstrAddrName);
 		logger->info("Address %s added.", addressName);
@@ -740,6 +761,26 @@ HRESULT MSTapi3::ListenOnAddresses()
 		pAddress->Release();
     }
     pEnumAddress->Release();
+
+    addresses.clear();
+	for (TempAddressMap::iterator it = tempAddressMap.begin(); it != tempAddressMap.end(); ++it) {
+        wstring addrName = (*it).first;
+        list<ITAddress*> addrList = (*it).second;
+        if(addrList.size() == 1) {
+            addresses[addrName] = addrList.front();
+        } else {
+            int i=0;
+            for(list<ITAddress*>::iterator addrIt = addrList.begin(); addrIt != addrList.end(); ++addrIt) {
+                i++;
+                char sIndex[8];
+                wchar_t wIndex[8];
+                sprintf(sIndex, "-#%d", i);
+                mbstowcs(wIndex, sIndex, strlen(sIndex) + 1);
+                addresses[addrName + wIndex] = *addrIt;
+            }
+        }
+	}
+
     return S_OK;
 }
 
@@ -923,6 +964,12 @@ HRESULT MSTapi3::SelectTerminalsOnCall(ITAddress* pAddress, ITBasicCallControl* 
                 if(FAILED(hr)) {
 					logger->error("GetTerminal() failed: hr=%08X", hr);
 				} else {
+
+		            BSTR bstrTermName;
+                    pTerminal->get_Name(&bstrTermName);
+		            logger->debug("Selecting terminal %S...", bstrTermName);
+		            SysFreeString(bstrTermName);
+
                     // Select the terminal on the stream.
                     hr = pStream->SelectTerminal(pTerminal);
                     if (FAILED(hr)) {
@@ -1036,4 +1083,27 @@ ITAddress* MSTapi3::getITAddress(wstring& address) {
 	}
 	ITAddress* pITAddress = (*it).second;
 	return pITAddress;
+}
+
+HRESULT MSTapi3::getAddressName(ITAddress* pITAddress, wstring& strAddress) {
+    HRESULT hr = 0;
+    strAddress = L"";
+    for (AddressMap::iterator it = addresses.begin(); it != addresses.end(); ++it) {
+        if(pITAddress == (*it).second) {
+            strAddress = (*it).first;
+            break;
+        }
+	}
+    if(strAddress.length == 0) {
+	    BSTR bstrAddrName;
+	    hr = pITAddress->get_AddressName(&bstrAddrName);
+	    if(FAILED(hr)) {
+		    logger->error("get_AddressName() failed: hr=%08X", hr);
+        } else {
+	        strAddress = bstrAddrName;
+	        SysFreeString(bstrAddrName);
+            logger->error("Address name alias not found in address map. Using real name '%S'", strAddress.c_str());
+        }
+    }
+	return hr;
 }

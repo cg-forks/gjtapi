@@ -37,13 +37,14 @@
 
 #include <tapi3.h>
 #include <string>
+#include "MSTapi3.h"
 
 using namespace std;
 
 bool getCallInfo(Logger* logger, ITCallInfo* pCall, wstring callInfo[4]);
 
 // class T must offer the method: HRESULT get_Address(ITAddress**);
-template<class T> HRESULT getAddress(Logger* logger, T* pInfo, wstring& strAddress) {
+template<class T> HRESULT getAddress(Logger* logger, MSTapi3* msTapi3, T* pInfo, wstring& strAddress) {
 	logger->debug("Calling getAddress()...");
 	ITAddress* pAddress;
 	HRESULT hr = pInfo->get_Address(&pAddress);
@@ -51,16 +52,13 @@ template<class T> HRESULT getAddress(Logger* logger, T* pInfo, wstring& strAddre
 		logger->error("get_Address() failed: hr=%08X", hr);
 		return hr;
 	}
-	logger->debug("Calling get_AddressName()....");
-	BSTR bstrAddrName;
-	hr = pAddress->get_AddressName(&bstrAddrName);
+
+    hr = msTapi3->getAddressName(pAddress, strAddress);
 	pAddress->Release();
 	if(FAILED(hr)) {
 		logger->error("get_AddressName() failed: hr=%08X", hr);
 		return hr;
 	}
-	strAddress = bstrAddrName;
-	SysFreeString(bstrAddrName);
 	logger->info("getAddress() returning %S.", strAddress.c_str());						
 
 	return S_OK;
