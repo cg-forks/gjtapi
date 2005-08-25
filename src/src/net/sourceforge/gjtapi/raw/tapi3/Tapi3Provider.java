@@ -342,6 +342,13 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                     break;
                 case METHOD_CONNECTION_ALERTING:
                     listener.connectionAlerting(tapi3CallID, address, eventCause);
+                    if(privateData != null) {
+                        String callerAddr = privateData.getCallerNumber();
+                        if(privateData.getCallerName() != null && privateData.getCallerName().length() > 0) {
+                            callerAddr += " (" + privateData.getCallerName() + ")"; 
+                        }
+                        listener.connectionInProgress(tapi3CallID, callerAddr, Event.CAUSE_NEW_CALL);
+                    }
                     break;
                 case METHOD_CONNECTION_CONNECTED:
                     listener.connectionConnected(tapi3CallID, address, eventCause);
