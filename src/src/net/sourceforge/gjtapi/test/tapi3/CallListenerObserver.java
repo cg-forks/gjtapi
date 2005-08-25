@@ -40,6 +40,7 @@ import javax.telephony.Event;
 import javax.telephony.TerminalConnection;
 import javax.telephony.TerminalConnectionEvent;
 import javax.telephony.TerminalConnectionListener;
+import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlCallObserver;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.callcontrol.events.CallCtlTermConnBridgedEv;
@@ -80,8 +81,9 @@ import org.apache.log4j.Logger;
 public class CallListenerObserver extends DefaultListModel implements TerminalConnectionListener, CallControlCallObserver {
     private static final Logger logger = Logger.getLogger(CallListenerObserver.class);
 
+    private boolean usePrivateData = false;
     // Map of Tapi3PrivateData indexed by Call
-    private Map callMap = new HashMap();
+    private Map callMap = new HashMap();    
     
     public class Item {
         private final Connection connection;
@@ -119,12 +121,19 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
         }
         
         public String getCallName() {
-            Tapi3PrivateData privateData = getPrivateData();
-            if(privateData != null) {
-                return privateData.getCalledName() + "(" + privateData.getCalledNumber() + ") " + 
-    			"<-- " + privateData.getCallerName() + "(" + privateData.getCallerNumber() + ")";
+            if(usePrivateData) {
+                Tapi3PrivateData privateData = getPrivateData();
+                if(privateData != null) {
+                    return privateData.getCalledName() + "(" + privateData.getCalledNumber() + ") " + "<-- "
+                            + privateData.getCallerName() + "(" + privateData.getCallerNumber() + ")";
+                } else {
+                    return "???@" + connection.getAddress();
+                }
             } else {
-                return "???@" + connection.getAddress();
+                CallControlCall call = (CallControlCall) connection.getCall();
+                String calledAddr = (call.getCalledAddress() == null) ? "???" : call.getCalledAddress().getName();
+                String callingAddr = (call.getCallingAddress() == null) ? "???" : call.getCallingAddress().getName();
+                return calledAddr + " <-- " + callingAddr;
             }
         }
         
@@ -167,6 +176,14 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
     public CallListenerObserver() {
     }
     
+    public boolean isUsePrivateData() {
+        return usePrivateData;
+    }
+
+    public void setUsePrivateData(boolean usePrivateData) {
+        this.usePrivateData = usePrivateData;
+    }
+
     private void updatePrivateData(Call call, Tapi3PrivateData privateData) {
         callMap.put(call, privateData);
         update();

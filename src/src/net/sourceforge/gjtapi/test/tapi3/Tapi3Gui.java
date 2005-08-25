@@ -37,8 +37,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -85,6 +87,8 @@ public class Tapi3Gui {
 	private JTextField txtCalledNumber;
 	private JButton butCall;
 
+    private JCheckBox ckPrivateData;
+    
 	private JTextField txtDTMFOut;
 	private JButton butDTMFOut;
 
@@ -149,6 +153,7 @@ public class Tapi3Gui {
         for(int i=0; i<names.length; i++) {
             names[i] = addresses[i].getName();
         }
+        Arrays.sort(names);
         String addressName = (String)JOptionPane.showInputDialog(null, "Select an address", "Address selection", 
                 				JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
         if(addressName == null) {
@@ -171,13 +176,17 @@ public class Tapi3Gui {
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
 		        new Insets(40, 15, 20, 10), 0, 0));
 	    
-	    butCall = new JButton("Call");
-	    butCall.setEnabled(false);
-		inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
-		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 10, 20, 10), 0, 0));
-        
-        
+        butCall = new JButton("Call");
+        butCall.setEnabled(false);
+        inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(40, 10, 20, 10), 0, 0));
+                
+        ckPrivateData = new JCheckBox("Use TAPI3 private data");
+        inputPanel.add(ckPrivateData, new GridBagConstraints(2, 0, 2, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_END, GridBagConstraints.NONE, 
+                new Insets(40, 10, 20, 10), 0, 0));
+                
 	    txtDTMFOut = new JTextField(16);
 		inputPanel.add(txtDTMFOut, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
@@ -265,6 +274,16 @@ public class Tapi3Gui {
             }
         });
 		
+        ckPrivateData.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+                        obsListener.setUsePrivateData(ckPrivateData.isSelected());
+                    }
+                }.start();
+            }
+        });
+        
 		butDTMFOut.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
