@@ -563,7 +563,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         if(id instanceof Tapi3CallID) {
             Tapi3CallID tapi3CallID = (Tapi3CallID)id;
             int retCode = tapi3Native.tapi3ReleaseCall(tapi3CallID.getCallID());
-            logger.debug("tapi3ReleaseCall() returned: " + retCode);
+            logger.debug("tapi3ReleaseCall() returned: 0x" + Integer.toHexString(retCode));
         } else {
             logger.warn("Not a Tapi3CallID: " + id);
         }
@@ -653,12 +653,12 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         if((call1 instanceof Tapi3CallID) && (call2 instanceof Tapi3CallID)) {
             Tapi3CallID tapi3CallID1 = (Tapi3CallID)call1;
             Tapi3CallID tapi3CallID2 = (Tapi3CallID)call2;
-            int joinCallID = tapi3Native.tapi3Join(tapi3CallID1.getCallID(), tapi3CallID2.getCallID());
-            if(joinCallID >= 0) {
-                logger.debug("tapi3Hold() returned callID: " + joinCallID);
-                return new Tapi3CallID(joinCallID);
+            int errCode = tapi3Native.tapi3Join(tapi3CallID1.getCallID(), tapi3CallID2.getCallID());
+            if(errCode == 0) {
+                logger.debug("tapi3Join() succeeded.");
+                return new Tapi3CallID(tapi3CallID1.getCallID());
             } else {
-                logger.error("Cannot join (errorCode=" + joinCallID + ")");
+                logger.error("Cannot join (errorCode=" + Integer.toHexString(errCode) + ")");
                 throw new RawStateException(call1, TerminalConnection.UNKNOWN);
             }
         } else {

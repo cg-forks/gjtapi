@@ -346,8 +346,18 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
  * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Join(JNIEnv* pEnv, jobject oObj, jint callID1, jint callID2) {
-	logger->error("Join not implemented.");
-	return -1;
+	try{
+		logger->debug("join() called for callID1=%d and callID2=%d", callID1, callID2);
+		HRESULT hr = g_msTapi3->JoinCalls(callID1, callID2);
+		logger->debug("join() done for callID1=%d and callID2=%d", callID1, callID2);
+        if(!FAILED(hr)) {
+            hr = 0;
+        }
+		return hr;
+	} catch(...){
+		logger->fatal("join failed.");
+		return E_FAIL;
+	}
 }
 
 

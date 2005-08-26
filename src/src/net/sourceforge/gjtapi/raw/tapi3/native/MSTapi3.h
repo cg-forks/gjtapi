@@ -75,6 +75,7 @@ public:
 	HRESULT DisconnectTheCall(int callID);
 	HRESULT HoldTheCall(int callID);
 	HRESULT UnHoldTheCall(int callID);
+	HRESULT JoinCalls(int callID1, int callID2);
 	HRESULT SendDigits(wstring terminal, wstring digits);
 	void ReleaseTheCall(int callID);
 	void setSwapOnHold(bool enabled) { swapOnHold = enabled; }

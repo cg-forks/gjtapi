@@ -447,6 +447,23 @@ HRESULT MSTapi3::UnHoldTheCall(int callID) {
 	}
 }
 
+//////////////////////////////////////////////////////////////////////
+// JoinCalls
+//
+// Joins two calls
+//////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::JoinCalls(int callID1, int callID2) {
+	ITBasicCallControl* callControl1 = getCallControl(callID1);
+	ITBasicCallControl* callControl2 = getCallControl(callID2);
+    HRESULT hr = callControl1->Conference(callControl2, VARIANT_FALSE);
+	if(FAILED(hr)) {
+		logger->error("JoinCalls() failed: hr=%08X.", hr);
+	} else {
+		logger->debug("JoinCalls() succeeded.");
+	}
+    return hr;
+}
+
 HRESULT MSTapi3::DetectDigits(ITBasicCallControl* pCallControl) {
 	ITLegacyCallMediaControl* pLegacy;
 	HRESULT hr = pCallControl->QueryInterface(IID_ITLegacyCallMediaControl, (void **) &pLegacy);
