@@ -83,6 +83,8 @@ import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import java.util.*;
 import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
+
+//import com.sun.jndi.cosnaming.IiopUrl.Address;
 /**
  *
  * @author  root
@@ -90,14 +92,14 @@ import javax.telephony.*;
 public class SipPhone implements  MediaListener, CommunicationsListener,  SecurityAuthority,net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener
 {
     private TelephonyListener listener;
-    private List addresses;
+//    private List addresses;
     private TermData terminal;
-    private final static String RESOURCE_NAME = "sip.props";
-    private Properties properties = new Properties();
+//    private final static String RESOURCE_NAME = "sip.props";
+//    private Properties properties = new Properties();
     protected MediaManager mediaManager;
     protected SipManager sipManager;
     protected static Console console = Console.getConsole(SipPhone.class);
-    private CallId idd;
+//    private CallId idd;
     private Vector idVector = new Vector();
     private String address ;
     private SipProvider sipProvider;
@@ -132,7 +134,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     {
         console.logEntry();
         console.debug("id = " + id);
-        idd = id;
+//        idd = id;
         
         try
         {
@@ -143,6 +145,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             
             SipCallId sipCallId = (SipCallId)(id);
             sipCallId.setSipId(call.getID());
+            call.setCallId(sipCallId);	// hook the call up to it's id
             idVector.add(new ListIdElement(id, call.getID(), term, dest));
             
        
@@ -161,6 +164,26 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         
     }
     
+    public void answerCall(CallId callId, String address, String term) throws
+    ResourceUnavailableException, PrivilegeViolationException, RawStateException, MethodNotSupportedException
+    {
+        console.logEntry();
+        try
+        {
+            ListIdElement listId = this.getElementIdListByJtapiId(callId);
+            sipManager.answerCall(listId.getSipId(), mediaManager.generateSdpDescription());
+        }
+        catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex)
+        {
+            console.debug(ex.toString());
+        }
+        catch ( net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException ex)
+        {
+            console.debug(ex.toString());
+        }
+        
+    }
+
     public void SipHangup(CallId callId)
     {
         try
@@ -172,7 +195,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         }
         catch (CommunicationsException exc)
         {
-            console.showException("Could not properly terminate call!\n"
+            Console.showException("Could not properly terminate call!\n"
             + "(This is not a fatal error)",
             exc
             );
@@ -204,6 +227,15 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             ListIdElement el =  getElementIdListBySipId(sipId);
             
             
+            if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.ALERTING)
+            {
+                System.out.println("remote address = " + el.getAddress());
+                    
+                sipProvider.sipTerminalConnectionRinging(el.getJtapiId(), el.getAddress() , el.getTerminal(), ConnectionEvent.CAUSE_NORMAL );
+                sipProvider.sipConnectionInProgress(el.getJtapiId(), el.getAddress(), Event.CAUSE_NORMAL);
+                sipProvider.sipConnectionAlerting(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                                       
+            }
             if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.RINGING)
             {
                 if (evt.getOldState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DIALING)
@@ -249,7 +281,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
                 }
                 catch (MediaException ex)
                 {
-                    console.showException(        "The following exception occurred while trying to open media connection:\n"
+                    Console.showException(        "The following exception occurred while trying to open media connection:\n"
                     + ex.getMessage(),           ex);
                 }
                 call.getRemoteSdpDescription();
@@ -326,6 +358,15 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     public void callReceived(net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallEvent evt)
     {
         console.logEntry();
+        
+        // register as a listener on the call
+        net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt.getSourceCall();
+        CallId callId = call.getCallId();
+        SipCallId sipCallId = (SipCallId)(callId);
+        sipCallId.setSipId(call.getID());
+        call.setCallId(sipCallId);	// hook the call up to it's id
+        idVector.add(new ListIdElement(callId, call.getID(), this.terminal.terminal, this.address));
+        evt.getSourceCall().addStateChangeListener(this);
     }
     
     public void callRejectedLocally(CallRejectedEvent evt)
@@ -372,7 +413,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             catch (MediaException exc)
             {
                 console.error("Failed to start mediaManager", exc);
-                console.showException(
+                Console.showException(
                 "The following exception occurred while initializing media!\n"
                 + exc.getMessage(),
                 exc);
@@ -397,7 +438,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             }
             catch (CommunicationsException exc)
             {
-                console.showException(
+                Console.showException(
                 "An exception occurred while initializing communication stack!\n"
                 + "You won't be able to send or receive calls",
                 exc);
@@ -411,7 +452,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             {
                 console.error(
                 "An exception occurred while trying to register, exc");
-                console.showException(
+                Console.showException(
                 "Failed to register!\n"
                 + exc.getMessage() + "\n"
                 + "This is a warning only. The phone would still function",
@@ -428,10 +469,10 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     private ListIdElement getElementIdListBySipId(int sipId)
     {
         ListIdElement ret = null;
-        Enumeration enum = idVector.elements();
-        while (enum.hasMoreElements())
+        Enumeration elementEnum = idVector.elements();
+        while (elementEnum.hasMoreElements())
         {
-            ListIdElement lst = (ListIdElement)enum.nextElement();
+            ListIdElement lst = (ListIdElement)elementEnum.nextElement();
             if ( lst.getSipId() == sipId)
             {
                 ret = lst;
@@ -443,10 +484,10 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     private ListIdElement getElementIdListByJtapiId(CallId callid)
     {
         ListIdElement ret = null;
-        Enumeration enum = idVector.elements();
-        while (enum.hasMoreElements())
+        Enumeration elementEnum = idVector.elements();
+        while (elementEnum.hasMoreElements())
         {
-            ListIdElement lst = (ListIdElement)enum.nextElement();
+            ListIdElement lst = (ListIdElement)elementEnum.nextElement();
             if ( lst.getJtapiId().equals(callid))
             {
                 ret = lst;

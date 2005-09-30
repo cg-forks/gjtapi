@@ -57,6 +57,8 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.sip;
 
+import net.sourceforge.gjtapi.CallId;
+import net.sourceforge.gjtapi.raw.sipprovider.SipCallId;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallStateEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
@@ -104,6 +106,8 @@ public class Call
      */
     private Request initialRequest = null;
     private String callState = "";
+    private SipCallId callId = new SipCallId();
+    
     //Event Management
     ArrayList listeners = new ArrayList();
     public String getState()
@@ -219,6 +223,25 @@ public class Call
         return hashCode();
     }
 
+    /**
+     * Get's the unique identifier associated with a call.
+     * @return
+     */
+    public CallId getCallId()
+    {
+    	return this.callId;
+    }
+    
+    /**
+     * Set the CallId for a call. This is done when a call is created
+     * with an already reserved call Id.
+     * @param replacementCallId
+     */
+    public void setCallId(SipCallId replacementCallId)
+    {
+    	this.callId = replacementCallId;
+    }
+    
     void setInitialRequest(Request request)
     {
         this.initialRequest = request;

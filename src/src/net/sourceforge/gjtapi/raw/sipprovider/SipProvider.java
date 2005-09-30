@@ -121,6 +121,9 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     public void answerCall(CallId call, String address, String terminal) throws PrivilegeViolationException, ResourceUnavailableException, MethodNotSupportedException, RawStateException
     {
         console.logEntry();
+        SipPhone mySP = getSipPhoneByAddress(address);
+        mySP.answerCall(call, address, terminal);
+        
     }
     
     
@@ -501,6 +504,11 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     {
         console.logEntry();
         listener.terminalConnectionCreated(id, address, terminal, cause);
+    }
+    public void sipTerminalConnectionRinging(CallId id, String address, String terminal, int cause)
+    {
+        console.logEntry();
+        listener.terminalConnectionRinging(id, address, terminal, cause);
     }
     //media methods---------------------------------------------------------------------
     //----------------------------------------------------------------------------------
