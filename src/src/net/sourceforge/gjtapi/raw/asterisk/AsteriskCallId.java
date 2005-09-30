@@ -1,3 +1,4 @@
+package net.sourceforge.gjtapi.raw.asterisk;
 
 import net.sourceforge.gjtapi.CallId;
 
