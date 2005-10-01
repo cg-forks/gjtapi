@@ -75,12 +75,12 @@ import javax.telephony.*;
 public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
 {
     private TelephonyListener listener;
-    private List addresses;
+//    private List addresses;
     //private TermData terminal;
-    private final static String RESOURCE_NAME = "sip.props";
+//    private final static String RESOURCE_NAME = "sip.props";
     private Properties properties = System.getProperties();
     protected static Console console = Console.getConsole(SipProvider.class);
-    private CallId idd;    
+//    private CallId idd;    
     private Vector sipPhoneVector = new Vector();
     
     /** Add an observer for RawEvents
@@ -183,12 +183,12 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     {
         console.logEntry();
         String [] ret = new String [sipPhoneVector.size()];
-        Enumeration enum = sipPhoneVector.elements();
+        Iterator iter = sipPhoneVector.iterator();
         int i=0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
-            SipManager sm = sp.getSipManager();
+            SipPhone sp = (SipPhone)iter.next();
+//            SipManager sm = sp.getSipManager();
             ret[i]=sp.getAddress();
             i++;
         }
@@ -206,22 +206,22 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     public String[] getAddresses(String terminal) throws InvalidArgumentException
     {
         console.logEntry();
-        Enumeration enum = sipPhoneVector.elements();
+        Iterator iter = sipPhoneVector.iterator();
         int size = 0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(terminal));
             size++;
             
         }
         String [] ret = new String [size];
-        enum = sipPhoneVector.elements();
+        iter = sipPhoneVector.iterator();
         int i=0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(terminal));
             ret[i] = sp.getAddress();
@@ -264,11 +264,11 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     {
         console.logEntry();
         TermData[] ret = new TermData [sipPhoneVector.size()];
-        Enumeration enum = sipPhoneVector.elements();
+        Iterator iter = sipPhoneVector.iterator();
         int i=0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             SipManager sm = sp.getSipManager();
             ret[i] =  new TermData(sm.getAddress(), true);
             ret[i] =  new TermData(sp.getAddress(), true);
@@ -289,22 +289,22 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     public TermData[] getTerminals(String address) throws InvalidArgumentException
     {
         console.logEntry();
-        Enumeration enum = sipPhoneVector.elements();
+        Iterator iter = sipPhoneVector.iterator();
         int size = 0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address));
             size++;
             
         }
         TermData[] ret = new TermData [size];
-        enum = sipPhoneVector.elements();
+        iter = sipPhoneVector.iterator();
         int i=0;
-        while (enum.hasMoreElements())
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address));
             ret[i] =  new TermData(sp.getAddress(), true);
@@ -445,10 +445,10 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     private SipPhone getSipPhoneByAddress(String address)
     {
         SipPhone ret = null;
-        Enumeration enum = sipPhoneVector.elements();
-        while (enum.hasMoreElements())
+        Iterator iter = sipPhoneVector.iterator();
+        while (iter.hasNext())
         {
-            SipPhone sp = (SipPhone)enum.nextElement();
+            SipPhone sp = (SipPhone)iter.next();
             if ( sp.getAddress().equals(address))
             {
                 ret = sp;

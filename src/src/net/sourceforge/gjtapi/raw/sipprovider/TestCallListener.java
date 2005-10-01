@@ -31,17 +31,17 @@ package net.sourceforge.gjtapi.raw.sipprovider;
     of the copyright holder.
  */
 import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
+//import javax.telephony.callcontrol.CallControlTerminalConnection;
+//import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
-import net.sourceforge.gjtapi.*;
+//import net.sourceforge.gjtapi.*;
 
 import javax.telephony.media.*;
 import net.sourceforge.gjtapi.media.*;
-import java.io.*;
-import javax.telephony.callcontrol.CallControlTerminalConnection;
-import net.sourceforge.gjtapi.*;
-import javax.telephony.*;
+//import java.io.*;
+//import javax.telephony.callcontrol.CallControlTerminalConnection;
+//import net.sourceforge.gjtapi.*;
+//import javax.telephony.*;
 /**
  * Simple test script for the emulator raw provider
  * Creation date: (2000-02-03 15:40:58)

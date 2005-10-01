@@ -168,7 +168,7 @@ public class RegisterProcessing
 
             Request register = clientTransaction.getRequest();
 
-            Request reoriginatedRequest = null;
+//            Request reoriginatedRequest = null;
 
             ClientTransaction retryTran = sipManCallback.sipSecurityManager.
                 handleChallenge(response,

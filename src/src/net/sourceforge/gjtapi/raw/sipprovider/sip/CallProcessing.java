@@ -322,7 +322,7 @@ public class CallProcessing
             console.logEntry();
 
             Request challengedRequest = clientTransaction.getRequest();
-            Request reoriginatedRequest = null;
+  //          Request reoriginatedRequest = null;
 
             ClientTransaction retryTran = sipManCallback.sipSecurityManager.
             		handleChallenge(response, clientTransaction.getBranchId(),
@@ -949,7 +949,7 @@ public class CallProcessing
         {
             console.logEntry();
 
-            Request request = dialog.getFirstTransaction().getRequest();
+//            Request request = dialog.getFirstTransaction().getRequest();
             Request bye = null;
             try {
                 bye = dialog.createRequest(Request.BYE);
@@ -998,7 +998,7 @@ public class CallProcessing
         {
             console.logEntry();
 
-            Request request = dialog.getFirstTransaction().getRequest();
+//            Request request = dialog.getFirstTransaction().getRequest();
             if (dialog.isServer()) {
                 console.error("Cannot cancel a server transaction");
                 throw new CommunicationsException(

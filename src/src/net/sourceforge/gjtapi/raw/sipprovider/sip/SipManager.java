@@ -558,8 +558,8 @@ public class SipManager implements SipListener
             
             //at this point we are sure we have a sip: prefix in the uri
             // we construct our pres: uri by replacing that prefix.
-            String presenceUri = "pres"
-            + publicAddress.substring(publicAddress.indexOf(':'));
+//            String presenceUri = "pres"
+//            + publicAddress.substring(publicAddress.indexOf(':'));
             
             
         }
@@ -1572,7 +1572,7 @@ public class SipManager implements SipListener
             ServerTransaction serverTransaction = requestReceivedEvent.
             getServerTransaction();
             Request request = requestReceivedEvent.getRequest();
-            String method = ( (CSeqHeader) request.getHeader(CSeqHeader.NAME)).getMethod();
+//            String method = ( (CSeqHeader) request.getHeader(CSeqHeader.NAME)).getMethod();
             if (serverTransaction == null)
             {
                 try
@@ -1618,7 +1618,7 @@ public class SipManager implements SipListener
                 }
             }
             Dialog dialog = serverTransaction.getDialog();
-            Request requestClone = (Request) request.clone();
+//            Request requestClone = (Request) request.clone();
             //INVITE
             if (request.getMethod().equals(Request.INVITE))
             {
@@ -1811,10 +1811,10 @@ public class SipManager implements SipListener
                 return;
             }
             Response response = responseReceivedEvent.getResponse();
-            Dialog dialog = clientTransaction.getDialog();
+//            Dialog dialog = clientTransaction.getDialog();
             String method = ( (CSeqHeader) response.getHeader(CSeqHeader.NAME)).
             getMethod();
-            Response responseClone = (Response) response.clone();
+//            Response responseClone = (Response) response.clone();
             //OK
             if (response.getStatusCode() == Response.OK)
             {

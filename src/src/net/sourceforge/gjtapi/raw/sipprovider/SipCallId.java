@@ -77,8 +77,8 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public class SipCallId implements CallId {
-    private static final String     version_id =
-        "@(#)$Id: SipCallId.java,v 1.1 kim NGUYEN-VAN";
+//    private static final String     version_id =
+//        "@(#)$Id: SipCallId.java,v 1.1 kim NGUYEN-VAN";
 
     private static int idCounter = 0;
     private int id;

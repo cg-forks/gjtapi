@@ -277,14 +277,15 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
                 //listener.connectionSuspended(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
                 try
                 {
-                    mediaManager.closeStreams(call.getRemoteSdpDescription());
+                    if (call.getRemoteSdpDescription() != null) {
+                    	mediaManager.closeStreams(call.getRemoteSdpDescription());
+                    }
                 }
                 catch (MediaException ex)
                 {
                     Console.showException(        "The following exception occurred while trying to open media connection:\n"
                     + ex.getMessage(),           ex);
                 }
-                call.getRemoteSdpDescription();
                 console.debug("+++++++++++++          ++++++      +++++ DIIIS conecTTTTEDDD"+ call.getRemoteName());
                 sipProvider.sipConnectionDisconnected(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
             }

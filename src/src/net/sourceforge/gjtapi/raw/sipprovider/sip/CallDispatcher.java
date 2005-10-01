@@ -134,9 +134,9 @@ class CallDispatcher
                 return null;
             }
             synchronized (calls) {
-                Enumeration enum = calls.elements();
-                while (enum.hasMoreElements()) {
-                    Call item = (Call) enum.nextElement();
+                Enumeration callEnumerator = calls.elements();
+                while (callEnumerator.hasMoreElements()) {
+                    Call item = (Call) callEnumerator.nextElement();
                     if (item.getDialog().getCallId().equals(dialog.getCallId())) {
                         return item;
                     }
@@ -162,9 +162,9 @@ class CallDispatcher
                 return null;
             }
             synchronized (calls) {
-                Enumeration enum = calls.elements();
-                while (enum.hasMoreElements()) {
-                    Call item = (Call) enum.nextElement();
+                Enumeration callEnumerator = calls.elements();
+                while (callEnumerator.hasMoreElements()) {
+                    Call item = (Call) callEnumerator.nextElement();
                     if (item.getDialog().getCallId().equals(callId)) {
                         return item;
                     }
