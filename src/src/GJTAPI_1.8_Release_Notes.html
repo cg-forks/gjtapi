@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>GJTAPI 1.8 Release Notes</title>
+  <meta content="Richard Deadman" name="author">
+  <meta content="Release notes for GJTAPI 1.8 and its providers"
+ name="description">
+</head>
+<body>
+<h1 style="text-align: center;">GJTAPI 1.8 Release Notes</h1>
+<h2>Version</h2>
+<div style="margin-left: 40px;">This is version 1.8 of the Generic
+JTAPI, Jcat and Jcc project.<br>
+</div>
+<h2>New Features</h2>
+<ul>
+  <li>SIP Provider</li>
+  <li>TAPI3 Provider</li>
+  <li>XTAPI Bridge now moved into same licence and the core jar file.<br>
+  </li>
+</ul>
+<h2>Known Bugs</h2>
+<ul>
+  <li>The new TAPI 3.0 Provider does not yet support playing or
+recording sounds<br>
+  </li>
+</ul>
+<h2>Install</h2>
+<ol>
+  <li>Add the JTAPI, Jcat or Jcc interface jar files on your classpath</li>
+  <li>Add the GJTAPI-1.8 jar file onto your classpath</li>
+  <li>Add any DLL or SO file required by the provider onto your library
+path</li>
+  <li>Add any dependent jar files for your provider onto your classpath<br>
+  </li>
+  <li>Create your Provider with the "Provider String" given in the
+following chart.<br>
+  </li>
+</ol>
+<h2>Providers</h2>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">Provider<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">Description<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">Dependencies<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">Provider
+String<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">Limitations<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Emulator<br>
+      </td>
+      <td style="vertical-align: top;">Provides an emulated telephony
+system, with GUI, for testing<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">"Emulator"<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Mux<br>
+      </td>
+      <td style="vertical-align: top;">Allows multiple GJTAPI providers
+to be multiplexed together as one virtual GJTAPI provider.<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">"Mux"<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Inverter<br>
+      </td>
+      <td style="vertical-align: top;">Allows 3rd party JTAPI
+implementations to be accessed through GJTAPI. Useful with both the Mux
+provider and the remote providers (RMI, CORBA, Web Services). Also
+allows JTAPI implementations to appear as Jcc or Jcat implementations.<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">"net.sourceforge.gjtapi.raw.inverter.InverterProvider"
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Corba<br>
+      </td>
+      <td style="vertical-align: top;">A remote provider that allows
+for a JTAPI/Jcc application to control remote GJTAPI providers.<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">"Corba"<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">RMI<br>
+      </td>
+      <td style="vertical-align: top;">Same as Corba provider, but
+using RMI for distributed messaging.<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">"Rmi"<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Web Services<br>
+      </td>
+      <td style="vertical-align: top;">Same as Corba provider but using
+web service for distributed messaging.<br>
+      </td>
+      <td style="vertical-align: top;">Jax-Rpc<br>
+GjtapiWebService.jar<br>
+Gjtapi-Rpc.war<br>
+      </td>
+      <td style="vertical-align: top;">"ca.deadman.gjtapi.raw.remote.webservices.WebProvider"</td>
+      <td style="vertical-align: top;">Available under GPL and
+proprietary licence from http://www.deadman.ca/products.shtml<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Modem<br>
+      </td>
+      <td style="vertical-align: top;">Supports serial voice modems,
+with configuration done by properties files.<br>
+      </td>
+      <td style="vertical-align: top;">comm.jar<br>
+(Java COM serial access)<br>
+      </td>
+      <td style="vertical-align: top;">"Modem"<br>
+      </td>
+      <td style="vertical-align: top;">Limited number of modems tested.
+AccuraV92 chips supported.<br>
+Only .au files are supported for playing. <br>
+Recorded files are ulaw files and must be converted to another format
+to be useful. <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Dialogic<br>
+      </td>
+      <td style="vertical-align: top;">Supports systems that provide
+the Dialogic GlobalCall API. Both Windows and Linux supported.<br>
+      </td>
+      <td style="vertical-align: top;">libgcprovider.so (linux)<br>
+      <br>
+or<br>
+      <br>
+gcprovider.dll (win32)</td>
+      <td style="vertical-align: top;">"DialogicGC"<br>
+      </td>
+      <td style="vertical-align: top;">Media not supported.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Xtapi Bridge<br>
+      </td>
+      <td style="vertical-align: top;">Supports the providers developed
+for the XTAPI project: Tapi, Serial Modem, H.323, Dialogic (using D4J)<br>
+      </td>
+      <td style="vertical-align: top;">(The appropriate XTAPI service
+provider and any dependent DLLs)<br>
+      </td>
+      <td style="vertical-align: top;">"Xtapi"<br>
+      </td>
+      <td style="vertical-align: top;">XTAPI does not seem to be
+actively developed anymore. The TAPI service provider does not handle
+some TAPI 3.0 devices properly.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Sip<br>
+      </td>
+      <td style="vertical-align: top;">Supports SIP calls<br>
+      </td>
+      <td style="vertical-align: top;">JainSipApi.jar<br>
+nist-sdp-1.0.jar<br>
+nist-sip-1.2.jar<br>
+Stun4J.jar<br>
+log4j.jar<br>
+      </td>
+      <td style="vertical-align: top;">"Sip"<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Tapi 3.0<br>
+      </td>
+      <td style="vertical-align: top;">Supports TAPI 3.0 on win32
+systems<br>
+      </td>
+      <td style="vertical-align: top;">Tapi3Provider.dll (win32)</td>
+      <td style="vertical-align: top;">"Tapi3"<br>
+      <br>
+      <br>
+      </td>
+      <td style="vertical-align: top;">Limited media support. It can
+generate and detect DTMF but not play and record sounds.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</body>
+</html>
