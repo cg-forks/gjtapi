@@ -11,9 +11,17 @@
 
   <!-- Edit this with your jtapi and jcc jar locations... -->
   <path id="classpath">	
-    <fileset dir="../../redistrib">	
+    <fileset dir="redistrib">
       <include name="jcc-1.1.jar"/>
       <include name="jtapi-1.3.1.jar"/>
+      <include name="jcat-0.3.1.jar"/>
+      <include name="JainSipApi1.1.jar"/>
+      <include name="jmf-2.1.1e.jar"/>
+      <include name="Stun4J.jar"/>
+      <include name="log4j-1.2.9.jar"/>
+      <include name="sip-sdp.jar"/>
+      <include name="comm-2.0.jar"/>
+      <include name="asterisk-java-0.2-rc1.jar"/>
     </fileset>
   </path>
 
@@ -28,7 +36,7 @@
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}">
+    <javac srcdir="${src}" destdir="${build}" source="1.4">
 	<classpath refid="classpath"/>
     </javac>
 
