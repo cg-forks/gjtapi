@@ -74,6 +74,17 @@ import org.apache.log4j.Level;
 public class Console
 {
     public static boolean debugMode = true;
+    private static final String LOG4J_PROPERTY_FILE = "log4j.props";
+    
+    /**
+     * Tell Log4j how to be configured
+     */
+    static {
+    	if(new File(LOG4J_PROPERTY_FILE).canRead())
+    	{
+    		PropertyConfigurator.configure(LOG4J_PROPERTY_FILE);
+    	}
+    }
 //-------------------- Messages --------------------------
     public static void showMsg(String message)
     {
