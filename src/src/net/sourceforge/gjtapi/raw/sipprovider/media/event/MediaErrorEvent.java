@@ -70,6 +70,8 @@ import java.util.*;
 public class MediaErrorEvent
     extends EventObject
 {
+	static final long serialVersionUID = -5814105028406706976L;
+	
     public MediaErrorEvent(Throwable source)
     {
         super(source);

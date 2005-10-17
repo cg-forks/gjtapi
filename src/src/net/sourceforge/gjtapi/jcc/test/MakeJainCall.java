@@ -96,7 +96,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		// Get an address
 		out.print("2.1: Attempting to get address...");
 		JccAddress addr = (JccAddress)prov.getAddress(fromAddr);
-		out.println(" success.");
+		out.println(" success:" + addr.getName());
 
 		// Make the Call
 		out.print("2.3: Attempting to create call...");

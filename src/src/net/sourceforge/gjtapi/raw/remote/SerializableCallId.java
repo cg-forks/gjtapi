@@ -39,6 +39,8 @@ import java.io.Serializable;
  * @author: Richard Deadman
  */
 public class SerializableCallId implements CallId, Serializable {
+	static final long serialVersionUID = 8561783071688424308L;
+	
 	private long id;
 /**
  * Create an call id with a set identifier.

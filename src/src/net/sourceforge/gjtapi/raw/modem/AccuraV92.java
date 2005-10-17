@@ -24,8 +24,6 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public class AccuraV92 extends AbstractModem {
-    private static final String     version_id =
-            "@(#)$Id$ Copyright Westhawk Ltd";
 
     //Temporary values for using the modem.
     //todo - read these from a props file or similar.

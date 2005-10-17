@@ -9,6 +9,8 @@ package net.sourceforge.gjtapi.raw.remote.corba;
 
 public final class ConnectionData implements org.omg.CORBA.portable.IDLEntity
 {
+	static final long serialVersionUID = 5313094066932619440L;
+	
   public int state = (int)0;
   public String address = null;
   public boolean isLocal = false;

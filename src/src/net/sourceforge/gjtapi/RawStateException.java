@@ -40,6 +40,8 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class RawStateException extends InvalidStateException {
+	static final long serialVersionUID = 5577229303226856758L;
+	
 	private CallId call;
 	private java.lang.String address;
 	private java.lang.String terminal;

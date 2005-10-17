@@ -85,12 +85,12 @@ class AVReceiver    implements ReceiveStreamListener, SessionListener,
 ControllerListener, SendStreamListener
 {
     private static Console console = Console.getConsole(AVReceiver.class);
-    private DataSource dataSource = null;
+    //private DataSource dataSource = null;
     private net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager mediaManager;
     private String sessions[] = null;
     private RTPManager mgrs[] = null;
     boolean dataReceived = false;
-    private Object dataSync = new Object();
+    //private Object dataSync = new Object();
     
     private int bindRetries = 3;
     private Properties sipProp;

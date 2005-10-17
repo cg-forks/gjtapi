@@ -67,13 +67,11 @@ class TCMediaService implements MediaServiceHolder {
 	 * @author Richard Deadman
 	 **/
 	abstract class BaseMediaThread extends Thread {
-		private GenericProvider prov;
 		protected FreeMediaTerminalConnection tc;
 		protected boolean runFlag = true;
 		protected boolean playFlag = false;
 
 		BaseMediaThread(GenericProvider gp, FreeMediaTerminalConnection termConn) {
-			prov = gp;
 			tc = termConn;
 			this.setDaemon(true);
 		}
@@ -317,7 +315,6 @@ public void generateDtmf(String digits) throws ResourceUnavailableException {
 	// ensure we've allocated
 	this.allocate();
 	
-	Terminal term = this.getTerminal();
 	try {
 		this.getProv().getRaw().sendSignals(this.getTerminalName(), SymbolConvertor.convert(digits), null, null);
 	} catch (MediaResourceException mre) {

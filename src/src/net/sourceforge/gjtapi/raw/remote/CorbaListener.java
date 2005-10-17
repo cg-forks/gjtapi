@@ -39,6 +39,8 @@ import javax.telephony.media.Symbol;
  * @author: Richard Deadman
  */
 public class CorbaListener extends net.sourceforge.gjtapi.raw.remote.corba._CorbaListenerImplBase {
+	static final long serialVersionUID = -2688204344061941227L;
+	
 	  private TelephonyListener real;
 /**
  * Create a CorbaListener that delegates off to the Generic JTAPI TelephonyListener.

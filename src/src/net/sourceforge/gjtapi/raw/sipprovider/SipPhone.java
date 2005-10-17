@@ -91,7 +91,7 @@ import javax.telephony.*;
  */
 public class SipPhone implements  MediaListener, CommunicationsListener,  SecurityAuthority,net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener
 {
-    private TelephonyListener listener;
+//    private TelephonyListener listener;
 //    private List addresses;
     private TermData terminal;
 //    private final static String RESOURCE_NAME = "sip.props";

@@ -101,7 +101,7 @@ public void dial(RawPhone phone) throws RawStateException {
 			RawStateException.TERMINAL_CONNECTION_OBJECT,
 			TerminalConnection.ACTIVE);
 	}
-	Leg leg = new Leg(this, phone, this.getManager().getListener(), Leg.ALERTING);
+	new Leg(this, phone, this.getManager().getListener(), Leg.ALERTING);
 	this.setState(RawCall.CONNECTED);
 }
 /**
@@ -284,15 +284,6 @@ public void sendDTMF(String digits) {
 	}
 }
 
-/**
- * Set the collection of legs
- * Creation date: (2000-02-09 10:20:37)
- * @author: 
- * @param newLegs The call leg collection
- */
-private void setLegs(HashSet newLegs) {
-	legs = newLegs;
-}
 /**
  * Insert the method's description here.
  * Creation date: (2000-02-09 12:19:56)

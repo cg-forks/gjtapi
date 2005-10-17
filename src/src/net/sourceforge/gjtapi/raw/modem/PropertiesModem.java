@@ -25,7 +25,7 @@ import net.sourceforge.gjtapi.CallId;
 public class PropertiesModem extends AbstractModem implements
         PropertiesModemValues {
 
-     private static final String version_id = "@(#)$Id: PropertyModem 1.2 2004/12/18 by Henry Voyer";
+     //private static final String version_id = "@(#)$Id: PropertyModem 1.2 2004/12/18 by Henry Voyer";
 
     private CallId currId;
 

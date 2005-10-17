@@ -73,16 +73,7 @@ import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import javax.media.rtp.RTPManager;
 import javax.media.rtp.SessionAddress;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.media.*;
 import javax.media.control.*;
-import javax.media.format.*;
-import javax.media.protocol.*;
-import javax.sdp.*;
-
-
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -99,6 +90,8 @@ import javax.sdp.*;
 public class MediaManager
 implements Serializable
 {
+	static final long serialVersionUID = 0L;	// never serialized
+	
     protected static Console console = Console.getConsole(MediaManager.class);
     protected ArrayList listeners = new ArrayList();
     protected Vector avTransmitters = new Vector();
@@ -297,7 +290,7 @@ implements Serializable
             
             mediaSource = sipProp.getProperty("net.java.sip.communicator.media.MEDIA_SOURCE");
             //Init Capture devices
-            DataSource audioDataSource = null;
+            //DataSource audioDataSource = null;
             
             isStarted = true;
         }
@@ -610,9 +603,9 @@ implements Serializable
             + "from privided session description", ex);
         }
         
-        boolean atLeastOneTransmitterStarted = false;
-        ArrayList ports = new ArrayList();
-        ArrayList formatSets = new ArrayList();
+        //boolean atLeastOneTransmitterStarted = false;
+        //ArrayList ports = new ArrayList();
+        //ArrayList formatSets = new ArrayList();
         for (int i = 0; i < mediaDescriptions.size(); i++)
         {
             Media media = ( (MediaDescription) mediaDescriptions.get(i)).getMedia();
@@ -975,7 +968,7 @@ implements Serializable
                 }
                 surfacePreferredEncodings(getReceivableVideoFormats());
                 //"m=video 22222 RTP/AVP 34";
-                String[] vformats = getReceivableVideoFormats();
+                //String[] vformats = getReceivableVideoFormats();
                 
                 
                 Vector mediaDescs = new Vector();

@@ -47,8 +47,6 @@ public class GenCallCapabilities extends BaseCap implements CallControlCallCapab
 	private boolean transferCall = false;
 	private boolean transferDestination = false;
 	
-	// note if I hold static or Address-specific capabilies
-	private boolean dynamic = false;
 /**
  * canAddParty method comment.
  */

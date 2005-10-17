@@ -66,7 +66,7 @@ import javax.telephony.JtapiPeerUnavailableException;
 import javax.telephony.Provider;
 import javax.telephony.Terminal;
 import javax.telephony.TerminalConnection;
-import javax.telephony.callcontrol.CallControlCall;
+//import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.MediaProvider;
 import javax.telephony.media.SignalDetectorEvent;

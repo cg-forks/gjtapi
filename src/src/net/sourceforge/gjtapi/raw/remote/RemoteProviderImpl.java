@@ -46,6 +46,8 @@ import net.sourceforge.gjtapi.raw.*;
  * @author: Richard Deadman
  */
 public class RemoteProviderImpl extends UnicastRemoteObject implements Unreferenced, RemoteProvider {
+	static final long serialVersionUID = 4108831180888441168L;
+	
 	private TelephonyProvider delegate;
 	private CallMapper refMapper = new CallMapper();
 	private RawListenerMux callbackMux = new RawListenerMux();

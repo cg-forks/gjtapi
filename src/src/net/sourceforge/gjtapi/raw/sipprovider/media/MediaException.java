@@ -70,6 +70,8 @@ package net.sourceforge.gjtapi.raw.sipprovider.media;
 public class MediaException
     extends Exception
 {
+	static final long serialVersionUID = 6475707722201823184L;
+	
     public MediaException(String message)
     {
         super(message);

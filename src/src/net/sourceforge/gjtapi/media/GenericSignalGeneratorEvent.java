@@ -38,6 +38,8 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public class GenericSignalGeneratorEvent extends GenericResourceEvent implements SignalGeneratorEvent {
+	static final long serialVersionUID = -1670520278372601398L;
+	
 /**
  * Create a signal generator event, when the MediaService is not known, but the terminal is.
  * Creation date: (2000-03-08 13:58:13)

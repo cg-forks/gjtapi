@@ -37,7 +37,8 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public class GenericPlayerEvent extends GenericResourceEvent implements PlayerEvent {
-	private int eventType = 0;
+	static final long serialVersionUID = -6994059946219801405L;
+	
 	private SymbolHolder changeType = null;
 	private int index = 0;
 	private int offset = 0;

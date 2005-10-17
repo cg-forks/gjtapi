@@ -9,6 +9,8 @@ package net.sourceforge.gjtapi.raw.remote.corba;
 
 public final class CallData implements org.omg.CORBA.portable.IDLEntity
 {
+	static final long serialVersionUID = 6550666207749062382L;
+	
   public int callId = (int)0;
   public int state = (int)0;
   public net.sourceforge.gjtapi.raw.remote.corba.ConnectionData connections[] = null;

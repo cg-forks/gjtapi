@@ -75,24 +75,26 @@ import javax.swing.border.*;
 class ConsoleUI
     extends JDialog
 {
+	static final long serialVersionUID = -7177978780017036004L;
+	
     static final String ERROR_ICON = "Error.gif";
     static final String MESSAGE_ICON = "Inform.gif";
-    private static Icon errorIcon = null;
+//    private static Icon errorIcon = null;
     private BorderLayout borderLayout1 = new BorderLayout();
     private JScrollPane detailsScroll = new JScrollPane();
     private JPanel messagePane = new JPanel();
     private BorderLayout borderLayout2 = new BorderLayout();
     private JPanel buttonPane = new JPanel();
     private BorderLayout borderLayout3 = new BorderLayout();
-    private Border border1;
-    private Border border2;
+//    private Border border1;
+//    private Border border2;
     private Border border3;
     private JTextArea detailsTextArea = new JTextArea();
     private JPanel buttonsEastPane = new JPanel();
     private JButton closeButton = new JButton();
     private JButton messageButton = new JButton();
     private Border border4;
-    private Border border5;
+//    private Border border5;
     private JLabel iconLabel = new JLabel();
     private JTextArea message = new JTextArea();
     public ConsoleUI(Frame owner) throws HeadlessException
@@ -112,10 +114,10 @@ class ConsoleUI
 
     private void jbInit() throws Exception
     {
-        border1 = BorderFactory.createEmptyBorder(20, 20, 20, 0);
+//        border1 = BorderFactory.createEmptyBorder(20, 20, 20, 0);
         border3 = BorderFactory.createEmptyBorder(20, 20, 10, 20);
         border4 = BorderFactory.createEmptyBorder(0, 0, 0, 20);
-        border5 = BorderFactory.createEmptyBorder(0, 0, 20, 0);
+//        border5 = BorderFactory.createEmptyBorder(0, 0, 20, 0);
         this.getContentPane().setLayout(borderLayout1);
         messagePane.setLayout(borderLayout2);
         buttonPane.setLayout(borderLayout3);

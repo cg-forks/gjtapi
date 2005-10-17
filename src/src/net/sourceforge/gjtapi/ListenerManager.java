@@ -129,6 +129,7 @@ class ListenerManager implements TerminalConnectionListener {
 	 * Internal HashMap wrapper that catches put and remove calls to turn on throttling
 	 **/
 	private class ListenerMap extends HashMap {
+		static final long serialVersionUID = 0L; // never serialized
 		
 		public Object put(CallListener list, ListenerStatus status) {
 			Object res = super.put(list, status);

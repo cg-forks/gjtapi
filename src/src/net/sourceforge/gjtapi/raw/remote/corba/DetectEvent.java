@@ -9,6 +9,8 @@ package net.sourceforge.gjtapi.raw.remote.corba;
 
 public final class DetectEvent implements org.omg.CORBA.portable.IDLEntity
 {
+	static final long serialVersionUID = -8445460095968525117L;
+	
   public int pattern = (int)0;
   public int sigs[] = null;
   public String terminal = null;

@@ -33,11 +33,11 @@ package net.sourceforge.gjtapi.raw.dialogic;
 import net.sourceforge.gjtapi.CallId;
 
 public class DCall implements CallId {
-    private static int cno=1; // increments with every call
+    //private static int cno=1; // increments with every call
     public DCall(){
-        pid = cno++; // I'll take the risk that it wraps.
+        //pid = cno++; // I'll take the risk that it wraps.
     }
-    private int pid;
+    //private int pid;
     private Integer crn;
     private Integer linedev;
     private String destaddr;

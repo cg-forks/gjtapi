@@ -90,7 +90,7 @@ public class NetworkAddressManager
     private SimpleAddressDetector detector = null;
     private boolean useStun = true;
     private static final int RANDOM_PORT = 55055;
-    private static final String WINDOWS_AUTO_CONFIGURED_ADDRESS_PREFIX = "169";
+//    private static final String WINDOWS_AUTO_CONFIGURED_ADDRESS_PREFIX = "169";
     private NetworkAddressManager()
     {
     }

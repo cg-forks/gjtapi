@@ -609,7 +609,6 @@ void loadAddresses() {
  */
 void loadTerminals() {
 	TelephonyProvider raw = this.getRaw();
-	GenericProvider prov = this.getProvider();
 
 	// Get the Terminal names and map them to our localAddress set.
 	try {
@@ -618,7 +617,7 @@ void loadTerminals() {
 			throw new ResourceUnavailableException(Event.CAUSE_RESOURCES_NOT_AVAILABLE);
 
 		for (int i = 0; i < terminals.length; i++) {
-			FreeTerminal t = this.createTerminal(terminals[i].terminal, terminals[i].isMedia);
+			this.createTerminal(terminals[i].terminal, terminals[i].isMedia);
 		}
 
 	} catch (ResourceUnavailableException rue) {

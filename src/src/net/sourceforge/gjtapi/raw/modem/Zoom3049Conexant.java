@@ -24,8 +24,8 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public class Zoom3049Conexant extends AbstractModem {
-    private static final String     version_id =
-            "@(#)$Id$ Copyright Westhawk Ltd";
+//    private static final String     version_id =
+//            "@(#)$Id$ Copyright Westhawk Ltd";
 
     //Temporary values for using the modem.
     //todo - read these from a props file or similar.

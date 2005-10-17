@@ -41,6 +41,8 @@ import net.sourceforge.gjtapi.*;
  * @author: Richard Deadman
  */
 public class GenericMediaEvent implements MediaEvent, java.io.Serializable {
+	static final long serialVersionUID = -8635515624336827001L;
+	
 	private SymbolHolder eventID = null;
 	private transient MediaService ms = null;
 

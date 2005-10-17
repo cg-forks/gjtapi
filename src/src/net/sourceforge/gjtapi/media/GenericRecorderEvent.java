@@ -37,6 +37,8 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public class GenericRecorderEvent extends GenericResourceEvent implements RecorderEvent {
+	static final long serialVersionUID = 2506605644792960275L;
+	
 	private int duration = 0;
 /**
  * Create a  recorder event, when the MediaService is not known, but the terminal is.

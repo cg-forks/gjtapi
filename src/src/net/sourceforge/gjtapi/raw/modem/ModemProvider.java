@@ -35,8 +35,6 @@ import net.sourceforge.gjtapi.raw.MediaTpi;
  */
 
 public class ModemProvider implements MediaTpi, ModemListener {
-    private static final String     version_id =
-        "@(#)$Id$ Copyright Westhawk Ltd";
 
     private final static String RESOURCE_NAME = "Modem.props";
     private final static String ADDRESS_PREFIX = "Address";
@@ -236,8 +234,8 @@ public class ModemProvider implements MediaTpi, ModemListener {
     }
 
     public String[] getAddresses() throws ResourceUnavailableException {
-        Iterator iter = addresses.iterator();
-        /*debug
+    	/*debug
+    	 * Iterator iter = addresses.iterator();
          * while (iter.hasNext()){
          *     System.err.println("    Address: " + iter.next());
          * }

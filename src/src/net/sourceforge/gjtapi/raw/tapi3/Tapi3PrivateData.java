@@ -37,6 +37,8 @@ import java.io.Serializable;
  * @author Serban Iordache
  */
 public class Tapi3PrivateData implements Serializable {
+	static final long serialVersionUID = 2360569966156135140L;
+	
     /**
      * The caller name
      */

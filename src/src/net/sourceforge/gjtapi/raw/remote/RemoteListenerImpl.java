@@ -44,6 +44,8 @@ import net.sourceforge.gjtapi.*;
  * @author: Richard Deadman
  */
 public class RemoteListenerImpl extends UnicastRemoteObject implements RemoteListener {
+	static final long serialVersionUID = 137460616322975486L;
+	
 	private TelephonyListener delegate;
 /**
  * Create a Remote proxy for a RawObserver

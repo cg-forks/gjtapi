@@ -34,6 +34,8 @@ import net.sourceforge.gjtapi.TermData;
 */
 
 public class GCTermData extends TermData {
+	static final long serialVersionUID = 6828577994587256204L;
+	
     int linedev;
     public GCTermData(String termName, boolean isMedia) {
         super (termName,isMedia);

@@ -60,6 +60,8 @@ package net.sourceforge.gjtapi.raw.sipprovider.sip;
 public class CommunicationsException
     extends Exception
 {
+	static final long serialVersionUID = 3902201299416559184L;
+	
     private boolean isFatal = false;
     public CommunicationsException()
     {

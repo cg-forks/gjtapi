@@ -73,6 +73,8 @@ import java.util.*;
 public class MediaEvent
     extends EventObject
 {
+	static final long serialVersionUID = 2568021480292614195L;
+	
     public MediaEvent(Object source)
     {
         super(source);

@@ -29,8 +29,6 @@ import javax.comm.*;
  * @version $Revision$ $Date$
  */
 public class ModemIO implements SerialPortEventListener{
-    private static final String     version_id =
-        "@(#)$Id$ Copyright Westhawk Ltd";
 
     public static final int DLE = 0x10;
     public static final int ETX = 0x03;

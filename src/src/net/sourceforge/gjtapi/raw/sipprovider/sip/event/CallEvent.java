@@ -74,6 +74,8 @@ import java.util.*;
 public class CallEvent
     extends EventObject
 {
+	static final long serialVersionUID = 7280248992282651232L;
+	
     public CallEvent(Object source)
     {
         super(source);

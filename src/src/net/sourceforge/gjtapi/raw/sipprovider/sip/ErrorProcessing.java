@@ -69,19 +69,19 @@ package net.sourceforge.gjtapi.raw.sipprovider.sip;
  */
 public class ErrorProcessing
 {
-    private SipManager sipManCallback = null;
+    //private SipManager sipManCallback = null;
     public ErrorProcessing()
     {
     }
 
     ErrorProcessing(SipManager sipManCallback)
     {
-        this.sipManCallback = sipManCallback;
+        //this.sipManCallback = sipManCallback;
     }
 
     void setSipManagerCallBack(SipManager sipManCallback)
     {
-        this.sipManCallback = sipManCallback;
+        //this.sipManCallback = sipManCallback;
     }
 
 }
