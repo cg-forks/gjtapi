@@ -67,6 +67,7 @@ import javax.telephony.Provider;
 import javax.telephony.Terminal;
 import javax.telephony.TerminalConnection;
 //import javax.telephony.callcontrol.CallControlCall;
+import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.MediaProvider;
 import javax.telephony.media.SignalDetectorEvent;
@@ -100,7 +101,8 @@ public class Tapi3Gui {
 	private JButton butAnswer;
 	private JButton butHangUp;
 	private JButton butHold;
-	private JButton butUnHold;
+    private JButton butUnHold;
+    private JButton butJoin;
 	
 	private JScrollPane traceScrollPane;
 	private JTextArea txtTrace;
@@ -247,6 +249,12 @@ public class Tapi3Gui {
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
 		        new Insets(2, 10, 20, 10), 0, 0));
 		
+        butJoin= new JButton("Join");
+        butJoin.setEnabled(false);
+        callPanel.add(butJoin, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.NONE, 
+                new Insets(2, 10, 20, 10), 0, 0));
+        
         
 		callPanel.add(new JPanel(), new GridBagConstraints(3, 0, 1, 2, 1.0, 1.0, 
 		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
@@ -371,20 +379,49 @@ public class Tapi3Gui {
             }
         });
 
-		butUnHold.addActionListener(new ActionListener() {
+        butUnHold.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     public void run() {
-		                try {
-		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
-		                    if(terminalConnection != null && terminalConnection instanceof CallControlTerminalConnection) {
-		                        CallControlTerminalConnection ccTermConn = (CallControlTerminalConnection)terminalConnection;
-		                        ccTermConn.unhold();
-		                    }
-		                } catch (Exception e) {
-		                    logger.error("Cannot unhold.", e);
-		                    new MessageBox("Unhold error", "Cannot unhold.", e).show();
-		                }
+                        try {
+                            TerminalConnection terminalConnection = getSelectedTerminalConnection();
+                            if(terminalConnection != null && terminalConnection instanceof CallControlTerminalConnection) {
+                                CallControlTerminalConnection ccTermConn = (CallControlTerminalConnection)terminalConnection;
+                                ccTermConn.unhold();
+                            }
+                        } catch (Exception e) {
+                            logger.error("Cannot unhold.", e);
+                            new MessageBox("Unhold error", "Cannot unhold.", e).show();
+                        }
+                    }
+                }.start();
+            }
+        });
+
+        butJoin.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                new Thread() {
+                    public void run() {
+                        try {
+                            TerminalConnection terminalConnection = getSelectedTerminalConnection();
+                            if(terminalConnection != null && terminalConnection instanceof CallControlTerminalConnection) {
+                                CallControlCall call1 = (CallControlCall)terminalConnection.getConnection().getCall();
+                                CallControlCall call2 = null;
+
+                                for(int i = 0; i < obsListener.size(); i++) {
+                                    if(i != lstCalls.getSelectedIndex()) {
+                                        call2= (CallControlCall)((CallListenerObserver.Item) obsListener.get(i)).getConnection().getCall();
+                                        break;
+                                    }
+                                }
+                                if(call2 != null) {
+                                    call1.conference(call2);
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error("Cannot join.", e);
+                            new MessageBox("Join error", "Cannot join.", e).show();
+                        }
                     }
                 }.start();
             }
@@ -571,6 +608,9 @@ public class Tapi3Gui {
 //        	}
 //        }
         butUnHold.setEnabled(unholdEnabled);
+        
+        boolean joinEnabled = lstCalls.getModel().getSize() > 1;
+        butJoin.setEnabled(joinEnabled);
     }
     
 	private String getCalledNumber() {
