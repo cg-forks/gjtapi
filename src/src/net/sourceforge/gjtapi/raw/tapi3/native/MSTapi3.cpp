@@ -554,9 +554,27 @@ HRESULT MSTapi3::DisconnectTheCall(int callID) {
 	logger->debug("Disconnecting callID=%d...", callID);
 	ITBasicCallControl* callControl = getCallControl(callID);
     if (NULL != callControl) {
-
-        HRESULT hr = callControl->Disconnect(DC_NORMAL);
-		logger->debug("Disconnect(DC_NORMAL): hr=%08X", hr);
+        DISCONNECT_CODE dc = DC_NORMAL;
+		ITCallInfo* pCallInfo;
+		HRESULT hr = callControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo );
+		if(FAILED(hr)) {
+			logger->error("Getting callInfo failed. hr=%08X", hr);
+        } else {
+		    CALL_STATE callState;
+		    hr = pCallInfo->get_CallState(&callState);
+		    pCallInfo->Release();
+		    if(FAILED(hr)) {
+			    logger->error("Cannot retrieve call state: hr=%08X.", hr);
+            } else {
+                switch(callState) {
+                    case CS_OFFERING: dc = DC_REJECTED; break;
+                    case CS_INPROGRESS: dc = DC_NOANSWER; break;
+                    default: dc = DC_NORMAL;
+				}
+            }
+        }
+        hr = callControl->Disconnect(dc);
+		logger->debug("Disconnect(dc=%d): hr=%08X", dc, hr);
         // Do not release the call yet, as that would prevent
         // us from receiving the disconnected notification.
         return hr;
