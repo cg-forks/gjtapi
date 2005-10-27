@@ -324,6 +324,7 @@ HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, ID
 					hr = pCall->QueryInterface( IID_ITBasicCallControl, (void**)&pCallControl );
 					if(FAILED(hr)) {
 						logger->error("Error retrieving CallControl: hr=%08X", hr);
+					    pCallHubEvent->Release();
 						pCall->Release();
 						return hr;
 					}
