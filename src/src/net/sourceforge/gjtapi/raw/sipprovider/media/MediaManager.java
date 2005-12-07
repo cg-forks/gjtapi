@@ -65,6 +65,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import javax.media.*;
+import javax.media.control.TrackControl;
 import javax.media.format.*;
 import javax.media.protocol.*;
 import javax.sdp.*;
@@ -72,8 +73,6 @@ import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import javax.media.rtp.RTPManager;
 import javax.media.rtp.SessionAddress;
-
-import javax.media.control.*;
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -208,33 +207,14 @@ implements Serializable
     {
         
         console.logEntry();
-        DataSource dsTab[] = new DataSource[receivers.size()] ;
-        DataSource ds =null;
-        for (int i = receivers.size()-1; i >= 0; i--)
-        {
-            try
-            {
-                Processor pro =  ( (AVReceiver) receivers.elementAt(i)).getProcessor();
-                
-                ds  = pro.getDataOutput();
-                dsTab[i]=ds;
-            }
-            catch (Exception ex)
-            {
-                console.debug(ex.toString());
-            }
-            
-        }
         try
         {
             
-            DataSource mergeDs = Manager.createMergingDataSource(dsTab);
-            mergeDs.connect();
-            mergeDs.start();
+            DataSource mergeDs = this.getDataSource();
             	// append "file:/" to URL if it is not already there
             String fullUrl = (url.indexOf("file:") == 0) ? url : "file:/"+ url;
             dest = new MediaLocator(fullUrl);
-            sink = Manager.createDataSink(ds, dest);
+            sink = Manager.createDataSink(mergeDs, dest);
             sink.open();
             sink.start();
             
@@ -261,6 +241,28 @@ implements Serializable
         }
         console.logExit();
     }
+    
+    /**
+     * Get the datasource for a Sip session.
+     * @return
+     */
+    public DataSource getDataSource() throws IncompatibleSourceException, IOException {
+        DataSource dsTab[] = new DataSource[receivers.size()] ;
+        DataSource ds =null;
+        for (int i = receivers.size()-1; i >= 0; i--)
+        {
+	        Processor pro =  ( (AVReceiver) receivers.elementAt(i)).getProcessor();
+	        
+	        ds  = pro.getDataOutput();
+	        dsTab[i]=ds;
+        }
+
+        DataSource mergeDs = Manager.createMergingDataSource(dsTab);
+        mergeDs.connect();
+        mergeDs.start();
+        return mergeDs;
+    }
+    
     public void stopRecording()
     {
         try
