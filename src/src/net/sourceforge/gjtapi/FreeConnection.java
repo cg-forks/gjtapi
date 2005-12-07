@@ -39,7 +39,6 @@ import javax.telephony.media.MediaTerminal;
 import javax.telephony.privatedata.PrivateData;
 import net.sourceforge.gjtapi.events.*;
 import net.sourceforge.gjtapi.capabilities.GenConnectionCapabilities;
-import net.sourceforge.gjtapi.media.FreeMediaTerminalConnection;
 /**
  * This type was created in VisualAge.
  */
@@ -89,12 +88,7 @@ FreeConnection(FreeCall fca, ConnectionData cd, DomainMgr dm){
 			TCData data = tcs[i];
 				// Since we are creating a Connection, we must also create all TerminalConnections
 				// That is, we don't need to check for their existance.
-			FreeTerminalConnection tc = null;
-			if (data.terminal.isMedia) {
-				 tc = new FreeMediaTerminalConnection(this, data.terminal.terminal);
-			} else {
-				 tc = new FreeTerminalConnection(this, data.terminal.terminal);
-			}
+			FreeTerminalConnection tc = new FreeTerminalConnection(this, data.terminal.terminal);
 			tc.setState(data.tcState);
 		}
 	}
@@ -206,10 +200,7 @@ public FreeTerminalConnection getLazyTermConn(String termName) {
 		tc = this.getLazyTermConn(term);
 	} else {	// must ask raw TelephonyProvider for media type
 		// we should never get here -- getLazyTerminal should create a Terminal if necessary
-		if (prov.getRaw().isMediaTerminal(termName))
-			tc = new FreeMediaTerminalConnection(this, termName);
-		else
-			tc = new FreeTerminalConnection(this, termName);
+		tc = new FreeTerminalConnection(this, termName);
 	}
 	return tc;
 }
@@ -227,10 +218,7 @@ public FreeTerminalConnection getLazyTermConn(FreeTerminal t) {
 		return tc;
 
 	// No terminal connection found -- create a new one
-	if (t instanceof MediaTerminal)
-		tc = new FreeMediaTerminalConnection(this, (MediaTerminal)t);
-	else
-		tc = new FreeTerminalConnection(this, t);
+	tc = new FreeTerminalConnection(this, t);
 	return tc;
 }
 /**
