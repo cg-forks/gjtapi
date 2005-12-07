@@ -33,7 +33,6 @@ package net.sourceforge.gjtapi.capabilities;
 import net.sourceforge.gjtapi.FreeTerminalConnection;
 import javax.telephony.callcontrol.capabilities.*;
 import javax.telephony.capabilities.*;
-import net.sourceforge.gjtapi.media.*;
 /**
  * Define static and dynamic TerminalConnection capabilities.
  * Creation date: (2000-03-15 9:25:13)
@@ -88,11 +87,7 @@ public GenTermConnCapabilities getDynamic(FreeTerminalConnection tc) {
 	try {
 		caps = (GenTermConnCapabilities)this.clone();
 	} catch (CloneNotSupportedException cnse) {
-		if (tc instanceof FreeMediaTerminalConnection) {
-			caps = new GenMediaTermConnCapabilities();
-		} else {
-			caps = new GenTermConnCapabilities();
-		}
+		caps = new GenTermConnCapabilities();
 		caps.answer = this.answer;
 		caps.hold = this.hold;
 		caps.leave = this.leave;
@@ -116,9 +111,6 @@ public GenTermConnCapabilities getDynamic(FreeTerminalConnection tc) {
 			break;
 		}
 	}
-	// now set the media availability
-	if (caps instanceof GenMediaTermConnCapabilities)
-		((GenMediaTermConnCapabilities)caps).setAvailable(((FreeMediaTerminalConnection)tc).getMediaAvailability() != 0);
 
 	caps.setDynamic(true);
 	return caps;

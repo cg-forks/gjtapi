@@ -31,8 +31,10 @@ package net.sourceforge.gjtapi.media;
 	of the copyright holder.
 */
 import java.util.*;
+
 import javax.telephony.*;
 import javax.telephony.media.*;
+
 import net.sourceforge.gjtapi.*;
 /**
  * A package-protected media group encapsualation.
@@ -431,5 +433,159 @@ private void setResourceTypes(int newResourceTypes) {
  */
 private void setTerminal(javax.telephony.Terminal newTerminal) {
 	terminal = newTerminal;
+}
+public PlayerEvent adjustPlayerSpeed(Symbol arg0) throws MediaResourceException {
+	// TODO Auto-generated method stub
+	return null;
+}
+public PlayerEvent adjustPlayerVolume(Symbol arg0) throws MediaResourceException {
+	// TODO Auto-generated method stub
+	return null;
+}
+public PlayerEvent jumpPlayer(Symbol arg0) throws MediaResourceException {
+	// TODO Auto-generated method stub
+	return null;
+}
+public PlayerEvent pausePlayer() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	this.getProv().getRaw().triggerRTC(this.getTerminalName(), PlayerConstants.a_Pause);
+	return null;
+}
+public PlayerEvent resumePlayer() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	return null;
+}
+public PlayerEvent stopPlayer() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	this.getProv().getRaw().stop(this.getTerminalName());
+	return new PlayerEvent() {
+
+		public int getIndex() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public int getOffset() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public Symbol getChangeType() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getRTCTrigger() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public MediaService getMediaService() {
+			// TODO Auto-generated method stub
+			return GenericMediaGroup.this.getMediaService();
+		}
+
+		public Symbol getEventID() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getQualifier() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getWarning() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getError() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public int getSubError() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public Dictionary getPayload() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Exception getException() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	};
+}
+public RecorderEvent pauseRecorder() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	this.getProv().getRaw().triggerRTC(this.getTerminalName(), PlayerConstants.a_Pause);
+	return null;
+}
+public RecorderEvent resumeRecorder() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	return null;
+}
+public RecorderEvent stopRecorder() throws MediaResourceException {
+	// TODO Auto-generated method stub
+	this.getProv().getRaw().stop(this.getTerminalName());
+	return new RecorderEvent() {
+
+		public int getDuration() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public Symbol getRTCTrigger() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public MediaService getMediaService() {
+			// TODO Auto-generated method stub
+			return GenericMediaGroup.this.getMediaService();
+		}
+
+		public Symbol getEventID() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getQualifier() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getWarning() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Symbol getError() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public int getSubError() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public Dictionary getPayload() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Exception getException() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	};
 }
 }

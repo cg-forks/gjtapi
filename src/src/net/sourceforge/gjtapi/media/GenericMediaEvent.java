@@ -141,10 +141,8 @@ private void setTerminal(java.lang.String newTerminal) {
 	 * @since JTAPI 1.4
 	 */
 	public Symbol getError() {
-		// TODO Auto-generated method stub
-		Symbol sym = this.getEventID();
-		
-		return ErrSym.e_OK;
+		return this.getEventID();
+		//return ErrSym.e_OK;
 	}
 
 	/* (non-Javadoc)

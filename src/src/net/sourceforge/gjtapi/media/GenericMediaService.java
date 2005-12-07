@@ -33,7 +33,9 @@ package net.sourceforge.gjtapi.media;
 import javax.telephony.callcontrol.*;
 import javax.telephony.*;
 import javax.telephony.media.*;
+
 import java.util.*;
+
 import net.sourceforge.gjtapi.*;
 
 /**
@@ -57,6 +59,7 @@ public class GenericMediaService implements MediaService, MediaServiceListener, 
 	/** Vector of MediaListeners (MediaServiceListener, 
 			ResourceListener (PlayerListener, RecorderListener, SignalDetectorListener)) */
 	protected static Vector theListeners = new Vector();
+	private Vector listeners = new Vector();
 	private GenericMediaGroup mediaGroup = null;
 /**
  * Create an unbound MediaService,
@@ -607,9 +610,9 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	Iterator iter = theListeners.iterator();
 	while(iter.hasNext()) {
 	    listener = (EventListener)iter.next();
-	    if(listener instanceof MediaServiceListener) {
+	    if((listener instanceof MediaServiceListener) && (event instanceof MediaServiceEvent)) {
 		try {
-		    ((MediaServiceListener)listener).onDisconnected(event);
+		    ((MediaServiceListener)listener).onDisconnected((MediaServiceEvent)event);
 		} catch (Exception ex) {}
 	    }
 	}
@@ -960,5 +963,95 @@ public void stop() throws NotBoundException {
 public void triggerRTC(Symbol rtca) throws NotBoundException {
 	String term = this.getTerminalName();
 	this.getProvider().getRaw().triggerRTC(term, rtca);
+}
+public MediaProvider getMediaProvider() {
+	return this.provider;
+}
+public void releaseToTag(String arg0) throws MediaBindException {
+	// not currently supported
+}
+public void releaseToDestroy() throws MediaBindException {
+	this.releaseAndFree();
+}
+public void addListener(EventListener arg0) {
+	this.listeners.add(arg0);
+	
+}
+public void removeListener(EventListener arg0) {
+	this.listeners.remove(arg0);
+	
+}
+public void onDisconnected(MediaServiceEvent arg0) {
+	Iterator it = this.listeners.iterator();
+	while(it.hasNext()) {
+		EventListener listener = (EventListener)it.next();
+		if(listener instanceof MediaServiceListener) {
+			((MediaServiceListener)listener).onDisconnected(arg0);
+		}
+	}
+	
+}
+public void onConnected(MediaServiceEvent arg0) {
+	Iterator it = this.listeners.iterator();
+	while(it.hasNext()) {
+		EventListener listener = (EventListener)it.next();
+		if(listener instanceof MediaServiceListener) {
+			((MediaServiceListener)listener).onConnected(arg0);
+		}
+	}
+}
+public void onRetrieved(MediaServiceEvent arg0) {
+	Iterator it = this.listeners.iterator();
+	while(it.hasNext()) {
+		EventListener listener = (EventListener)it.next();
+		if(listener instanceof MediaServiceListener) {
+			((MediaServiceListener)listener).onRetrieved(arg0);
+		}
+	}
+}
+public PlayerEvent adjustPlayerSpeed(Symbol arg0) throws MediaResourceException {
+	return this.getMediaGroup().adjustPlayerSpeed(arg0);
+}
+public PlayerEvent adjustPlayerVolume(Symbol arg0) throws MediaResourceException {
+	return this.getMediaGroup().adjustPlayerVolume(arg0);
+}
+public PlayerEvent jumpPlayer(Symbol arg0) throws MediaResourceException {
+	return this.getMediaGroup().jumpPlayer(arg0);
+}
+public PlayerEvent pausePlayer() throws MediaResourceException {
+	return this.getMediaGroup().pausePlayer();
+}
+public PlayerEvent resumePlayer() throws MediaResourceException {
+	return this.getMediaGroup().resumePlayer();
+}
+public PlayerEvent stopPlayer() throws MediaResourceException {
+	return this.getMediaGroup().stopPlayer();
+}
+public void onJump(PlayerEvent arg0) {
+	Iterator it = this.listeners.iterator();
+	while(it.hasNext()) {
+		EventListener listener = (EventListener)it.next();
+		if(listener instanceof PlayerListener) {
+			((PlayerListener)listener).onJump(arg0);
+		}
+	}
+}
+public void onMarker(PlayerEvent arg0) {
+	Iterator it = this.listeners.iterator();
+	while(it.hasNext()) {
+		EventListener listener = (EventListener)it.next();
+		if(listener instanceof PlayerListener) {
+			((PlayerListener)listener).onMarker(arg0);
+		}
+	}
+}
+public RecorderEvent pauseRecorder() throws MediaResourceException {
+	return this.getMediaGroup().pauseRecorder();
+}
+public RecorderEvent resumeRecorder() throws MediaResourceException {
+	return this.getMediaGroup().resumeRecorder();
+}
+public RecorderEvent stopRecorder() throws MediaResourceException {
+	return this.getMediaGroup().stopRecorder();
 }
 }
