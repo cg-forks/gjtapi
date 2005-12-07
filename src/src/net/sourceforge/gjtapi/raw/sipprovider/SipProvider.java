@@ -62,19 +62,26 @@
 
 package net.sourceforge.gjtapi.raw.sipprovider;
 
+import net.sourceforge.gjtapi.raw.MediaTpi;
+import net.sourceforge.gjtapi.raw.PrivateDataTpi;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.SipManager;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import java.util.*;
 import java.io.*;
 import net.sourceforge.gjtapi.*;
+
+import javax.media.IncompatibleSourceException;
 import javax.telephony.*;
 /**
- *
- * @author  root
+ * This is a provider that hooks into the SIP Communicator to provided
+ * Session Initiation Protocol support for GJTAPI
  */
-public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
+public class SipProvider implements MediaTpi, PrivateDataTpi
 {
-    private TelephonyListener listener;
+	// Used by sendPrivateData to allow a client to get a MediaSource for a terminal.
+    public static final String GET_MEDIA_SOURCE = "GetMediaSource";
+    
+	private TelephonyListener listener;
 //    private List addresses;
     //private TermData terminal;
 //    private final static String RESOURCE_NAME = "sip.props";
@@ -601,5 +608,44 @@ public class SipProvider implements net.sourceforge.gjtapi.raw.MediaTpi
     public void triggerRTC(String terminal, javax.telephony.media.Symbol action)
     {
     }
+
+	public Object getPrivateData(CallId call, String address, String terminal) {
+		// we don't support this
+		return null;
+	}
+
+	/**
+	 * This is used to allow an application to retrieve JMF Media streams from
+	 * the provider so they can be used in real time for handling media
+	 */
+	public Object sendPrivateData(CallId call, String address, String terminal, Object data) {
+		// we allow setting a media stream on a Terminal
+		if ((terminal != null) && (data instanceof String) &&(((String)data).equals(GET_MEDIA_SOURCE))) {
+			// get the media stream
+			try {
+	        	// find the stream on the first successful phone
+	            String[] add = this.getAddresses(terminal);
+	            for(int i=0; i < add.length; i++)
+	            {
+			        try
+			        {
+			                SipPhone sipPhone = this.getSipPhoneByAddress(add[i]);
+			                return sipPhone.mediaManager.getDataSource();
+			        } catch(IncompatibleSourceException isEx) {
+			        	// keep looping
+			        } catch(IOException ioEx) {
+			        	// keep looping
+			        }
+	            }	
+	        } catch(javax.telephony.InvalidArgumentException ex) {
+		        // couldn't get the addresses -- fall through and return null	
+			}
+		}
+		return null;
+	}
+
+	public void setPrivateData(CallId call, String address, String terminal, Object data) {
+		// we don't support this
+	}
     
 }
