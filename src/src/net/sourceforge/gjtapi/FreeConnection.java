@@ -387,6 +387,9 @@ void toConnected(int cause) {
 		oldState != Connection.CONNECTED) {
 		this.setState(Connection.CONNECTED);
 		
+		// Unless otherwise set, this is the calling address for the call
+		this.call.setCallingAddress(this.getAddress(), false);
+		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnConnectedEv(cause, this));
 	}
@@ -458,8 +461,8 @@ void toInProgress(int cause) {
 	if (oldState == Connection.IDLE || oldState == Connection.UNKNOWN) {
 		this.setState(Connection.INPROGRESS);
 		
-		// Unless otherwise set, this is the calling address for the call
-		this.call.setCallingAddress(this.getAddress(), false);
+		// Unless otherwise set, this is the called address for the call
+		this.call.setCalledAddress(this.getAddress(), false);
 		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnInProgressEv(cause, this));
