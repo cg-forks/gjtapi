@@ -168,7 +168,8 @@ public void dial(String digits) throws javax.telephony.InvalidPartyException, Ra
 	}
 		// test if we are dialing on a idle leg
 	if (state == PhoneModel.DIALTONE && leg.getState() == Leg.IDLE) {
-		leg.inProgress();
+		// legs with dialtone or ringtone on it are connected ;jw
+		leg.connected();
 		leg.getCall().dial(this, digits);
 		this.getListener().dialing();
 		return;

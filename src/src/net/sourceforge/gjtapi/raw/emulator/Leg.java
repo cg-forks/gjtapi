@@ -121,7 +121,8 @@ public boolean answer() {
  * @author: 
  */
 void connected() {
-	if (this.getState() == INPROGRESS)
+	// legs with dialtone or ringtone on it are connected ;jw
+	if (this.getState() == INPROGRESS || this.getState() == IDLE)
 		this.setState(CONNECTED);
 }
 /**
