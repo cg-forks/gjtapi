@@ -46,6 +46,7 @@ jobject g_thisObj = NULL;
 void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause cause, wstring* callInfo);
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+	//Logger::setLogFile("./tapi3dll.log");
 	try {
 		if(DLL_PROCESS_ATTACH == ul_reason_for_call) {
 			logger->debug("DllMain: DLL_PROCESS_ATTACH");
@@ -241,10 +242,10 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
  * Method:    tapi3CreateCall
- * Signature: (ILjava/lang/String;)I
+ * Signature: (ILjava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3CreateCall(
-					JNIEnv* pEnv, jobject oObj, jint callID, jstring jAddress, jstring jDestination) {
+					JNIEnv* pEnv, jobject oObj, jint callID, jstring jAddress, jstring jDestination, jint mode) {
 	try{
 		logger->debug("createCall() called for callID=%d", callID);
 		jboolean isCopyAddress;
@@ -262,7 +263,7 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 		}
 
 		logger->debug("Creating call with callID=%d to %S on %S", callID, destination.c_str(), address.c_str());
-		HRESULT hr = g_msTapi3->MakeTheCall(callID, address, destination);
+		HRESULT hr = g_msTapi3->MakeTheCall(callID, address, destination, mode);
 		if(SUCCEEDED(hr)) {
 			logger->debug("createCall() done for callID=%d to %S on %S", callID, destination.c_str(), address.c_str());
 		} else {
@@ -277,9 +278,9 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 	}
 }
 
-          /*
+/*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
- * Method:    tapi3CreateCall
+ * Method:    tapi3Dial
  * Signature: (ILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Dial(
@@ -343,13 +344,44 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
  * Method:    tapi3Join
- * Signature: (II)I
+ * Signature: (IILjava/lang/String;Ljava/lang/String;I)I
  */
-JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Join(JNIEnv* pEnv, jobject oObj, jint callID1, jint callID2) {
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Join(JNIEnv* pEnv, jobject oObj, jint callID1, jint callID2, jstring jAddress, jstring jTerminal, jint mode) {
 	try{
-		logger->debug("join() called for callID1=%d and callID2=%d", callID1, callID2);
-		HRESULT hr = g_msTapi3->JoinCalls(callID1, callID2);
-		logger->debug("join() done for callID1=%d and callID2=%d", callID1, callID2);
+		char* modeName;
+		switch(mode)
+		{
+			default:
+			case 0:
+				modeName = "NONE";
+				break;
+			case 1:
+				modeName = "SETUP_TRANSFER";
+				break;
+			case 2:
+				modeName = "TRANSFER";
+				break;
+			case 3:
+				modeName = "SETUP_CONFERENCE";
+				break;
+			case 4:
+				modeName = "CONFERENCE";
+				break;
+		}
+		logger->debug("join() called for callID1=%d and callID2=%d with mode=%s", callID1, callID2, modeName);
+		jboolean isCopyAddress;
+		const unsigned short* wsAddress = pEnv->GetStringChars(jAddress, &isCopyAddress);
+		wstring address = wsAddress;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jAddress, wsAddress);
+		}
+		const unsigned short* wsTerminal = pEnv->GetStringChars(jTerminal, &isCopyAddress);
+		wstring terminal = wsTerminal;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jTerminal, wsTerminal);
+		}
+		HRESULT hr = g_msTapi3->JoinCalls(callID1, callID2, address, terminal, mode);
+		logger->debug("join() done for callID1=%d and callID2=%d with mode=%s", callID1, callID2, modeName);
         if(!FAILED(hr)) {
             hr = 0;
         }
@@ -407,6 +439,43 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 }
 
 
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3LineDevSpecific
+ * Signature: (ILjava/lang/String;[B)J
+ */
+JNIEXPORT jlong JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3LineDevSpecific
+(JNIEnv* pEnv, jobject oObj, jint callID, jstring jAddress, jbyteArray jByteArray) {
+	try{
+		jboolean isCopyAddress;
+		const unsigned short* wsAddress = pEnv->GetStringChars(jAddress, &isCopyAddress);
+		logger->debug("SendLineDevSpecific() called for %S and callID=%d", wsAddress, callID);
+		wstring address = wsAddress;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jAddress, wsAddress);
+		}
+		int size = pEnv->GetArrayLength(jByteArray);
+		jbyte* jBytes = new jbyte[size];
+		pEnv->GetByteArrayRegion(jByteArray, 0, size, jBytes);
+		//jbyte* jBytes = pEnv->GetByteArrayElements(jByteArray, &isCopyAddress);
+		/*if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseByteArrayElements(jByteArray, jBytes, 0);
+		}*/
+		logger->debug("SendLineDevSpecific() data has %d bytes and has content:", size);
+		for(int i = 0; i < size; i++){
+			logger->debug("%x", (BYTE)jBytes[i]);	
+		}
+		int result = g_msTapi3->SendLineDevSpecific(callID, address, (BYTE*)jBytes, size);
+		
+		logger->debug("SendLineDevSpecific() done for %S: callID=%d - result=%d", address.c_str(), callID, result);
+		return result;
+	} catch(...){
+		logger->fatal("SendLineDevSpecific failed.");
+		return -1;
+	}
+}
+
+
 void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause cause, wstring* callInfo) {
     static HANDLE hMutex = CreateMutex(NULL, FALSE, "callbackMutex");
     DWORD dwWaitResult = WaitForSingleObject(hMutex, 5000L);
@@ -420,7 +489,7 @@ void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause ca
             jmethodID callbackID = NULL;
             for(int retry=0; callbackID == NULL && retry < 5; retry++) {
 		        callbackID = localEnv->GetMethodID(cls, "callback", "(IILjava/lang/String;I[Ljava/lang/String;)V");
-                Sleep(1000);
+                Sleep(250);
             }           
             logger->debug("callback methodID: %p, retry=%d", callbackID, retry);
 

@@ -57,6 +57,13 @@ private:
 	int currCallID;
 	bool isDown;
 
+	// callcontrol modi
+	const static int TAPICALLCONTROLMODE_NONE = 0;
+    const static int TAPICALLCONTROLMODE_SETUPTRANSFER = 1;
+    const static int TAPICALLCONTROLMODE_TRANSFER = 2;
+    const static int TAPICALLCONTROLMODE_SETUPCONFERENCE = 3;
+    const static int TAPICALLCONTROLMODE_CONFERENCE = 4;
+
 public:
     // constructor
     MSTapi3();
@@ -69,15 +76,16 @@ public:
 	list<wstring> getAddressNames();
 
 	int reserveCall(wstring& address);
-	HRESULT MakeTheCall(int callID, wstring& address, wstring& destination);
+	HRESULT MakeTheCall(int callID, wstring& address, wstring& destination, int mode);
 	HRESULT Dial(int callID, wstring& destination);
 	HRESULT AnswerTheCall(int callID);
 	HRESULT DisconnectTheCall(int callID);
 	HRESULT HoldTheCall(int callID);
 	HRESULT UnHoldTheCall(int callID);
-	HRESULT JoinCalls(int callID1, int callID2);
+	HRESULT JoinCalls(int callID1, int callID2, wstring& address, wstring& terminal, int mode);
 	HRESULT SendDigits(wstring terminal, wstring digits);
 	void ReleaseTheCall(int callID);
+	long SendLineDevSpecific(int callID, wstring& address, BYTE* bytes, DWORD bytesSize);
 	void setSwapOnHold(bool enabled) { swapOnHold = enabled; }
     void setHandoff(wstring& appName) { handoff = appName; }
 

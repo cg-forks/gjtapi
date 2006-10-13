@@ -110,7 +110,7 @@ HRESULT MSTapi3::InitializeTapi(CallbackNotification aCallback) {
 
     // Set the Event filter to only give us the events we process
     tapi->put_EventFilter(TE_ADDRESS | TE_CALLNOTIFICATION | TE_CALLSTATE | TE_CALLHUB | TE_CALLINFOCHANGE | TE_DIGITEVENT | TE_GENERATEEVENT);
-//    tapi->put_EventFilter(0x2FFFFFF);
+	// tapi->put_EventFilter(0x2FFFFFF);
 
     // find all address objects that we will use to listen for calls on
 	logger->debug("Calling ListenOnAddresses...");
@@ -169,7 +169,7 @@ void MSTapi3::ShutdownTapi() {
 //
 // Sets up and makes a call
 /////////////////////////////////////////////////////////////////
-HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination) {
+HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination, int mode) {
 	ITAddress* pITAddress = getITAddress(address);
 	if(pITAddress == NULL) {
 		logger->error("Address not found: %S", address.c_str());
@@ -195,7 +195,7 @@ HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination)
 	} else {
 		logger->debug("Ok: empty entry found for callID=%d.", callID);
 	}
-
+	
     // Create the call.
     HRESULT hr = pITAddress->CreateCall(const_cast<unsigned short*>(destination.c_str()),
                                 LINEADDRESSTYPE_PHONENUMBER, lMediaTypes, &pCallControl);
@@ -226,22 +226,24 @@ HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination)
 		SysFreeString(bstrDestination);
 	}
 
+	if(mode == TAPICALLCONTROLMODE_NONE)
+	{
+		// We're now ready to call connect.
+		//
+		// the VARIANT_TRUE parameter indicates that this call is sychronous - that is, it won't
+		// return until the call is in the connected state (or fails to connect).	
+		hr = pCallControl->Connect(VARIANT_TRUE);
 
-    // We're now ready to call connect.
-    //
-    // the VARIANT_TRUE parameter indicates that this call is sychronous - that is, it won't
-    // return until the call is in the connected state (or fails to connect).
-    hr = pCallControl->Connect(VARIANT_TRUE);
-
-    if (FAILED(hr)) {
-		removeCallControl(callID);
-        logger->error("Could not connect the call to %S on %S.", destination.c_str(), address.c_str());
-        return hr;
-    } else {
-		logger->info("Successfully connected to %S on %S.", destination.c_str(), address.c_str());
+		if (FAILED(hr)) {
+			removeCallControl(callID);
+			logger->error("Could not connect the call to %S on %S.", destination.c_str(), address.c_str());
+			return hr;
+		} else {
+			logger->info("Successfully connected to %S on %S.", destination.c_str(), address.c_str());
+		}
+		hr = DetectDigits(pCallControl);
 	}
-
-    hr = DetectDigits(pCallControl);
+	
     return S_OK;
 }
 
@@ -452,18 +454,87 @@ HRESULT MSTapi3::UnHoldTheCall(int callID) {
 //
 // Joins two calls
 //////////////////////////////////////////////////////////////////////
-HRESULT MSTapi3::JoinCalls(int callID1, int callID2) {
+HRESULT MSTapi3::JoinCalls(int callID1, int callID2, wstring& address, wstring& terminal, int mode) {
 	ITBasicCallControl* callControl1 = getCallControl(callID1);
 	ITBasicCallControl* callControl2 = getCallControl(callID2);
-    HRESULT hr = callControl1->Conference(callControl2, VARIANT_FALSE);
-	if(FAILED(hr)) {
-		logger->error("JoinCalls() failed: hr=%08X.", hr);
-	} else {
-		logger->debug("JoinCalls() succeeded.");
+
+	HRESULT hr;
+	if(mode == TAPICALLCONTROLMODE_SETUPCONFERENCE)
+	{
+		hr = callControl1->Conference(callControl2, VARIANT_FALSE); //VARIANT_TRUE);
+		if(FAILED(hr))
+			logger->error("Conference setup failed: hr=%08X.", hr);
+		else
+			logger->debug("Conference setup succeeded.");
 	}
+	else if(mode == TAPICALLCONTROLMODE_CONFERENCE)
+	{
+		hr = callControl2->Finish(FM_ASCONFERENCE);
+		if(FAILED(hr))
+			logger->error("Finish conference failed: hr=%08X.", hr);
+		else
+			logger->debug("Finish conference succeeded.");
+	}
+	else if(mode == TAPICALLCONTROLMODE_SETUPTRANSFER)
+	{
+		hr = callControl1->Transfer(callControl2, VARIANT_FALSE); //VARIANT_TRUE);
+		if(FAILED(hr))
+			logger->error("Transfer setup failed: hr=%08X.", hr);
+		else
+			logger->debug("Transfer setup succeeded.");
+	}
+	else if(mode == TAPICALLCONTROLMODE_TRANSFER)
+	{
+		hr = callControl2->Finish(FM_ASTRANSFER);
+		if(FAILED(hr))
+			logger->error("Finish transfer failed: hr=%08X.", hr);
+		else
+			logger->debug("Finish transfer succeeded.");
+	}
+	else
+		return E_FAIL;
     return hr;
+	
+	/*ITBasicCallControl* callControl1 = getCallControl(callID1);
+	ITBasicCallControl* callControl2 = NULL;
+	if(callID2 != -1)
+		callControl2 = getCallControl(callID2);
+
+	HRESULT hr;
+	if(mode == 0)
+	{
+		hr = callControl1->Conference(callControl2, VARIANT_TRUE);
+		if(FAILED(hr)) {
+			logger->error("Conference() failed: hr=%08X.", hr);
+		} 
+		else {
+			logger->debug("Conference() succeeded.");
+			hr = callControl2->Finish(FM_ASCONFERENCE);
+		}
+	}
+	else
+	{	
+		ITAddress2* pITAddress = (ITAddress2*)getITAddress(address);		
+		pITAddress->CreateCall(const_cast<unsigned short*>(terminal.c_str()),
+                                LINEADDRESSTYPE_PHONENUMBER, TAPIMEDIATYPE_AUDIO, &callControl2);		
+
+		hr = callControl1->Transfer(callControl2, VARIANT_TRUE);
+		if(FAILED(hr)) {
+			logger->error("Transfer() failed: hr=%08X.", hr);
+		} 
+		else {
+			logger->debug("Transfer() succeeded.");
+			hr = callControl2->Finish(FM_ASTRANSFER);
+		}
+	}
+    return hr;*/
 }
 
+//////////////////////////////////////////////////////////////////////
+// DetectDigits
+//
+// detects digits
+//////////////////////////////////////////////////////////////////////
 HRESULT MSTapi3::DetectDigits(ITBasicCallControl* pCallControl) {
 	ITLegacyCallMediaControl* pLegacy;
 	HRESULT hr = pCallControl->QueryInterface(IID_ITLegacyCallMediaControl, (void **) &pLegacy);
@@ -554,27 +625,9 @@ HRESULT MSTapi3::DisconnectTheCall(int callID) {
 	logger->debug("Disconnecting callID=%d...", callID);
 	ITBasicCallControl* callControl = getCallControl(callID);
     if (NULL != callControl) {
-        DISCONNECT_CODE dc = DC_NORMAL;
-		ITCallInfo* pCallInfo;
-		HRESULT hr = callControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo );
-		if(FAILED(hr)) {
-			logger->error("Getting callInfo failed. hr=%08X", hr);
-        } else {
-		    CALL_STATE callState;
-		    hr = pCallInfo->get_CallState(&callState);
-		    pCallInfo->Release();
-		    if(FAILED(hr)) {
-			    logger->error("Cannot retrieve call state: hr=%08X.", hr);
-            } else {
-                switch(callState) {
-                    case CS_OFFERING: dc = DC_REJECTED; break;
-                    case CS_INPROGRESS: dc = DC_NOANSWER; break;
-                    default: dc = DC_NORMAL;
-				}
-            }
-        }
-        hr = callControl->Disconnect(dc);
-		logger->debug("Disconnect(dc=%d): hr=%08X", dc, hr);
+
+        HRESULT hr = callControl->Disconnect(DC_NORMAL);
+		logger->debug("Disconnect(DC_NORMAL): hr=%08X", hr);
         // Do not release the call yet, as that would prevent
         // us from receiving the disconnected notification.
         return hr;
@@ -593,6 +646,52 @@ void MSTapi3::ReleaseTheCall(int callID) {
 	logger->debug("Releasing callID=%d...", callID);
 	removeCallControl(callID);
 }
+
+//////////////////////////////////////////////////////////////////////
+// SendLineDevSpecific
+// 
+// Sends a LineDevSpecific action
+// Note: Available since Tapi 3.1 -> WindowsXP or newer required
+//////////////////////////////////////////////////////////////////////
+long MSTapi3::SendLineDevSpecific(int callID, wstring& address, BYTE* bytes, DWORD bytesSize){
+	ITAddress2* pITAddress = (ITAddress2*)getITAddress(address);
+	ITCallInfo* pCallInfo = NULL;
+	
+	/*ITBasicCallControl* callControl = getCallControl(callID);
+	
+	if(callControl == NULL)
+		pITAddress->CreateCall
+		(NULL, LINEADDRESSTYPE_PHONENUMBER, TAPIMEDIATYPE_AUDIO, &callControl);
+
+	if(callControl != NULL){
+		HRESULT hr = callControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo);
+		if(FAILED(hr)){
+			logger->error("Getting callInfo failed. hr=%08X", hr);
+			pCallInfo = NULL;
+		}
+	}
+	int result = pITAddress->DeviceSpecific(pCallInfo, bytes, bytesSize);
+	if(callID == -1)
+		callControl->Release();*/
+
+	if(callID != -1){
+		ITBasicCallControl* callControl = getCallControl(callID);
+		if(callControl != NULL){
+			HRESULT hr = callControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo );
+			if(FAILED(hr)){
+				logger->error("Getting callInfo failed. hr=%08X", hr);
+				pCallInfo = NULL;
+			}
+		}
+	}
+
+	HRESULT hr = pITAddress->DeviceSpecific(pCallInfo, bytes, bytesSize);
+	return hr;
+}
+
+
+
+
 
 
 /////////////////////////////////////
@@ -1129,7 +1228,7 @@ HRESULT MSTapi3::getAddressName(ITAddress* pITAddress, wstring& strAddress) {
             break;
         }
 	}
-    if(strAddress.length == 0) {
+	if(strAddress.length() == 0) {
 	    BSTR bstrAddrName;
 	    hr = pITAddress->get_AddressName(&bstrAddrName);
 	    if(FAILED(hr)) {

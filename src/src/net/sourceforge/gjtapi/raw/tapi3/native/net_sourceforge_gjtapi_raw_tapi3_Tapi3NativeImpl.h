@@ -58,10 +58,10 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
  * Method:    tapi3CreateCall
- * Signature: (ILjava/lang/String;Ljava/lang/String;)I
+ * Signature: (ILjava/lang/String;Ljava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3CreateCall
-  (JNIEnv *, jobject, jint, jstring, jstring);
+  (JNIEnv *, jobject, jint, jstring, jstring, jint);
 
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
@@ -82,10 +82,10 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
  * Method:    tapi3Join
- * Signature: (II)I
+ * Signature: (IILjava/lang/String;Ljava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3Join
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jint, jint, jstring, jstring, jint);
 
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
@@ -102,6 +102,14 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3SendSignals
   (JNIEnv *, jobject, jstring, jstring);
+
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl
+ * Method:    tapi3LineDevSpecific
+ * Signature: (ILjava/lang/String;[B)J
+ */
+JNIEXPORT jlong JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3LineDevSpecific
+  (JNIEnv *, jobject, jint, jstring, jbyteArray);
 
 #ifdef __cplusplus
 }

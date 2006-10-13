@@ -39,21 +39,12 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.Logger;
  * @author Serban Iordache
  */
 public class Tapi3NativeImpl implements Tapi3Native {
-	private static final Logger logger = Tapi3Provider.getLogger();
-    static {
-        try {
-			System.loadLibrary("Tapi3Provider");
-		} catch (Throwable t) {
-			String msg = "Library Tapi3Provider could not be loaded from " + System.getProperty("java.library.path");
-			logger.error(msg, t);
-			throw new RuntimeException(msg, t);
-		}        
-    }
+	private static Logger logger;
     
     /**
      * The one and only instance of Tapi3NativeImpl
      */
-    private static final Tapi3NativeImpl instance = new Tapi3NativeImpl();
+    private static Tapi3NativeImpl instance; // = new Tapi3NativeImpl();
     
     /**
      * The provider registered for this Tapi3NativeImpl
@@ -70,9 +61,31 @@ public class Tapi3NativeImpl implements Tapi3Native {
      * @return The one and only instance of this class
      */
     public static final Tapi3Native getInstance() {
-        return instance;
+      if(instance == null)
+      {
+        logger = Tapi3Provider.getLogger();
+        instance = new Tapi3NativeImpl();
+        try
+        {
+          //System.loadLibrary("Tapi3Provider");
+          System.loadLibrary("Tapi3Provider"); //./src/net/sourceforge/gjtapi/raw/tapi3/native/Debug/Tapi3Provider");
+        }
+        catch (Throwable t)
+        {
+          String msg = "Library Tapi3Provider could not be loaded from " + System.getProperty("java.library.path");
+          logger.error(msg, t);
+          throw new RuntimeException(msg, t);
+        }
+      }
+      return instance;
     }
-    
+
+  public static final void releaseInstance()
+  {
+    logger = null;
+    instance = null;
+  }
+
     /**
      * Initialize the Tapi3 provider
      * @param props The name value properties map
@@ -121,7 +134,7 @@ public class Tapi3NativeImpl implements Tapi3Native {
      * @param dest The destination address
      * @return The callID or a negative error code
      */
-    public native int tapi3CreateCall(int callID, String address, String dest); 
+    public native int tapi3CreateCall(int callID, String address, String dest, int mode);
 
     /**
      * Dial a number on an existing call.
@@ -129,23 +142,24 @@ public class Tapi3NativeImpl implements Tapi3Native {
      * @param numberToDial
      * @return 1 or a negative error code
      */
-    public native int tapi3Dial(int callI, String numberToDial);
+    public native int tapi3Dial(int callID, String numberToDial);
     
     /**
      * Put a call on hold 
      * @param callID The identifier for the call
-     * @param address The address that defines the call to hold
      * @return Error code (0=success) 
      */
+    //* @param address The address that defines the call to hold
     public native int tapi3Hold(int callID);
     
     /**
      * Join one call to another call
      * @param callID1 The identifier for one call
      * @param callID2 The identifier for another call
+     * @param mode The mode for joining
      * @return The new callID or a negative error code
      */
-    public native int tapi3Join(int callID1, int callID2);
+    public native int tapi3Join(int callID1, int callID2, String address, String terminal, int mode);
     
     /**
      * Take a call off hold 
@@ -185,5 +199,14 @@ public class Tapi3NativeImpl implements Tapi3Native {
             Tapi3Provider.getLogger().error("Callback " + methodID + " called, but no provider registered.");
         }
     }
+
+    /**
+     * sends DeviceSpecific commands as defined by the tapi-specification
+     * @param callID in case of a call is involved
+     * @param address the address from the invoker
+     * @param data the command data
+     * @return a negative value in case of an error, zero in case of success and a positive value when the command is processed asynchronously
+     */
+    public native long tapi3LineDevSpecific(int callID, String address, byte[] data);
 
 }

@@ -85,7 +85,7 @@ public interface Tapi3Native {
      * @param dest The destination address
      * @return The callID or a negative error code
      */
-    public int tapi3CreateCall(int callID, String address, String dest); 
+    public int tapi3CreateCall(int callID, String address, String dest, int mode);
 
     /**
      * Dial a number on an existing call.
@@ -96,20 +96,21 @@ public interface Tapi3Native {
     public int tapi3Dial(int callID, String numberToDial);
     
     /**
-     * Put a call on hold 
-     * @param callID The identifier for the call
+     * Put a call on hold
      * @param address The address that defines the call to hold
      * @return Error code (0=success) 
      */
+    //* @param callID The identifier for the call
     public int tapi3Hold(int callID);
     
     /**
      * Join one call to another call
      * @param callID1 The identifier for one call
      * @param callID2 The identifier for another call
+     * @param mode The mode for joining
      * @return The new callID or a negative error code
      */
-    public int tapi3Join(int callID1, int callID2);
+    public int tapi3Join(int callID1, int callID2, String address, String terminal, int mode);
     
     /**
      * Take a call off hold 
@@ -125,10 +126,13 @@ public interface Tapi3Native {
      * @return Error code (0=success)
      */
     public int tapi3SendSignals(String terminal, String digits);
-    
+
     /**
-     * Register a Tapi3 provider 
-     * @param provider The Tapi3 provider
+     * sends DeviceSpecific commands as defined by the tapi-specification
+     * @param callID in case of a call is involved
+     * @param address the address from the invoker
+     * @param data the command data
+     * @return a negative value in case of an error, zero in case of success and a positive value when the command is processed asynchronously
      */
-    public void registerProvider(Tapi3Provider provider);
+    public long tapi3LineDevSpecific(int callID, String address, byte[] data);
 }
