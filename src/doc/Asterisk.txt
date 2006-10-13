@@ -1,0 +1,22 @@
+
+
+This is a quick overview over the Asterisk-Provider.
+
+
+
+
+
+The asteriskprovider currently supports calling and detecting incoming and outgoing calls.
+
+
+
+To get it working adjust the Asterisk.props or use
+"Asterisk; Server=IP-Addresse; Port=Port; User=ManagerUsername; 
+Password=ManagerUserPassword; Context=AsteriskContext" 
+as providername. 
+(e.g. "Asterisk; Server=192.168.0.1; Port=5038; User=user; Password=1234; Context=default")
+
+
+
+Beside that asteriskProvider needs 'asterisk-java-0.2.jar'. 
+You can download it at: http://sourceforge.net/projects/asterisk-java/
