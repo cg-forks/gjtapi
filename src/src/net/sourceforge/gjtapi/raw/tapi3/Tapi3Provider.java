@@ -1,6 +1,6 @@
 /*
 	Copyright (c) 2005 Serban Iordache 
-	
+
 	All rights reserved. 
 	
 	Permission is hereby granted, free of charge, to any person obtaining a 
@@ -34,12 +34,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Dictionary;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import javax.telephony.Event;
 import javax.telephony.InvalidArgumentException;
@@ -64,7 +59,6 @@ import net.sourceforge.gjtapi.capabilities.Capabilities;
 import net.sourceforge.gjtapi.raw.CCTpi;
 import net.sourceforge.gjtapi.raw.MediaTpi;
 import net.sourceforge.gjtapi.raw.PrivateDataTpi;
-import net.sourceforge.gjtapi.raw.tapi3.logging.ConsoleLogger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.Logger;
 import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
 
@@ -73,7 +67,7 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
  * @author Serban Iordache
  */
 public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
-    private static Logger logger = new ConsoleLogger(); // new NullLogger();
+    private static Logger logger; // = new ConsoleLogger(); // new NullLogger();
 
     /**
      * Method identifier for <i>addressPrivateData</i>; used as methodID parameter for the {@link #callback} method.  
@@ -192,7 +186,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     /**
      * The concrete Tapi3Native implementation
      */
-    private static Tapi3Native tapi3Native;
+    private Tapi3Native tapi3Native;
     
     /**
      * The array of addresses
@@ -203,7 +197,32 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     private TermData[] terminals = new TermData[0];
     /**
-     * The list of TelephonyListeners 
+     * indicates whether the termhack is activated
+     */
+    private boolean termHack = false;
+    /**
+     * Mapping of addresses to terminals (for the termHack)
+     */
+    private Map termAddrMap = new HashMap();
+    /**
+     * flag for callControl (transfer, conference)
+     */
+    private int tapiCallControlMode = 0;
+    private int TAPICALLCONTROLMODE_NONE = 0;
+    private int TAPICALLCONTROLMODE_SETUPTRANSFER = 1;
+    private int TAPICALLCONTROLMODE_TRANSFER = 2;
+    private int TAPICALLCONTROLMODE_SETUPCONFERENCE = 3;
+    private int TAPICALLCONTROLMODE_CONFERENCE = 4;
+    /**
+     * callID for callControl (transfer, conference)
+     */
+    private Tapi3CallID ccCallID = null;
+    /**
+     * Mapping of terminal string to termData
+     */
+    private Map termTermDataMap = new HashMap();
+    /**
+     * The list of TelephonyListeners
      */
     private final ArrayList listenerList = new ArrayList();
 
@@ -215,7 +234,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     private static interface DigitListener {
         public void receivedDigit(String terminal, char ch);
     }
-    
+
     /**
      * Return the logger
      * @return The logger
@@ -228,7 +247,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Configure the logger
      * @param props The name value properties map used to configure the logger 
      */
-    private static void configureLogger(Map props) {
+    private void configureLogger(Map props) {
         String tapi3LogOut = (String)props.get("tapi3.log.out");
         if(tapi3LogOut != null) {
             if("console".equals(tapi3LogOut)) {
@@ -259,7 +278,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Configure a concrete implementation of the {@link Tapi3Native} interface
      * @param props The name value properties map used to configure the {@link Tapi3Native} implementation 
      */
-    private static void configureNative(Map props) {
+    private void configureNative(Map props) {
         String tapi3ImplClass = (String)props.get("tapi3.impl.class");
         if(tapi3ImplClass == null) {
             tapi3ImplClass = "net.sourceforge.gjtapi.raw.tapi3.Tapi3NativeImpl";
@@ -280,7 +299,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param methodID The identifier of the method parameter (as used in the {@link #callback} method)
      * @return The friendly name of methodID
      */
-    private static String getMethodName(int methodID) {
+    private String getMethodName(int methodID) {
         String name = "<UNKNOWN>";
         if(methodID >= 0 && methodID < METHOD_NAMES.length) {
             name = METHOD_NAMES[methodID];
@@ -293,7 +312,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param jniCause The identifier of the cause parameter (as used in the {@link #callback} method)
      * @return The friendly name of jniCause
      */
-    private static int getEventCause(int jniCause) {
+    private int getEventCause(int jniCause) {
         switch(jniCause) {
             case JNI_CAUSE_NORMAL: return Event.CAUSE_NORMAL;
             case JNI_CAUSE_NEW_CALL: return Event.CAUSE_NEW_CALL;
@@ -311,9 +330,20 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param jniCause The event cause. Must be one of the <i>JNI_CAUSE_XXX</i> values.
      * @param callInfo Array of 4 elements used to initialize a {@link Tapi3PrivateData}
      */
-    public void callback(int methodID, int callID, String address, int jniCause, String[] callInfo) {
+    public synchronized void callback(int methodID, int callID, String address, int jniCause, String[] callInfo) {
         Tapi3CallID tapi3CallID = new Tapi3CallID(callID);
-        String terminal = address;  // !!!
+        String terminal = null;  // !!!
+        if(termHack)
+          try
+          {
+            terminal = getTerminals(address)[0].terminal;
+          }
+          catch (InvalidArgumentException e)
+          {
+            e.printStackTrace();
+          }
+        else
+          terminal = address;
 //        String terminal = getTerminals(address)[0].terminal;
         Tapi3PrivateData privateData = null;
         if(callInfo != null && callInfo.length == 4) {
@@ -360,6 +390,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                     listener.connectionFailed(tapi3CallID, address, eventCause);
                     break;
                 case METHOD_CONNECTION_IN_PROGRESS:
+                    // events added because there was no information about the called number in a jtapi call
+                    listener.terminalConnectionCreated(tapi3CallID, address, terminal, eventCause);
+                    listener.connectionAlerting(tapi3CallID, privateData.getCalledNumber(), eventCause);
+                    // events add till here
                     listener.connectionInProgress(tapi3CallID, address, eventCause);
                     break;
                 case METHOD_PROVIDER_PRIVATE_DATA:
@@ -418,31 +452,75 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public void initialize(Map props) throws ProviderUnavailableException {
     	configureProperties(props);
-		configureLogger(props);
-        logger.debug("Tapi3 properties: " + props + " ...");
-        configureNative(props);        
-        logger.debug("Initializing Tapi3 provider...");
-        addresses = tapi3Native.tapi3Init(props);
-        logger.debug("Registering Tapi3 provider...");
-        tapi3Native.registerProvider(this);
+		  configureLogger(props);
+      logger.debug("Tapi3 properties: " + props + " ...");
+      configureNative(props);
+      logger.debug("Initializing Tapi3 provider...");
+      addresses = tapi3Native.tapi3Init(props);
+      logger.debug("Registering Tapi3 provider...");
+      ((Tapi3NativeImpl)tapi3Native).registerProvider(this);
 
-        logger.debug("Retrieving addresses...");
-        if(addresses == null) {
-            addresses = new String[0];
+      logger.debug("Retrieving addresses...");
+      if(addresses == null) {
+        addresses = new String[0];
+      }
+      /**
+       * termHack enables several addresses for one terminal
+       * the decision depends on the addressnames
+       */
+      if("true".equals(props.get("tapi3.termHack")))
+      {
+        termHack = true;
+        int nGramVal = 3;
+        double threshold = 0.75;
+        ArrayList termArr = new ArrayList();
+        ArrayList conTermArr = new ArrayList();
+        for(int i = 0; i < addresses.length; i++)
+        {
+          double bestFit = 0;
+          int bestFitIndex[] = new int[]{0, 0};
+          ArrayList refNGram = _nGramSegmentation(addresses[i], nGramVal);
+          for(Iterator j = termArr.iterator(); j.hasNext(); )
+          {
+            String next = (String)j.next();
+            ArrayList curNGram = _nGramSegmentation(next, nGramVal);
+            double fit = _nGramRating(refNGram, curNGram);
+            if(fit > bestFit)
+            {
+              bestFit = fit;
+              bestFitIndex[1] = bestFitIndex[0];
+            }
+            bestFitIndex[0]++;
+          }
+          if(bestFit < threshold)
+          {
+            termArr.add(addresses[i]);
+            TermData tmpTermData = new TermData(addresses[i], false);
+            conTermArr.add(tmpTermData);
+            termAddrMap.put(addresses[i], new ArrayList());
+            termTermDataMap.put(addresses[i], tmpTermData);
+          }
+          ((List)termAddrMap.get(termArr.get(bestFitIndex[1]))).add(addresses[i]);
+
         }
+        terminals = (TermData[]) conTermArr.toArray(new TermData[conTermArr.size()]);
+      }
+      else
+      {
         terminals = new TermData[addresses.length];
         for(int i=0; i<terminals.length; i++) {
             logger.info("Address #" + (i+1) + ": " + addresses[i]);
             terminals[i] = new TermData(addresses[i], false);
         }
-        logger.debug("Initialized");
+      }
+      logger.debug("Initialized");
     }
 
     /**
      * Replace ${<i>propertyName</i>} occurences with the actual value of the system property identified by <i>propertyName</i>  
      * @param props The properties map whose values will be modified
      */
-    public static void configureProperties(Map props) {
+    public void configureProperties(Map props) {
     	Iterator it = props.entrySet().iterator();
     	while(it.hasNext()) {
         	Map.Entry entry = (Map.Entry) it.next();
@@ -468,6 +546,9 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     public void shutdown() {
         logger.debug("Shutting down...");
         int retCode = tapi3Native.tapi3Shutdown();
+        ((Tapi3NativeImpl)tapi3Native).releaseInstance();
+        /*logger = null;
+        tapi3Native = null;*/
         logger.debug("Shut down: retCode=" + retCode);
     }
 
@@ -517,7 +598,13 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public String[] getAddresses(String terminal) throws InvalidArgumentException {
         logger.debug("getAddresses(" + terminal + ")");
-        for(int i=0; i<terminals.length; i++) {
+        if(termHack)
+        {
+          ArrayList arr = (ArrayList)termAddrMap.get(terminal);
+          String[] adr = (String[]) arr.toArray(new String[arr.size()]);
+          return adr;
+        }
+        else for(int i=0; i<terminals.length; i++) {
             if(terminals[i].terminal.equals(terminal)) {
                 return new String[] { addresses[i] };
             }
@@ -529,6 +616,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @see net.sourceforge.gjtapi.raw.BasicJtapiTpi#getTerminals()
      */
     public TermData[] getTerminals() throws ResourceUnavailableException {
+        /*for(int i = 0; i < terminals.length; i++)
+          System.out.println("debug test: " + terminals[i].terminal);*/
         logger.debug("getTerminals()");
         return terminals;
     }
@@ -538,7 +627,31 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public TermData[] getTerminals(String address) throws InvalidArgumentException {
         logger.debug("getTerminals(" + address + ")");
-        for(int i=0; i<addresses.length; i++) {
+        if(termHack)
+        {
+          String found = null;
+          Set keySet = termAddrMap.keySet();
+          for(Iterator i = keySet.iterator(); i.hasNext(); )
+          {
+            String key = (String)i.next();
+            if(((ArrayList)termAddrMap.get(key)).contains(address))
+            {
+              found = key;
+              break ;
+            }
+          }
+          if(found != null)
+            return new TermData[]{(TermData)termTermDataMap.get(found)};
+          /*List tmpList = (List)termAddrMap.get(terminals[0].terminal);
+          int tmpCount = 0;
+          for(Iterator i = tmpList.iterator(); i.hasNext(); tmpCount++)
+          {
+            String next = i.next().toString();
+            if(next.equals(address))
+              return new TermData[]{(terminals[tmpCount])};
+          }*/
+        }
+        else for(int i=0; i<addresses.length; i++) {
             if(addresses[i].equals(address)) {
                 return new TermData[] { terminals[i] };
             }
@@ -550,8 +663,9 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @see net.sourceforge.gjtapi.raw.CoreTpi#reserveCallId(java.lang.String)
      */
     public CallId reserveCallId(String address) throws InvalidArgumentException {
-        logger.debug("reserveCallId(" + address + ")");
+      logger.debug("reserveCallId for adress: " + address);
         int id = tapi3Native.tapi3ReserveCallId(address);
+        logger.debug("reservedCallId(" + id + ")");
         return (id < 0) ? null : new Tapi3CallID(id);
     }
 
@@ -562,7 +676,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.debug("releaseCallId(" + id + ")");
         if(id instanceof Tapi3CallID) {
             Tapi3CallID tapi3CallID = (Tapi3CallID)id;
-            int retCode = tapi3Native.tapi3ReleaseCall(tapi3CallID.getCallID());
+          int retCode = tapi3Native.tapi3ReleaseCall(tapi3CallID.getCallID());
             logger.debug("tapi3ReleaseCall() returned: 0x" + Integer.toHexString(retCode));
         } else {
             logger.warn("Not a Tapi3CallID: " + id);
@@ -578,13 +692,32 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.debug("createCall(" + id + ", " + address + ", " + term + ", " + dest + ")");
         if(id instanceof Tapi3CallID) {
             Tapi3CallID tapi3CallID = (Tapi3CallID)id;
-            int retCode = tapi3Native.tapi3CreateCall(tapi3CallID.getCallID(), address, dest);
+            int retCode;
+            if((tapiCallControlMode == TAPICALLCONTROLMODE_SETUPCONFERENCE ||
+                tapiCallControlMode == TAPICALLCONTROLMODE_SETUPTRANSFER) && ccCallID != null)
+            {
+              retCode = tapi3Native.tapi3CreateCall(tapi3CallID.getCallID(), address, dest, tapiCallControlMode);
+              try
+              {
+                Thread.sleep(200);
+              }
+              catch (InterruptedException e)
+              {
+                _resetCallControlInfo();
+                e.printStackTrace();
+              }
+              tapi3Native.tapi3Join(ccCallID.getCallID(), tapi3CallID.getCallID(), address, term, tapiCallControlMode);
+            }
+            else
+              retCode = tapi3Native.tapi3CreateCall(tapi3CallID.getCallID(), address, dest, TAPICALLCONTROLMODE_NONE);
+            _resetCallControlInfo();
             logger.debug("tapi3CreateCall() returned: " + Integer.toHexString(retCode));
             if(retCode < 0) {
                 throw new InvalidPartyException(InvalidPartyException.UNKNOWN_PARTY, "Error code: " + Integer.toHexString(retCode));
             }
             return id;
         } else {
+            _resetCallControlInfo();
             throw new MethodNotSupportedException("Not a Tapi3CallID: " + id);
         }
     }
@@ -650,10 +783,52 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public CallId join(CallId call1, CallId call2, String address, String terminal) throws RawStateException, InvalidArgumentException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException {
         logger.debug("join(" + call1 + ", " + call2 + ", " + address + ", " + terminal + ")");
+        if(tapiCallControlMode != TAPICALLCONTROLMODE_CONFERENCE && tapiCallControlMode != TAPICALLCONTROLMODE_TRANSFER)
+        {
+            _resetCallControlInfo();
+            throw new InvalidArgumentException("No or wrong callControlMode set. Call sendPrivateData(null, null, null, mode) first!");
+        }
         if((call1 instanceof Tapi3CallID) && (call2 instanceof Tapi3CallID)) {
             Tapi3CallID tapi3CallID1 = (Tapi3CallID)call1;
             Tapi3CallID tapi3CallID2 = (Tapi3CallID)call2;
-            int errCode = tapi3Native.tapi3Join(tapi3CallID1.getCallID(), tapi3CallID2.getCallID());
+            int errCode;
+            int callID1;
+            int callID2;
+            if(tapi3CallID1.getCallID() < tapi3CallID2.getCallID())
+            {
+              callID1 = tapi3CallID1.getCallID();
+              callID2 = tapi3CallID2.getCallID();
+            }
+            else
+            {
+              callID1 = tapi3CallID2.getCallID();
+              callID2 = tapi3CallID1.getCallID();
+            }
+            errCode = tapi3Native.tapi3Join(callID1, callID2, address, terminal, tapiCallControlMode);
+            _resetCallControlInfo();
+            if(errCode == 0) {
+                logger.debug("tapi3Join() succeeded.");
+                return new Tapi3CallID(tapi3CallID2.getCallID());
+            } else {
+                logger.error("Cannot join (errorCode=" + Integer.toHexString(errCode) + ")");
+                throw new RawStateException(call1, TerminalConnection.UNKNOWN);
+            }
+        } else {
+           logger.warn("Not a Tapi3CallID: " + call1 + ", " + call2);
+           _resetCallControlInfo();
+           throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
+        }
+        /*int mode = 0;
+        if(call2 == null &! getTerminals(address)[0].equals(terminal))
+        {
+          mode = 1;
+          call2 = new Tapi3CallID(-1);
+        }
+        logger.debug("join(" + call1 + ", " + call2 + ", " + address + ", " + terminal + ")");
+        if((call1 instanceof Tapi3CallID) && (call2 instanceof Tapi3CallID)) {
+            Tapi3CallID tapi3CallID1 = (Tapi3CallID)call1;
+            Tapi3CallID tapi3CallID2 = (Tapi3CallID)call2;
+            int errCode = tapi3Native.tapi3Join(tapi3CallID1.getCallID(), tapi3CallID2.getCallID(), address, terminal, mode);
             if(errCode == 0) {
                 logger.debug("tapi3Join() succeeded.");
                 return new Tapi3CallID(tapi3CallID1.getCallID());
@@ -664,7 +839,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         } else {
             logger.warn("Not a Tapi3CallID: " + call1 + ", " + call2);
            throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
-        }
+        }*/
     }
 
     /* (non-Javadoc)
@@ -770,8 +945,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
 	/* This is used to send in-call dialing information.
 	 * @see net.sourceforge.gjtapi.raw.PrivateDataTpi#sendPrivateData(net.sourceforge.gjtapi.CallId, java.lang.String, java.lang.String, java.lang.Object)
 	 */
-	public Object sendPrivateData(CallId call, String address, String terminal,
-			Object data) {
+	public Object sendPrivateData(CallId call, String address, String terminal, Object data) {
 		// If the data is a PrivateDialCommand, send it to the native level
 		if ((call instanceof Tapi3CallID) && (data instanceof PrivateDialCommand))
 		{
@@ -779,6 +953,37 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
 			int result = tapi3Native.tapi3Dial(((Tapi3CallID)call).getCallID(), dialCommand.getNumberToDial());
 			return new Integer(result);
 		}
+    else if (data instanceof byte[] && address != null)
+		{
+			long result;
+      if(call == null)
+        result = tapi3Native.tapi3LineDevSpecific(-1, address, (byte[])data);
+      else if(call instanceof Tapi3CallID)
+        result = tapi3Native.tapi3LineDevSpecific(((Tapi3CallID)call).getCallID(), address, (byte[])data);
+      else
+        return null;
+      return new Long(result);
+		}
+    else if(address == null && terminal == null)
+    {
+      if(call != null && call instanceof Tapi3CallID)
+        ccCallID = (Tapi3CallID)call;
+      if(data.toString().equals("setupTransferCall"))
+        tapiCallControlMode = TAPICALLCONTROLMODE_SETUPTRANSFER;
+      else if(data.toString().equals("transferCall"))
+        tapiCallControlMode = TAPICALLCONTROLMODE_TRANSFER;
+      else if(data.toString().equals("setupConferenceCall"))
+        tapiCallControlMode = TAPICALLCONTROLMODE_SETUPCONFERENCE;
+      else if(data.toString().equals("conferenceCall"))
+        tapiCallControlMode = TAPICALLCONTROLMODE_CONFERENCE;
+      else
+      {
+        ccCallID = null;
+        tapiCallControlMode = TAPICALLCONTROLMODE_NONE;
+        return "callControl error";
+      }
+      return "callControl success";
+    }
 		return null;
 	}
 	/* (non-Javadoc)
@@ -796,7 +1001,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param symbols The array of {@link javax.telephony.media.Symbol}s
      * @return A String containing the corresponding DTMF digits
      */
-    public static String getSymbolsAsString(Symbol[] symbols) {
+    public String getSymbolsAsString(Symbol[] symbols) {
         StringBuffer sbuf = new StringBuffer(symbols.length);
         for(int i=0; i<symbols.length; i++) {
             char ch = getSymbolAsChar(symbols[i]);
@@ -810,7 +1015,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param symbol The {@link javax.telephony.media.Symbol} to be converted
      * @return The corresponding DTMF digit
      */
-    public static char getSymbolAsChar(Symbol symbol) {
+    public char getSymbolAsChar(Symbol symbol) {
         if(symbol == SignalConstants.v_DTMF0) return '0';
         if(symbol == SignalConstants.v_DTMF1) return '1';
         if(symbol == SignalConstants.v_DTMF2) return '2';
@@ -835,7 +1040,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param ch The DTMF digit as char
      * @return The corresponding {@link javax.telephony.media.Symbol}
      */
-    public static Symbol getSymbol(char ch) {
+    public Symbol getSymbol(char ch) {
         switch(ch) {
             case '0': return SignalConstants.v_DTMF0;
             case '1': return SignalConstants.v_DTMF1;
@@ -855,5 +1060,71 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
             case '*': return SignalConstants.v_DTMFStar;
             default: return null;
         }
+    }
+
+    /**
+     * segmentates a string into n-grams
+     * @param pStr the string to segmentate
+     * @param n the value of the n-gram
+     * @return the n-gram segmentated from the string
+     */
+    private ArrayList _nGramSegmentation(String pStr, int n)
+    {
+
+      ArrayList arr = new ArrayList();
+      if(n > pStr.length())
+        arr.add(pStr);
+      else
+      {
+        for(int i = 0; i < pStr.length()-(n-1); i++)
+        {
+          arr.add(pStr.substring(i, i+n));
+        }
+      }
+      return arr;
+    }
+
+   /**
+    * rates the similarity
+    * @param pRef remains unmodified
+    * @param pToRate will be modified
+    * @return a rating
+    */
+    private double _nGramRating(ArrayList pRef, ArrayList pToRate)
+    {
+      ArrayList a;
+      ArrayList b;
+      if(pToRate.size() > pRef.size())
+      {
+        a = (ArrayList)pRef.clone();
+        b = pToRate;
+      }
+      else
+      {
+        a = pToRate;
+        b = (ArrayList)pRef.clone();
+      }
+      int count = a.size() + b.size();
+      int hits = 0;
+      for(Iterator i = a.iterator(); i.hasNext(); )
+      {
+        Object next = i.next();
+        if(b.contains(next))
+        {
+          b.remove(next);
+          i.remove();
+          hits++;
+        }
+      }
+      return 2.0*(double)hits/(double)count;
+    }
+
+    /**
+     * for callcontrol (transfer, conference)
+     */
+    private void _resetCallControlInfo()
+    {
+      tapiCallControlMode = TAPICALLCONTROLMODE_NONE;
+      ccCallID = null;
     }
 }
