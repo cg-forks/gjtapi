@@ -4,3 +4,4 @@ Server = 192.168.0.1
 Port = 5038
 User = User
 Password = Password
+Context = default
