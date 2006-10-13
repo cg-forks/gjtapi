@@ -1,8 +1,10 @@
 package net.sourceforge.gjtapi.raw.asterisk;
 
+import net.sf.asterisk.manager.Channel;
+
 /**
  * 
- * this gives information about a 'connection'
+ * 
  * @author J. Boesl, 30.06.2005
  */
 

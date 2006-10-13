@@ -5,7 +5,7 @@ import net.sourceforge.gjtapi.CallId;
 import java.util.*;
 
 /**
- * 
+ *
  * this is an identifier-class for calls
  * @author J. Boesl, 21.06.2005
  */
@@ -15,6 +15,7 @@ public class AsteriskCallId implements CallId
 {
 
   private Map connections;
+  //private String[] callDetails;
 
   public AsteriskCallId()
   {
@@ -26,6 +27,9 @@ public class AsteriskCallId implements CallId
   {
     if(connections.isEmpty() || other == null)
       return false;
+    /*if (other instanceof String)
+      return connections.containsKey(other);
+    else*/
     if (other instanceof AsteriskCallId)
     {
       return other.hashCode() == hashCode();
@@ -70,5 +74,19 @@ public class AsteriskCallId implements CallId
   {
     connections.remove(id);
   }
+
+  /**
+   * content: callingAddress, calledAddress, callingAddressUniqueId
+   * @return
+   */
+  /*public String[] getCallDetails()
+  {
+    return callDetails;
+  }
+
+  public void setCallDetails(String[] details)
+  {
+    callDetails = details;
+  }*/
 
 }

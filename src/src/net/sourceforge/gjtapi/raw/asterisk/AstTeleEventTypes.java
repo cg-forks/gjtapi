@@ -2,7 +2,7 @@ package net.sourceforge.gjtapi.raw.asterisk;
 
 /**
  * 
- * indentifiers for JTapi-Events
+ * 
  * @author J. Boesl, 22.06.2005
  */
 
