@@ -1,0 +1,48 @@
+
+This is a quick overview over termHack, sendLineDeviceSpecific, setupTransfer, transfer, 
+setupConference and conference.
+
+
+
+
+
+termHack:
+---------
+termHack enables Tapi3 to do a conference or a transfer between different addresses on the same
+terminal. It's off by default. To enable it add 'tapi3.termHack = true' to your Tapi3.props or
+use 'Tapi3; tapi3.termHack=true' as providername.
+When enabled the provider checks the addressnames for similarity and in case it's similar enough
+it's sayed to be the same terminal.
+
+
+sendLineDeviceSpecific:
+-----------------------
+this is for extra features the telephone systems offers. I for one use it for acd-registration.
+All you have to do is to sendPrivateData(object) with the object beeing a byte array. 
+SendPrivateData is usually called on a call-object so if you want to use this without a call you
+have to call rawProvider.sendPrivateData(..). And another thing you have to be cautious is the
+endianness. Java is big endian so if you want to send the byte array '01 02 03 04' to your tsps 
+sendLineDeviceSpecific function you have to put '04 03 02 01' in the java byte array.
+
+
+setupTransfer, transfer, setupConference, conference:
+-----------------------------------------------------
+a lot of tsps require transfer (and conference, too) to work properly to use setupTransfer 
+(setupConference accordingly) for the consultation call. GJTapi has another idea how to
+transfer and conference works. That's why this party is 'hacky' again.
+For this function to be called you have to have another call first. Then call 
+'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "setupTransferCall");'
+This tells the provider that the next call shall be setupTransfer(..). That means you have to
+call something like 'provider.createCall().connect(terminal, address, destAddress);'. A
+consultation call is created and you can transfer now by callig
+'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "transferCall");'
+and next
+'firstCall.transfer(secondCall);'
+
+for conference:
+'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "setupConferenceCall");'
+'provider.createCall().connect(terminal, address, destAddress);'
+'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "conferenceCall");'
+'firstCall.conference(secondCall);'
+
+
