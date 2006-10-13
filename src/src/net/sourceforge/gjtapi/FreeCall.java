@@ -455,6 +455,7 @@ private FreeTerminalConnection findCommonTC(Call otherCall) {
 				Connection[] cs2 = otherCall.getConnections();
 				for (int k = 0; k < cs2.length; k++) {
 					TerminalConnection[] tcs2 = cs2[k].getTerminalConnections();
+					if(tcs2 != null)
 					for (int l = 0; l < tcs2.length; l++) {
 						if (tcs2[l].getTerminal().equals(t)) {
 							return (FreeTerminalConnection) tcs[j];
