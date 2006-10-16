@@ -7,13 +7,14 @@ This is a quick overview over the Asterisk-Provider.
 
 
 The asteriskprovider currently supports calling and detecting incoming and outgoing calls.
+It getAddresses() lists all available SIP phones. To use another phone add "Phone=phonename"
+(e.g. Phone=ZAP/4) to Asterisk.props or to the providername.
 
 
 
 To get it working adjust the Asterisk.props or use
 "Asterisk; Server=IP-Addresse; Port=Port; User=ManagerUsername; 
-Password=ManagerUserPassword; Context=AsteriskContext" 
-as providername. 
+Password=ManagerUserPassword; Context=AsteriskContext" as providername. 
 (e.g. "Asterisk; Server=192.168.0.1; Port=5038; User=user; Password=1234; Context=default")
 
 
