@@ -36,7 +36,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
 
   private int TIMEOUT = 10000;
 
-  private boolean OUT = true;
+  private boolean OUT = false;
 
   public AsteriskProvider()
   {
