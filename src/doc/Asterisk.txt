@@ -6,8 +6,9 @@ This is a quick overview over the Asterisk-Provider.
 
 
 
-The asteriskprovider currently supports calling and detecting incoming and outgoing calls.
-It getAddresses() lists all available SIP phones. To use another phone add "Phone=phonename"
+The asteriskprovider currently supports calling and detecting incoming and outgoing calls as
+well as conference and transfer through join().
+getAddresses() lists all available SIP phones. To use another phone add "Phone=phonename"
 (e.g. Phone=ZAP/4) to Asterisk.props or to the providername.
 
 
@@ -15,7 +16,17 @@ It getAddresses() lists all available SIP phones. To use another phone add "Phon
 To get it working adjust the Asterisk.props or use
 "Asterisk; Server=IP-Addresse; Port=Port; User=ManagerUsername; 
 Password=ManagerUserPassword; Context=AsteriskContext" as providername. 
-(e.g. "Asterisk; Server=192.168.0.1; Port=5038; User=user; Password=1234; Context=default")
+(e.g. "Asterisk; Server=192.168.0.1; Port=5038; User=user; Password=1234; Context=default;
+ConferenceContext=custom-meetme")
+
+For conference and transfer you must have a special context for the meetme application and you
+have to specify that context in the Asterisk.props or within the providerstring.
+e.g.:
+[custom-meetme]
+exten => _X.,1,MeetMe(${EXTEN},dqx)
+
+Conference and transfer doesn't work with a bristuffed asterisk because of a bug in it. There is
+a patch for bristuff but it didn't solve the problem for me.
 
 
 
