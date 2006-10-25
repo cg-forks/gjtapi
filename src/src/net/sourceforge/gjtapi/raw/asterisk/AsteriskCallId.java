@@ -15,21 +15,22 @@ public class AsteriskCallId implements CallId
 {
 
   private Map connections;
-  //private String[] callDetails;
+  private String callId;
+  private String conferenceRoom;
 
-  public AsteriskCallId()
+
+  public AsteriskCallId(String callId)
   {
     super();
     connections = new HashMap();
+    this.callId = callId;
+    conferenceRoom = null;
   }
 
   public boolean equals(Object other)
   {
     if(connections.isEmpty() || other == null)
       return false;
-    /*if (other instanceof String)
-      return connections.containsKey(other);
-    else*/
     if (other instanceof AsteriskCallId)
     {
       return other.hashCode() == hashCode();
@@ -75,18 +76,19 @@ public class AsteriskCallId implements CallId
     connections.remove(id);
   }
 
-  /**
-   * content: callingAddress, calledAddress, callingAddressUniqueId
-   * @return
-   */
-  /*public String[] getCallDetails()
+  public String getCallId()
   {
-    return callDetails;
+    return callId;
   }
 
-  public void setCallDetails(String[] details)
+  public String getConferenceRoom()
   {
-    callDetails = details;
-  }*/
+    return conferenceRoom;
+  }
+
+  public void setConferenceRoom(String conferenceRoom)
+  {
+    this.conferenceRoom = conferenceRoom;
+  }
 
 }

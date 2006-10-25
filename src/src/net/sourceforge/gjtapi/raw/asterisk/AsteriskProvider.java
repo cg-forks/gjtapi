@@ -15,8 +15,8 @@ import java.io.*;
 
 /**
  *
- * a simple Asteriskprovider
- * @author J. Boesl, 20.06.2005
+ * an AsteriskProvider
+ * @author Johannes Boesl - ADITO Software GmbH, 20.06.2005
  */
 
 
@@ -25,7 +25,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
   private DefaultAsteriskManager asteriskManager;
   private DefaultManagerConnection managerConnection;
   private Set listeners;
-  private Set calls;
+  private Set callSet;
   private String[] addresses;
   private TermData[] terminals;
   private boolean gJtapiSetsStateOnItsOwnOnCallCreate;
@@ -33,6 +33,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
   private String conferenceContext;
   private int conferenceCounter = 0;
   private String context;
+  private Map confrenceMap;
 
   private int TIMEOUT = 10000;
 
@@ -42,7 +43,8 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
   {
 	  super();
     listeners = new HashSet();
-    calls = new HashSet();
+    callSet = new HashSet();
+    confrenceMap = new HashMap();
 	}
 
   public void addListener(TelephonyListener ro)
@@ -61,7 +63,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
   public void answerCall(CallId call, String address, String terminal) throws PrivilegeViolationException, ResourceUnavailableException,
       MethodNotSupportedException, RawStateException
   {
-    throw new MethodNotSupportedException("answering calls is not supported by asterisk");
+    throw new MethodNotSupportedException("answering callSet is not supported by asterisk");
   }
 
   public CallId createCall(CallId id, String address, String term, String dest) throws ResourceUnavailableException, PrivilegeViolationException,
@@ -96,9 +98,8 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
 
       if(gJtapiSetsStateOnItsOwnOnCallCreate)
       {
-        String channel = chan.getName();
         AsteriskConnectionDetail detail = new AsteriskConnectionDetail
-          (uniqueId, channel, address, dest);
+          (uniqueId, chan, address, dest);
         ((AsteriskCallId)id).addConnection(response.getUniqueId(), detail);
         _o("set the ID: " + response.getUniqueId() + "\t\t" + response.getResponse());
       }
@@ -118,17 +119,16 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
   public void hold(CallId call, String address, String terminal) throws RawStateException, MethodNotSupportedException,
       PrivilegeViolationException, ResourceUnavailableException
   {
-    throw new MethodNotSupportedException("holding calls is not supported by asterisk provider");
+    throw new MethodNotSupportedException("holding callSet is not supported by asterisk provider");
   }
 
 
-  // todo NOT WORKING, YET!
   public CallId join(CallId call1, CallId call2, String address, String terminal) throws RawStateException, InvalidArgumentException,
       MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException
   {
     if(!(call1 instanceof AsteriskCallId) || !(call2 instanceof AsteriskCallId))
       throw new InvalidArgumentException("at least one callId isn't an AsteriskCallId");
-    _o("join called for: " + call1 + " and " + call2);
+    _o("\t\tjoin called for: " + call1 + " and " + call2);
     AsteriskCallId aCId1 = (AsteriskCallId)call1;
     AsteriskCallId aCId2 = (AsteriskCallId)call2;
 
@@ -149,41 +149,58 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
         isOneOfMyAddresses(getAddressForAsteriskCallerId(aCDi1.calledAddress)))
       myCallerId = aCDi1.calledAddress;
 
-    String myExt = myCallerId + ++conferenceCounter%100;
-    _o("myCallerId: " + myCallerId);
+
+    _o("\t\tmyCallerId: " + myCallerId);
     AsteriskConnectionDetail myDetail1 = getDetailForCallerId(aCId1, myCallerId);
     AsteriskConnectionDetail myDetail2 = getDetailForCallerId(aCId2, myCallerId);
-    _o(myDetail1 + "  " + myDetail2);
     AsteriskConnectionDetail[] otherDetails1 = getDetailsForNotCallerId(aCId1, myCallerId);
     AsteriskConnectionDetail[] otherDetails2 = getDetailsForNotCallerId(aCId2, myCallerId);
-    AsteriskCallId aCallId = new AsteriskCallId();
+
+
+    String myExt = "";
+    boolean newConf = false;
+    if(aCId1.getConferenceRoom() != null)
+      myExt = aCId1.getConferenceRoom();
+    else if(aCId2.getConferenceRoom() != null)
+      myExt = aCId2.getConferenceRoom();
+    else
+    {
+      myExt = myCallerId + conferenceCounter++%100;
+      newConf = true;
+    }
+
+    _o(getChannelForUniqueId(myDetail1.uniqueId).toString());
 
     try
     {
-
-
-      for(int i = 0; i < otherDetails1.length; i++)
+      for(int i = newConf?1:0; i < otherDetails1.length; i++)    // i = newConf?1:0 !
       {
-        RedirectAction redAct = new RedirectAction(otherDetails1[i].channel, conferenceContext, myExt, new Integer(1));
+        RedirectAction redAct = new RedirectAction(otherDetails1[i].channel.getName(),
+            conferenceContext, myExt, new Integer(1));
         ManagerResponse resp = managerConnection.sendAction(redAct);
-        _o("second response " + i + " " + resp.getResponse() + "   " + resp.getMessage());
-        aCallId.addConnection(otherDetails1[i].uniqueId, otherDetails1[i]);
+        _o("\t\tsecond response " + i + " " + resp.getResponse() + "   " + resp.getMessage());
       }
+
+      {
+        RedirectAction redAct = null;
+        if(newConf)
+          redAct = new RedirectAction(myDetail1.channel.getName(),
+              otherDetails1[0].channel.getName(), conferenceContext, myExt, new Integer(1));
+        else
+          redAct = new RedirectAction(myDetail1.channel.getName(), conferenceContext, myExt, new Integer(1));
+        ManagerResponse resp = managerConnection.sendAction(redAct);
+        _o("\t\tfirst response " + resp.getResponse() + "   " + resp.getMessage());
+      }
+
       for(int i = 0; i < otherDetails2.length; i++)
       {
-        RedirectAction redAct = new RedirectAction(otherDetails2[i].channel, conferenceContext, myExt, new Integer(1));
+        RedirectAction redAct = new RedirectAction(otherDetails2[i].channel.getName(),
+            conferenceContext, myExt, new Integer(1));
         ManagerResponse resp = managerConnection.sendAction(redAct);
-        aCallId.addConnection(otherDetails2[i].uniqueId, otherDetails2[i]);
-        _o("third response " + i + " " + resp.getResponse() + "   " + resp.getMessage());
+        _o("\t\tthird response " + i + " " + resp.getResponse() + "   " + resp.getMessage());
       }
 
-      RedirectAction redirAction1 = new RedirectAction(myDetail1.channel, conferenceContext, myExt, new Integer(1));
-      //RedirectAction redirAction1 = new RedirectAction(myDetail1.channel, "from-internal", "270", new Integer(1));
-      ManagerResponse response = managerConnection.sendAction(redirAction1);
-      aCallId.addConnection(myDetail1.uniqueId, myDetail1);
-      _o("first response " + response.getResponse() + "   " + response.getMessage());
-      /*for(Iterator i = asteriskManager.getChannels().values().iterator(); i.hasNext(); )
-        _o(i.next().toString());*/
+      hangUpChannel(myDetail2.channel.getName());
     }
     catch (IOException e)
     {
@@ -193,55 +210,41 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     {
       e.printStackTrace();
     }
-
-
-    return aCallId;
+    return aCId1;
   }
 
   public void unHold(CallId call, String address, String terminal) throws RawStateException, MethodNotSupportedException,
       PrivilegeViolationException, ResourceUnavailableException
   {
-    throw new MethodNotSupportedException("unholding calls is not supported by asterisk provider");
+    throw new MethodNotSupportedException("unholding callSet is not supported by asterisk provider");
   }
 
 
   public void release(String address, CallId call) throws PrivilegeViolationException,
       ResourceUnavailableException, MethodNotSupportedException, RawStateException
   {
-    if(calls.contains(call))
+    _o("address: " + address + "\t\tcallid: " + call.toString());
+    if(callSet.contains(call))
     {
+      AsteriskCallId aCId = (AsteriskCallId)call;
       String channel2Hangup = null;
-      for(Iterator i = ((AsteriskCallId)call).getConnections().keySet().iterator(); i.hasNext(); )
+      _o("connections: " + aCId.getConnections().size() + "\t\tmyId: " + aCId.getCallId());
+      for(Iterator i = aCId.getConnections().keySet().iterator(); i.hasNext(); )
       {
-        AsteriskConnectionDetail detail = getDetail((AsteriskCallId)call, i.next().toString());
+        AsteriskConnectionDetail detail = getDetail(aCId, i.next().toString());
         if(detail != null && detail.channel != null)
         {
-          String channelAddress = getAddressForAsteriskCallerId(detail.address);
-          if(address != null && address.equals(channelAddress))
+          _o("release debug: " + detail.channel.toString());
+          if(aCId.getCallId().equals(detail.address))
           {
-            channel2Hangup = detail.channel;
-            ((AsteriskCallId)call).removeConnection(detail.uniqueId);
+            channel2Hangup = detail.channel.getName();
+            aCId.removeConnection(detail.uniqueId);
             break;
           }
         }
       }
       if(channel2Hangup != null)
-      {
-        HangupAction hangupAction = new HangupAction();
-        hangupAction.setChannel(channel2Hangup);
-        try
-        {
-          managerConnection.sendAction(hangupAction);
-        }
-        catch (IOException e)
-        {
-          e.printStackTrace();
-        }
-        catch (TimeoutException e)
-        {
-          e.printStackTrace();
-        }
-      }
+        hangUpChannel(channel2Hangup);
     }
   }
 
@@ -257,14 +260,13 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
 
   public void releaseCallId(CallId id)
   {
-    calls.remove(id);
+    callSet.remove(id);
   }
 
   public CallId reserveCallId(String address) throws InvalidArgumentException
   {
-    //getAddresses(address);
-    CallId call = new AsteriskCallId();
-    calls.add(call);
+    CallId call = new AsteriskCallId(address);
+    callSet.add(call);
     return call;
   }
 
@@ -364,8 +366,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     Object context = props.get("Context");
     Object phone = props.get("Phone");
     Object gJtapiSetsState = props.get("GJtapiSetsState");
-    Object confCont = props.get("ConferenceExtension");
-    //Object reconWait = props.get("ReconnectWaitTime");
+    Object confCont = props.get("ConferenceContext");
 
     managerConnection.setHostname(server==null? null: server.toString());
     managerConnection.setPort(Integer.parseInt(port==null? "5038": port.toString()));
@@ -375,7 +376,6 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     this.addresses = phone==null? null: new String[]{phone.toString()};
     gJtapiSetsStateOnItsOwnOnCallCreate = gJtapiSetsState==null? true: Boolean.valueOf(gJtapiSetsState.toString()).booleanValue();
     conferenceContext = confCont==null? null: confCont.toString();
-    //reconWaitTime = reconWait==null? 7500: Integer.parseInt(reconWait.toString());
 
     asteriskManager.setManagerConnection(managerConnection);
 
@@ -455,42 +455,47 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
             _o("DialEvent");
             DialEvent ev = (DialEvent)event;
 
-            AsteriskCallId call = getCallIdForUniqueId(ev.getSrcUniqueId());
-            if(call != null)
+            AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getSrcUniqueId());
+            if(calls.length != 0)
             {
-              AsteriskConnectionDetail callerDetail = getDetail(call, ev.getSrcUniqueId());
-              if(callerDetail.calledAddress != null)
+              for(int i = 0; i < calls.length; i++)
               {
-                getChannelForUniqueId(ev.getDestUniqueId()).setCallerId(callerDetail.calledAddress);
-                AsteriskConnectionDetail aDetail = new AsteriskConnectionDetail
-                (
-                    ev.getDestUniqueId(),
-                    getChannelForUniqueId(ev.getDestUniqueId()).toString(),
-                    callerDetail.calledAddress,
-                    null
-                );
-                call.addConnection(ev.getDestUniqueId(), aDetail);
-
-                String callingAddress = getAddressForAsteriskCallerId(callerDetail.address);
-                String calledAddress = callerDetail.calledAddress;
-                if(!isOneOfMyAddresses(callingAddress))
-                  calledAddress = getAddressForAsteriskCallerId(calledAddress);
-                _o("called " + calledAddress + "\t\tcalling " + callingAddress);
-
-                fireTelephonyEvent(AstTeleEventTypes.callActive, call, null, Event.CAUSE_NORMAL);
-                if(isOneOfMyAddresses(callingAddress))
+                AsteriskConnectionDetail callerDetail = getDetail(calls[i], ev.getSrcUniqueId());
+                if(callerDetail.calledAddress != null)
                 {
-                  fireTelephonyEvent(AstTeleEventTypes.connectionAlerting, call, calledAddress, Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, call, callingAddress, Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.connectionInProgress, call, callingAddress, Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.connectionConnected, call, calledAddress, Event.CAUSE_NORMAL);
-                }
-                else
-                {
-                  fireTelephonyEvent(AstTeleEventTypes.connectionInProgress, call, callingAddress, Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.connectionAlerting, call, calledAddress, Event.CAUSE_NORMAL);
-                  //fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, call, calledAddress, Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.connectionConnected, call, callingAddress, Event.CAUSE_NORMAL);
+                  getChannelForUniqueId(ev.getDestUniqueId()).setCallerId(callerDetail.calledAddress);
+                  AsteriskConnectionDetail aDetail = new AsteriskConnectionDetail
+                  (
+                      ev.getDestUniqueId(),
+                      getChannelForUniqueId(ev.getDestUniqueId()),
+                      callerDetail.calledAddress,
+                      null
+                  );
+                  calls[i].addConnection(ev.getDestUniqueId(), aDetail);
+
+                  String[] det = adjustCallingCalled(calls[i].getCallId(), callerDetail.address, callerDetail.calledAddress);
+                  String callingAddress = det[0];
+                  String calledAddress = det[1];
+
+                  _o("called " + calledAddress + "\t\tcalling " + callingAddress + "\t\tthis one: " + calls[i].getCallId());
+
+                  fireTelephonyEvent(AstTeleEventTypes.callActive, calls[i], null, Event.CAUSE_NORMAL);
+                  if(getAddressForAsteriskCallerId(calls[i].getCallId()).equals(callingAddress))
+                  {
+                    fireTelephonyEvent(AstTeleEventTypes.connectionAlerting, calls[i], calledAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, calls[i], callingAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.connectionInProgress, calls[i], callingAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.connectionConnected, calls[i], calledAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, calls[i], calledAddress, Event.CAUSE_NORMAL);
+                  }
+                  else if(getAddressForAsteriskCallerId(calls[i].getCallId()).equals(calledAddress))
+                  {
+                    fireTelephonyEvent(AstTeleEventTypes.connectionInProgress, calls[i], callingAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.connectionAlerting, calls[i], calledAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, calls[i], calledAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.connectionConnected, calls[i], callingAddress, Event.CAUSE_NORMAL);
+                    fireTelephonyEvent(AstTeleEventTypes.terminalConnectionCreated, calls[i], callingAddress, Event.CAUSE_NORMAL);
+                  }
                 }
               }
 
@@ -509,24 +514,32 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
           {
             _o("HangupEvent");
             HangupEvent ev = (HangupEvent)event;
-            AsteriskCallId call;
-            call = getCallIdForUniqueId(ev.getUniqueId());
-            String address = null;
-            if (call != null)
+            _o(ev.getChannel() + "\t\t" + getChannelForUniqueId(ev.getUniqueId()) + "\t\t" + ev.getUniqueId());
+            AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getUniqueId());
+            if (calls.length != 0)
             {
-              AsteriskConnectionDetail aDetail = getDetail(call, ev.getUniqueId());
-              if(isOneOfMyAddresses(getAddressForAsteriskCallerId(aDetail.address)))
-                address = getAddressForAsteriskCallerId(aDetail.address);
-              else if((isOneOfMyAddresses(getAddressForAsteriskCallerId(aDetail.calledAddress))))
-                address = getAddressForAsteriskCallerId(aDetail.calledAddress);
-              call.removeConnection(ev.getUniqueId());
-            }
-            if(address != null)
-            {
-              fireTelephonyEvent(AstTeleEventTypes.terminalConnectionDropped, call, address, Event.CAUSE_NORMAL);
-              fireTelephonyEvent(AstTeleEventTypes.connectionDisconnected, call, address, Event.CAUSE_NORMAL);
-              calls.remove(call);
-              _o("call " + call.toString() + " removed!");
+              for(int i = 0; i < calls.length; i++)
+              {
+                String address = null;
+                AsteriskConnectionDetail aDetail = getDetail(calls[i], ev.getUniqueId());
+                if(ev.getChannel().indexOf("<ZOMBIE>") == -1)
+                {
+                  if(calls[i].getCallId().equals(aDetail.address))
+                    address = getAddressForAsteriskCallerId(aDetail.address);
+                  calls[i].removeConnection(ev.getUniqueId());
+                  _o("connection removed: " + ev.getChannel());
+                  if(calls[i].getConnections().size() == 0)
+                  {
+                    callSet.remove(calls[i]);
+                    _o("call " + calls[i].toString() + " removed!");
+                  }
+                }
+                if(address != null)
+                {
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionDropped, calls[i], address, Event.CAUSE_NORMAL);
+                  fireTelephonyEvent(AstTeleEventTypes.connectionDisconnected, calls[i], address, Event.CAUSE_NORMAL);
+                }
+              }
             }
           }
           else if (event.getClass().equals(HoldedCallEvent.class))
@@ -560,10 +573,66 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
           else if (event.getClass().equals(MeetMeJoinEvent.class))
           {
             _o("MeetMeJoinEvent");
+            MeetMeJoinEvent ev = (MeetMeJoinEvent)event;
+            _o(ev.getMeetMe() + "\t\t" + ev.getUserNum() + "\t\t" + getChannelForUniqueId(ev.getUniqueId()).toString());
+            Channel newChan = getChannelForUniqueId(ev.getUniqueId());
+
+            List confList = (List)confrenceMap.get(ev.getMeetMe());
+            if(confList == null)
+            {
+              confList = new ArrayList();
+              confrenceMap.put(ev.getMeetMe(), confList);
+            }
+            for(Iterator it = callSet.iterator(); it.hasNext(); )
+            {
+              AsteriskCallId call = (AsteriskCallId)it.next();
+              Set keySet = call.getConnections().keySet();
+              for(Iterator it2 = keySet.iterator(); it2.hasNext(); )
+              {
+                AsteriskConnectionDetail aCDi = (AsteriskConnectionDetail)call.getConnections().get(it2.next());
+                if(aCDi.channel.getName().indexOf(newChan.getName()) != -1)
+                {
+                  it2.remove();
+                  _o("old chan: " + aCDi.channel);
+                  aCDi.channel = newChan;
+                  aCDi.uniqueId = ev.getUniqueId();
+                  call.setConferenceRoom(ev.getMeetMe());
+                  //put every conference join to conferenceMap to be able to put this call to other calls and vice versa
+                  if(!confList.contains(aCDi))
+                    confList.add(aCDi);
+                }
+              }
+            }
+
+            // don't know whether this is the last event -> do it each time
+            for(Iterator it = callSet.iterator(); it.hasNext(); )
+            {
+              AsteriskCallId call = (AsteriskCallId)it.next();
+              if(ev.getMeetMe().equals(call.getConferenceRoom()))
+              {
+                for(Iterator it2 = confList.iterator(); it2.hasNext(); )
+                {
+                  AsteriskConnectionDetail aCDi = (AsteriskConnectionDetail)it2.next();
+                  call.getConnections().put(aCDi.uniqueId, aCDi);
+                }
+              }
+            }
           }
           else if (event.getClass().equals(MeetMeLeaveEvent.class))
           {
             _o("MeetMeLeaveEvent");
+            MeetMeLeaveEvent ev = (MeetMeLeaveEvent)event;
+            _o(ev.getMeetMe() + "\t\t" + ev.getUserNum() + "\t\t" + getChannelForUniqueId(ev.getUniqueId()).toString());
+            List confList = (List)confrenceMap.get(ev.getMeetMe());
+            if(confList != null)
+            {
+              for(Iterator it = confList.iterator(); it.hasNext(); )
+              {
+                AsteriskConnectionDetail aCDi = (AsteriskConnectionDetail)it.next();
+                if(aCDi.uniqueId.equals(ev.getUniqueId()))
+                  it.remove();
+              }
+            }
           }
           else if (event.getClass().equals(MessageWaitingEvent.class))
           {
@@ -583,14 +652,16 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
               _o("!Ringing");
               _o(getChannelForUniqueId(ev.getUniqueId()).toString());
 
-              AsteriskCallId call = getCallIdForUniqueId(ev.getUniqueId());
-              if(call != null)
+              AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getUniqueId());
+              if(calls.length != 0)
               {
-                AsteriskConnectionDetail callerDetail = getCallingDetail(call);
-                fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, call,
-                    getAddressForAsteriskCallerId(callerDetail.address), Event.CAUSE_NORMAL);
-                fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, call,
-                    getAddressForAsteriskCallerId(callerDetail.calledAddress), Event.CAUSE_NORMAL);
+                for(int i = 0; i < calls.length; i++)
+                {
+                  AsteriskConnectionDetail callerDetail = getCallingDetail(calls[i]);
+                  String[] det = adjustCallingCalled(calls[i].getCallId(), callerDetail.address, callerDetail.calledAddress);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, calls[i], det[0], Event.CAUSE_NORMAL);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, calls[i], det[1], Event.CAUSE_NORMAL);
+                }
               }
             }
           }
@@ -606,33 +677,49 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
               Channel chan = getChannelForUniqueId(ev.getUniqueId());
               _o(chan.toString());
 
-              String callingAddress = chan.getCallerId();
-              String calledAddress = ev.getAppData();
+              String callingAddress = getAsteriskCallerIdForAddress(chan.getCallerId());
+              String calledAddress = getAsteriskCallerIdForAddress(ev.getAppData());
               int pipeIndex = (calledAddress.indexOf('|'));
               if(pipeIndex != -1)
                 calledAddress = calledAddress.substring(0, pipeIndex);
-              pipeIndex = calledAddress.lastIndexOf('/');
-              if(pipeIndex != -1)
-                calledAddress = calledAddress.substring(pipeIndex+1);
 
-              AsteriskCallId call = getCallIdForUniqueId(ev.getUniqueId());
-              if(call == null)
+              AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getUniqueId());
+              if(calls.length == 0)
               {
-                if(!isOneOfMyAddresses(getAddressForAsteriskCallerId(calledAddress)) &!
-                    isOneOfMyAddresses(getAddressForAsteriskCallerId(callingAddress)))
-                  return ;
-
-                call = new AsteriskCallId();
-                AsteriskConnectionDetail detail = new AsteriskConnectionDetail
-                (
-                  ev.getUniqueId(), ev.getChannel(), callingAddress, calledAddress
-                );
-                call.addConnection(ev.getUniqueId(), detail);
-                calls.add(call);
+                if(isOneOfMyAddresses(getAddressForAsteriskCallerId(calledAddress)))
+                {
+                  String calling = callingAddress;
+                  if(calledAddress.equals(callingAddress))
+                    calling += " (myself)";
+                  AsteriskCallId call = new AsteriskCallId(calledAddress);
+                  AsteriskConnectionDetail detail = new AsteriskConnectionDetail
+                  (
+                    ev.getUniqueId(), getChannelForUniqueId(ev.getUniqueId()), calling, calledAddress
+                  );
+                  call.addConnection(ev.getUniqueId(), detail);
+                  callSet.add(call);
+                  _o("new Call: " + call.toString() + " !!!");
+                }
+                if(isOneOfMyAddresses(getAddressForAsteriskCallerId(callingAddress)))
+                {
+                  String called = calledAddress;
+                  if(calledAddress.equals(callingAddress))
+                    called += "(myself)";
+                  AsteriskCallId call = new AsteriskCallId(callingAddress);
+                  AsteriskConnectionDetail detail = new AsteriskConnectionDetail
+                  (
+                    ev.getUniqueId(), getChannelForUniqueId(ev.getUniqueId()), callingAddress, called
+                  );
+                  call.addConnection(ev.getUniqueId(), detail);
+                  callSet.add(call);
+                  _o("new Call: " + call.toString() + " !!!");
+                }
               }
               else
               {
-                AsteriskConnectionDetail aDetail = getDetail(call, ev.getUniqueId());
+                // doesn't need to check for more AsteriskCallIDs because this case can only occur
+                // when the call is done by using the jtapi-framework
+                AsteriskConnectionDetail aDetail = getDetail(calls[0], ev.getUniqueId());
                 if(aDetail != null)
                   aDetail.calledAddress = calledAddress;
               }
@@ -650,19 +737,16 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
               _o(ev.getCallerId() + "\t\t" + ev.getCallerIdName() + "\t\t" + ev.getChannel());
               _o(getChannelForUniqueId(ev.getUniqueId()).toString());
 
-              AsteriskCallId call = getCallIdForUniqueId(ev.getUniqueId());
-              if(call!= null)
+              AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getUniqueId());
+              if(calls.length != 0)
               {
-                AsteriskConnectionDetail detail = null;
-                detail = getCallingDetail(call);
-                if(detail == null)
-                  detail = getDetail(call, ev.getUniqueId());
-                String address = getAddressForAsteriskCallerId(detail.address);
-                String destAddress = getAddressForAsteriskCallerId(detail.calledAddress);
-                if(destAddress != null)
-                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionTalking, call, destAddress, Event.CAUSE_NORMAL);
-                if(address != null)
-                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionTalking, call, address, Event.CAUSE_NORMAL);
+                for(int i = 0; i < calls.length; i++)
+                {
+                  AsteriskConnectionDetail detail = getCallingDetail(calls[i]);
+                  String[] det = adjustCallingCalled(calls[i].getCallId(), detail.address, detail.calledAddress);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionTalking, calls[i], det[1], Event.CAUSE_NORMAL);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionTalking, calls[i], det[0], Event.CAUSE_NORMAL);
+                }
               }
             }
             else if (ev.getState().equals("Ringing"))
@@ -670,16 +754,15 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
               _o("!Ringing");
               _o(getChannelForUniqueId(ev.getUniqueId()).toString());
 
-              AsteriskCallId call = getCallIdForUniqueId(ev.getUniqueId());
-              if(call != null)
+              AsteriskCallId[] calls = getCallIdsForUniqueId(ev.getUniqueId());
+              if(calls.length != 0)
               {
-                AsteriskConnectionDetail callerDetail = getCallingDetail(call);
-                if(callerDetail != null)
+                for(int i = 0; i < calls.length; i++)
                 {
-                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, call,
-                      getAddressForAsteriskCallerId(callerDetail.address), Event.CAUSE_NORMAL);
-                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, call,
-                      getAddressForAsteriskCallerId(callerDetail.calledAddress), Event.CAUSE_NORMAL);
+                  AsteriskConnectionDetail callerDetail = getCallingDetail(calls[i]);
+                  String[] det = adjustCallingCalled(calls[i].getCallId(), callerDetail.address, callerDetail.calledAddress);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, calls[i], det[0], Event.CAUSE_NORMAL);
+                  fireTelephonyEvent(AstTeleEventTypes.terminalConnectionRinging, calls[i], det[1], Event.CAUSE_NORMAL);
                 }
               }
             }
@@ -888,18 +971,12 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     }
 	}
 
-  /**
-   * returns a 'connection' alias 'channel' from an existing call
-   * @param call
-   * @param uniqueId
-   * @return
-   *//*
-  private Channel getChannel(AsteriskCallId call, String uniqueId)
-  {
-    if(call!= null && call.getConnections().containsKey(uniqueId))
-      return getChannelForUniqueId(uniqueId);
-    return null;
-  }*/
+
+
+
+
+
+
 
   /**
    * returns the Channel for that uniqueId regardless of a CallId
@@ -911,51 +988,24 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     return (Channel)asteriskManager.getChannels().get(uniqueId);
   }
 
+
   /**
    * Searches all callIds for this uniqueId.
    * @param uniqueId
-   * @return the callId when found, null otherwise
+   * @return the callIds as array
    */
-  private AsteriskCallId getCallIdForUniqueId(String uniqueId)
+  private AsteriskCallId[] getCallIdsForUniqueId(String uniqueId)
   {
-    for(Iterator i = calls.iterator(); i.hasNext(); )
+    ArrayList arr = new ArrayList();
+    for(Iterator i = callSet.iterator(); i.hasNext(); )
     {
       AsteriskCallId next = (AsteriskCallId)i.next();
       if(next.getConnections().containsKey(uniqueId))
-        return next;
+        arr.add(next);
     }
-    return null;
+    return (AsteriskCallId[])arr.toArray(new AsteriskCallId[arr.size()]);
   }
 
-  /**
-   * return the fitting address for the uniqueId
-   * @param call
-   * @param uniqueId
-   * @return
-   *//*
-  private String getAddress(AsteriskCallId call, String uniqueId)
-  {
-    Object detail = call.getConnections().get(uniqueId);
-    if(detail!=null)
-      return ((AsteriskConnectionDetail)detail).address;
-    return null;
-  }*/
-
-  /**
-   * I don't have another solution for this, yet. Works well for sip-connections.
-   * @param chan
-   * @return
-   */
-  /*private String getAddressForChannel(String chan)
-  {
-    if(chan != null)
-    {
-      if(chan.startsWith("SIP/"))
-        return chan.substring(0, chan.indexOf("-"));
-      return chan;
-    }
-    return null;
-  }*/
 
   /**
    * a simple debugging method
@@ -967,36 +1017,29 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
       System.out.println(out);
   }
 
+
   private AsteriskConnectionDetail getDetail(AsteriskCallId call, String uniqueId)
   {
     return (AsteriskConnectionDetail)call.getConnections().get(uniqueId);
   }
 
 
+  /**
+   * AsteriskConnectionDetail representing the caller
+   * @param call
+   * @return
+   */
   private AsteriskConnectionDetail getCallingDetail(AsteriskCallId call)
   {
     Collection values =  call.getConnections().values();
     for(Iterator i = values.iterator(); i.hasNext(); )
     {
       AsteriskConnectionDetail aDetail = (AsteriskConnectionDetail)i.next();
-      //if(callerId.equals(aDetail.calledAddress))
       if(aDetail.address != null && aDetail.calledAddress != null)
         return aDetail;
     }
     return null;
   }
-
-  /*// not safe
-  private String getUniqueIdThroughCallerId(AsteriskCallId call, String callerId)
-  {
-    for( Iterator i= call.getConnections().entrySet().iterator(); i.hasNext(); )
-    {
-      AsteriskConnectionDetail detail = (AsteriskConnectionDetail)((Map.Entry) i.next()).getValue();
-      if(detail.address.equals(callerId))
-        return detail.uniqueId;
-    }
-    return null;
-  }*/
 
 
   private String getAddressForAsteriskCallerId(String callerId)
@@ -1020,10 +1063,6 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
         if(addresses[i].equals(j.next().toString() + callerId))
           return addresses[i];
       }
-      /*if(addresses[i].equals("SIP/" + callerId) || addresses[i].equals("ZAP/" + callerId) ||
-          addresses[i].equals("IAX/" + callerId) || addresses[i].equals("IAX2/" + callerId) ||
-          addresses[i].equals(callerId))
-        return addresses[i];*/
     }
     return callerId;
   }
@@ -1031,11 +1070,12 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
 
   private String getAsteriskCallerIdForAddress(String address)
   {
-    String[] addrSplit = address.split("/");
-      if(addrSplit.length > 1)
-        return addrSplit[1];
+    int index = address.lastIndexOf('/');
+    if(index != -1)
+      return address.substring(index+1);
     return address;
   }
+
 
   private boolean isOneOfMyAddresses(String address)
   {
@@ -1060,6 +1100,7 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     return null;
   }
 
+
   private AsteriskConnectionDetail[] getDetailsForNotCallerId(AsteriskCallId call, String callerId)
   {
     List aList = new ArrayList();
@@ -1074,4 +1115,33 @@ public class AsteriskProvider implements BasicJtapiTpi, CCTpi
     aList.toArray(arr);
     return arr;
   }
+
+  private String[] adjustCallingCalled(String thisOne, String calling, String called)
+  {
+    if(thisOne.equals(calling))
+      return new String[]{getAddressForAsteriskCallerId(calling), called};
+    else if(thisOne.equals(called))
+      return new String[]{calling, getAddressForAsteriskCallerId(called)};
+    return null;
+  }
+
+  private void hangUpChannel(String channel)
+  {
+    HangupAction hangupAction = new HangupAction();
+    hangupAction.setChannel(channel);
+    try
+    {
+      managerConnection.sendAction(hangupAction);
+      _o("hangup action sent for " + channel);
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+    catch (TimeoutException e)
+    {
+      e.printStackTrace();
+    }
+  }
+
 }

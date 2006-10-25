@@ -13,11 +13,11 @@ public class AsteriskConnectionDetail
 {
 
   public String uniqueId;
-  public String channel;
+  public Channel channel;
   public String address;
   public String calledAddress;
 
-  public AsteriskConnectionDetail(String uniqueId, String channel, String address, String calledAddress)
+  public AsteriskConnectionDetail(String uniqueId, Channel channel, String address, String calledAddress)
   {
     this.uniqueId = uniqueId;
     this.channel = channel;
@@ -25,4 +25,8 @@ public class AsteriskConnectionDetail
     this.calledAddress = calledAddress;
   }
 
+  public String toString()
+  {
+    return channel.toString();
+  }
 }
