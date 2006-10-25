@@ -450,16 +450,23 @@ private FreeTerminalConnection findCommonTC(Call otherCall) {
 		TerminalConnection[] tcs = cs[i].getTerminalConnections();
 		if (tcs != null) {
 			for (int j = 0; j < tcs.length; j++) {
-				Terminal t = tcs[j].getTerminal();
+				Terminal t = null;
+				try {
+					t = tcs[j].getTerminal();
+				}
+				catch (PlatformException e){ }
 				// now check the other call for the same Terminal
 				Connection[] cs2 = otherCall.getConnections();
 				for (int k = 0; k < cs2.length; k++) {
 					TerminalConnection[] tcs2 = cs2[k].getTerminalConnections();
 					if(tcs2 != null)
 					for (int l = 0; l < tcs2.length; l++) {
-						if (tcs2[l].getTerminal().equals(t)) {
-							return (FreeTerminalConnection) tcs[j];
+						try {
+							if (t.equals(tcs2[l].getTerminal())) {
+								return (FreeTerminalConnection) tcs[j];
+							}
 						}
+						catch (PlatformException e){ }
 					}
 				}
 			}
