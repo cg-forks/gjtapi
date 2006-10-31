@@ -181,7 +181,7 @@ public class AsteriskProviderDraft implements BasicJtapiTpi {
 	 */
 	public CallId reserveCallId(String address) throws InvalidArgumentException {
 		// TODO Must change constructor as we determine how to identify the call
-		return new AsteriskCallId();
+		return new AsteriskCallIdDraft();
 	}
 
 	/* Do any Asterisk API shutdown commands here
