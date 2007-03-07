@@ -101,8 +101,8 @@ public class SipManager implements SipListener
      * Specifies the time to wait before retrying delete of a sipProvider.
      */
     protected static final long RETRY_OBJECT_DELETES_AFTER = 500;
-    
-    
+
+
     protected static final Console console = Console.getConsole(SipManager.class);
     protected static final String DEFAULT_TRANSPORT = "udp";
     //jain-sip objects - package accessibility as they should be
@@ -112,49 +112,49 @@ public class SipManager implements SipListener
      * Message and Header Factories.
      */
     public SipFactory sipFactory;
-    
+
     /**
      * The AddressFactory used to create URLs ans Address objects.
      */
     public AddressFactory addressFactory;
-    
+
     /**
      * The HeaderFactory used to create SIP message headers.
      */
     public HeaderFactory headerFactory;
-    
+
     /**
      * The Message Factory used to create SIP messages.
      */
     public MessageFactory messageFactory;
-    
+
     /**
      * The sipStack instance that handles SIP communications.
      */
     SipStack sipStack;
-    
+
     /**
      * The default (and currently the only) SIP listening point of the
      * application.
      */
     ListeningPoint listeningPoint;
-    
+
     /**
      * The JAIN SIP SipProvider instance.
      */
     public  SipProvider sipProvider;
-    
+
     /**
      * An instance used to provide user credentials
      */
     private SecurityAuthority securityAuthority = null;
-    
-    
+
+
     /**
      * Used for the contact header to provide firewall support.
      */
     private InetSocketAddress publicIpAddress = null;
-    
+
     //properties
     protected String sipStackPath = null;
     public String currentlyUsedURI = null;
@@ -165,11 +165,11 @@ public class SipManager implements SipListener
     protected int registrarPort = -1;
     protected int registrationsExpiration = -1;
     protected String registrarTransport = null;
-    
+
     //mandatory stack properties
     protected String stackAddress = null;
     protected String stackName = "sip-communicator";
-    
+
     //Prebuilt Message headers
     protected FromHeader fromHeader = null;
     protected ContactHeader contactHeader = null;
@@ -178,49 +178,49 @@ public class SipManager implements SipListener
     protected MaxForwardsHeader maxForwardsHeader = null;
     protected long registrationTransaction = -1;
     protected ArrayList listeners = new ArrayList();
-    
+
     //XxxProcessing managers
     /**
      * The instance that handles all registration associated activity such as
      * registering, unregistering and keeping track of expirations.
      */
     RegisterProcessing registerProcessing = null;
-    
+
     /**
      * The instance that handles all call associated activity such as
      * establishing, managing, and terminating calls.
      */
     CallProcessing callProcessing = null;
-    
+
     /**
      * The instance that handles subscriptions.
      */
     //public Watcher watcher = null;
-    
+
     /**
      * The instance that informs others of our avaibility.
      */
     // public PresenceAgent presenceAgent = null;
-    
+
     /**
      * The instance that handles status management and notifications.
      */
     //   public PresenceUserAgent presenceUserAgent = null;
-    
+
     /**
      * The instance that handles incoming/outgoing REFER requests.
      */
     TransferProcessing transferProcessing = null;
-    
+
     /**
      * Authentication manager.
      */
     public SipSecurityManager sipSecurityManager = null;
-    
+
     protected boolean isStarted = false;
-    
+
     private Properties sipProp;
-    
+
     /**
      * Constructor. It only creates a SipManager instance without initializing
      * the stack itself.
@@ -229,14 +229,14 @@ public class SipManager implements SipListener
     {
         this.sipProp = new Properties() ;
         this.sipProp.putAll(sipProp);
-        
+
         registerProcessing  = new RegisterProcessing(this);
         callProcessing      = new CallProcessing(this);
         //  watcher = new Watcher(this);
-        
+
         sipSecurityManager  = new SipSecurityManager(this.sipProp);
     }
-    
+
     /**
      * Creates and initializes JAIN SIP objects (factories, stack, listening
      * point and provider). Once this method is called the application is ready
@@ -250,9 +250,9 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            initProperties();           
+            initProperties();
 
-           
+
             this.sipFactory = SipFactory.getInstance();
              sipFactory.setPathName("gov.nist");
             try
@@ -269,7 +269,7 @@ public class SipManager implements SipListener
                 ex
                 );
             }
-            
+
             try
             {
                 sipStack = sipFactory.createSipStack(sipProp);
@@ -296,7 +296,7 @@ public class SipManager implements SipListener
                         //just befre it gets occuppied by the stack
                         publicIpAddress = NetworkAddressManager.
                         getPublicAddressFor(localPort);
-                        
+
                         listeningPoint = sipStack.createListeningPoint(localPort, transport);
                     }
                     catch (InvalidArgumentException ex)
@@ -304,7 +304,7 @@ public class SipManager implements SipListener
                         //choose another port between 1024 and 65000
                         console.error("error binging stack to port " + localPort +
                         ". Will try another port", ex);
-                        
+
                         localPort = (int) ( (65000 - 1024) * Math.random()) +
                         1024;
                         continue;
@@ -339,7 +339,7 @@ public class SipManager implements SipListener
             }
             try
             {
-                
+
                 sipProvider.addSipListener(this);
             }
             catch (TooManyListenersException exc)
@@ -349,7 +349,7 @@ public class SipManager implements SipListener
                 throw new CommunicationsException(
                 "Could not register SipManager as a sip listener!", exc);
             }
-            
+
             // we should have a security authority to be able to handle
             // authentication
             if(sipSecurityManager.getSecurityAuthority() == null)
@@ -360,8 +360,8 @@ public class SipManager implements SipListener
             sipSecurityManager.setHeaderFactory(headerFactory);
             sipSecurityManager.setTransactionCreator(sipProvider);
             sipSecurityManager.setSipManCallback(this);
-            
-            
+
+
             //Make sure prebuilt headers are nulled so that they get reinited
             //if this is a restart
             contactHeader = null;
@@ -375,7 +375,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Unregisters listening points, deletes sip providers, and generally
      * prepares the stack for a re-start(). This method is meant to be used
@@ -387,7 +387,7 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            
+
             //Delete SipProvider
             int tries = 0;
             for (tries = 0; tries < RETRY_OBJECT_DELETES; tries++)
@@ -406,7 +406,7 @@ public class SipManager implements SipListener
             }
             if (tries >= RETRY_OBJECT_DELETES)
                 throw new CommunicationsException("Failed to delete the sipProvider!");
-            
+
             //Delete RI ListeningPoint
             for (tries = 0; tries < RETRY_OBJECT_DELETES; tries++)
             {
@@ -424,14 +424,14 @@ public class SipManager implements SipListener
             }
             if (tries >= RETRY_OBJECT_DELETES)
                 throw new CommunicationsException("Failed to delete a listeningPoint!");
-            
+
             sipProvider = null;
             listeningPoint = null;
             addressFactory = null;
             messageFactory = null;
             headerFactory = null;
             sipStack = null;
-            
+
             viaHeaders = null;
             contactHeader = null;
             fromHeader = null;
@@ -440,7 +440,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Waits during _no_less_ than sleepFor milliseconds.
      * Had to implement it on top of Thread.sleep() to guarantee minimum
@@ -453,7 +453,7 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            
+
             long startTime = System.currentTimeMillis();
             long haveBeenSleeping = 0;
             while (haveBeenSleeping < sleepFor)
@@ -472,14 +472,14 @@ public class SipManager implements SipListener
         {
             console.logExit();
         }
-        
+
     }
-    
+
     public void setCurrentlyUsedURI(String uri)
     {
         this.currentlyUsedURI = uri;
     }
-    
+
     /**
      * Causes the RegisterProcessing object to send a registration request
      * to the registrar defined in
@@ -495,7 +495,7 @@ public class SipManager implements SipListener
     {
         register(currentlyUsedURI);
     }
-    
+
     /**
      * Registers using the specified public address. If public add
      * @param publicAddress
@@ -506,17 +506,17 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            
-            
-            
+
+
+
             if(publicAddress == null || publicAddress.trim().length() == 0)
                 return; //maybe throw an exception?
-            
-            
+
+
             //Handle default domain name (i.e. transform 1234 -> 1234@sip.com
             String defaultDomainName =
             Utils.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
-            
+
             //feature request, Michael Robertson (sipphone.com)
             //strip the following chars of their user names: ( - ) <space>
             if(publicAddress.toLowerCase().indexOf("sipphone.com") != -1
@@ -526,18 +526,18 @@ public class SipManager implements SipListener
                 int nameEnd = publicAddress.indexOf('@');
                 nameEnd = nameEnd==-1?Integer.MAX_VALUE:nameEnd;
                 nameEnd = Math.min(nameEnd, buff.length())-1;
-                
+
                 int nameStart = publicAddress.indexOf("sip:");
                 nameStart = nameStart == -1 ? 0 : nameStart + "sip:".length();
-                
+
                 for(int i = nameEnd; i >= nameStart; i--)
                     if(!Character.isLetter( buff.charAt(i) )
                     && !Character.isDigit( buff.charAt(i)))
                         buff.deleteCharAt(i);
                 publicAddress = buff.toString();
             }
-            
-            
+
+
             // if user didn't provide a domain name in the URL and someone
             // has defined the DEFAULT_DOMAIN_NAME property - let's fill in the blank.
             if (defaultDomainName != null
@@ -546,29 +546,29 @@ public class SipManager implements SipListener
             {
                 publicAddress = publicAddress + "@" + defaultDomainName;
             }
-            
+
             if (!publicAddress.trim().toLowerCase().startsWith("sip:"))
             {
                 publicAddress = "sip:" + publicAddress;
             }
-            
+
             this.currentlyUsedURI = publicAddress;
             registerProcessing.register( registrarAddress, registrarPort,
             registrarTransport, registrationsExpiration);
-            
+
             //at this point we are sure we have a sip: prefix in the uri
             // we construct our pres: uri by replacing that prefix.
 //            String presenceUri = "pres"
 //            + publicAddress.substring(publicAddress.indexOf(':'));
-            
-            
+
+
         }
         finally
         {
             console.logExit();
         }
     }
-    
+
     public void startRegisterProcess() throws CommunicationsException
     {
         try
@@ -576,30 +576,30 @@ public class SipManager implements SipListener
             console.logEntry();
             checkIfStarted();
             //Obtain initial credentials
-            
+
             UserCredentials defaultCredentials = new UserCredentials();
-            
+
             //avoid nullpointer exceptions
             String uName = Utils.getProperty(
             "net.java.sip.communicator.sip.USER_NAME");
             defaultCredentials.setUserName(uName == null? "" : uName);
             defaultCredentials.setPassword(new char[0]);
-            
+
             String realm = Utils.getProperty(
             "net.java.sip.communicator.sip.DEFAULT_AUTHENTICATION_REALM");
             realm = realm == null ? "" : realm;
-            
+
             UserCredentials initialCredentials = securityAuthority.obtainCredentials(realm,
             defaultCredentials);
-            
+
             register(initialCredentials.getUserName());
-            
+
             //at this point a simple register request has been sent and the global
             //from  header in SipManager has been set to a valid value by the RegisterProcesing
             //class. Use it to extract the valid user name that needs to be cached by
             //the security manager together with the user provider password.
             initialCredentials.setUserName(((SipURI)getFromHeader().getAddress().getURI()).getUser());
-            
+
             cacheCredentials(realm, initialCredentials);
         }
         finally
@@ -607,7 +607,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Causes the RegisterProcessing object to send a registration request with
      * a 0 "expires" interval to the registrar defined in
@@ -628,14 +628,14 @@ public class SipManager implements SipListener
             }
             checkIfStarted();
             registerProcessing.unregister();
-            
+
         }
         finally
         {
             console.logExit();
         }
     }
-    
+
     /**
      * Queries the RegisterProcessing object whether the application is registered
      * with a registrar.
@@ -645,7 +645,7 @@ public class SipManager implements SipListener
     {
         return (registerProcessing != null && registerProcessing.isRegistered());
     }
-    
+
     /**
      * Determines whether the SipManager was start()ed.
      * @return true if the SipManager was start()ed.
@@ -654,7 +654,7 @@ public class SipManager implements SipListener
     {
         return isStarted;
     }
-    
+
     //============================ COMMUNICATION FUNCTIONALITIES =========================
     /**
      * Causes the CallProcessing object to send  an INVITE request to the
@@ -684,7 +684,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //CALL
-    
+
     //------------------ hang up on
     /**
      * Causes the CallProcessing object to send a terminating request (CANCEL,
@@ -706,7 +706,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Calls endCall for all currently active calls.
      * @throws CommunicationsException if an exception occurs while
@@ -731,8 +731,8 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
-    
+
+
     /**
      * Causes CallProcessing to send a 200 OK response, with the specified
      * sdp description, to the specified call's remote party.
@@ -755,7 +755,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //answer to
-    
+
     /**
      * Sends a NOT_IMPLEMENTED response through the specified transaction.
      * @param serverTransaction the transaction to send the response through.
@@ -806,7 +806,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //============================= Utility Methods ==================================
     /**
      * Initialises SipManager's fromHeader field in accordance with
@@ -835,7 +835,7 @@ public class SipManager implements SipListener
                 //Unnecessary test (report by Willem Romijn)
                 //if (console.isDebugEnabled())
                 fromURI.setTransportParam(listeningPoint.getTransport());
-                
+
                 fromURI.setPort(listeningPoint.getPort());
                 Address fromAddress = addressFactory.createAddress(fromURI);
                 if (displayName != null && displayName.trim().length() > 0)
@@ -860,7 +860,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Same as calling getContactHeader(true)
      *
@@ -872,7 +872,7 @@ public class SipManager implements SipListener
     {
         return getContactHeader(true);
     }
-    
+
     /**
      * Same as calling getContactHeader(true).
      * @return the result of calling getContactHeader(true).
@@ -883,7 +883,7 @@ public class SipManager implements SipListener
     {
         return getContactHeader(true);
     }
-    
+
     /**
      * Initialises SipManager's contactHeader field in accordance with
      * javax.sip.IP_ADDRESS
@@ -910,13 +910,23 @@ public class SipManager implements SipListener
             }
             try
             {
-                
+
                 SipURI contactURI;
                 if (useLocalHostAddress)
                 {
-                    
-                    contactURI = (SipURI) addressFactory.createSipURI(null,
-                    publicIpAddress.getAddress().getHostAddress());
+                    //ContacHeader it's incomplite
+                    /*contactURI = (SipURI) addressFactory.createSipURI(null,
+                    publicIpAddress.getAddress().getHostAddress());*/
+
+                    /*In this way, allow multiple terminals located in the same machine
+                  and generate a correct ContactHeader
+                  before: <sip:IP:port;transport=udp> after: <sip:user@IP:port;transport=udp>>
+                    */
+                    String _publicAddrsUsed = Utils.getProperty(
+                            "net.java.sip.communicator.sip.PUBLIC_ADDRESS");
+                    contactURI = (SipURI) addressFactory.createURI(
+                            _publicAddrsUsed);
+
                 }
                 else
                 {
@@ -952,7 +962,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Initializes (if null) and returns an ArrayList with a single ViaHeader
      * containing localhost's address. This ArrayList may be used when sending
@@ -1009,7 +1019,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Initializes and returns SipManager's maxForwardsHeader field using the
      * value specified by MAX_FORWARDS.
@@ -1047,7 +1057,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Returns the user used to create the From Header URI.
      * @return the user used to create the From Header URI.
@@ -1068,7 +1078,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     /**
      * Generates a ToTag (the containingDialog's hashCode())and attaches it to
      * response's ToHeader.
@@ -1112,7 +1122,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //================================ PROPERTIES ================================
     protected void initProperties()
     {
@@ -1149,7 +1159,7 @@ public class SipManager implements SipListener
             {
                 console.debug("stack name is:" + stackName);
             }
-            
+
             String retransmissionFilter = Utils.getProperty("javax.sip.RETRANSMISSION_FILTER");
             if (retransmissionFilter == null)
             {
@@ -1173,7 +1183,7 @@ public class SipManager implements SipListener
             {
                 currentlyUsedURI = "sip:" + currentlyUsedURI.trim();
             }
-            
+
             if (console.isDebugEnabled())
             {
                 console.debug("public address=" + currentlyUsedURI);
@@ -1243,7 +1253,7 @@ public class SipManager implements SipListener
             {
               sipProp.setProperty("javax.sip.ROUTER_PATH",
             "net.sourceforge.gjtapi.raw.sipprovider.sip.SipCommRouter");
-                
+
             }
             if (console.isDebugEnabled())
             {
@@ -1284,7 +1294,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //============================     SECURITY     ================================
     /**
      * Sets the SecurityAuthority instance that should be consulted later on for
@@ -1299,7 +1309,7 @@ public class SipManager implements SipListener
         this.securityAuthority = authority;
         sipSecurityManager.setSecurityAuthority(authority);
     }
-    
+
     /**
      * Adds the specified credentials to the security manager's credentials cache
      * so that they get tried next time they're needed.
@@ -1328,7 +1338,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //------------ call received dispatch
     public void fireCallReceived(Call call)
     {
@@ -1350,7 +1360,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
+
     //------------ call received dispatch
     void fireMessageReceived(Request message)
     {
@@ -1373,7 +1383,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
+
     //------------ registerred
     public void fireRegistered(String address)
     {
@@ -1395,7 +1405,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
+
     //------------ registering
     public void fireRegistering(String address)
     {
@@ -1417,7 +1427,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
+
     //------------ unregistered
     public void fireUnregistered(String address)
     {
@@ -1439,7 +1449,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
+
     public void fireUnregistering(String address)
     {
         try
@@ -1460,8 +1470,8 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //call received
-    
-    
+
+
     //---------------- received unknown message
     public void fireUnknownMessageReceived(Message message)
     {
@@ -1485,7 +1495,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //unknown message
-    
+
     //---------------- rejected a call
     public void fireCallRejectedLocally(String reason, Message invite)
     {
@@ -1511,7 +1521,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     public void fireCallRejectedRemotely(String reason, Message invite)
     {
         try
@@ -1536,7 +1546,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //call rejected
     //---------------- error occurred
     public void fireCommunicationsError(Throwable throwable)
@@ -1558,7 +1568,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //error occurred
-    
+
     //============================= SIP LISTENER METHODS ==============================
     public void processRequest(RequestEvent requestReceivedEvent)
     {
@@ -1595,7 +1605,7 @@ public class SipManager implements SipListener
                     + "(Next message contains the request)",
                     ex
                     );
-                    
+
                     return;
                 }
                 catch (TransactionUnavailableException ex)
@@ -1726,7 +1736,7 @@ public class SipManager implements SipListener
             else if (request.getMethod().equals(Request.SUBSCRIBE))
             {
                 /** @todo add proper request handling */
-                
+
                 //fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
             else if (request.getMethod().equals(Request.UPDATE))
@@ -1747,7 +1757,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     public void processTimeout(TimeoutEvent transactionTimeOutEvent)
     {
         try
@@ -1792,7 +1802,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     //-------------------- PROCESS RESPONSE
     public void processResponse(ResponseEvent responseReceivedEvent)
     {
@@ -1948,7 +1958,7 @@ public class SipManager implements SipListener
                 {
                     fireUnknownMessageReceived(response);
                 }
-                
+
             }
             else if (response.getStatusCode() == Response.ACCEPTED)
             {
@@ -2178,7 +2188,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     } //process response
-    
+
     //--------
     public String getLocalHostAddress()
     {
@@ -2202,7 +2212,7 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     protected void checkIfStarted() throws CommunicationsException
     {
         if (!isStarted)
@@ -2213,7 +2223,7 @@ public class SipManager implements SipListener
             + "properly initialised! Impossible to continue");
         }
     }
-    
+
     public void sendServerInternalError(int callID) throws
     CommunicationsException
     {
@@ -2228,26 +2238,26 @@ public class SipManager implements SipListener
             console.logExit();
         }
     }
-    
+
     public String getAddress()
     {
         return "sip:" + this.getLocalUser() + "@" + this.getLocalHostAddress();
-        
+
     }
     //======================================= SIMPLE ==========================================
-    
+
     /**
      * Retrieves a Contact List from the specified URL.
      * @param url the location where the list is to be retrieved from.
      * @throws CommunicationsException if we fail to retrieve the list.
      * @return ContactGroup the contact list retrieved from the specified URL
      */
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
 }
