@@ -338,9 +338,17 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         UserCredentials credentials = new UserCredentials();
         credentials.setUserName(defaultValues.getUserName());
 
+        char[] pass;
         String password = Utils.getProperty(
             "net.java.sip.communicator.sip.PASSWORD");
-        char[] pass = password.toCharArray();
+        if(password == null){
+            console.debug("Phone without password",new Throwable("verify file properties of the phone"));
+            pass = new char[0];
+        }
+        else{
+           pass = password.toCharArray();
+        }
+
         credentials.setPassword(pass);
 
         console.logExit();
