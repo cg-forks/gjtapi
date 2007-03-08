@@ -730,8 +730,8 @@ void MSTapi3::ReleaseCalls(ITAddress* pAddr) {
 						calls.erase(callID);
 					}
 					logger->debug("Disconnecting pCallControl...");
-					hr = pCallControl->Disconnect( DC_NORMAL );
-					logger->debug("Disconnected pCallControl.");
+					//hr = pCallControl->Disconnect( DC_NORMAL );
+					//logger->debug("Disconnected pCallControl.");
 					logger->debug("Releasing pCallControl...");
 					pCallControl->Release();
 					logger->debug("pCallControl released.");
