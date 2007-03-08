@@ -80,16 +80,16 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
 {
 	// Used by sendPrivateData to allow a client to get a MediaSource for a terminal.
     public static final String GET_MEDIA_SOURCE = "GetMediaSource";
-    
+
 	private TelephonyListener listener;
 //    private List addresses;
     //private TermData terminal;
 //    private final static String RESOURCE_NAME = "sip.props";
     private Properties properties = System.getProperties();
     protected static Console console = Console.getConsole(SipProvider.class);
-//    private CallId idd;    
+//    private CallId idd;
     private Vector sipPhoneVector = new Vector();
-    
+
     /** Add an observer for RawEvents
      *
      * @param ro New event listener
@@ -99,9 +99,9 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     //constructeur
     public SipProvider()
     {
-        
+
     }
-    
+
     //ajoute un listener TelephonyListener
     public void addListener(TelephonyListener ro)
     {
@@ -114,9 +114,9 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             System.err.println("Request to add a TelephonyListener to "
             + this.getClass().getName() + ", but one is already registered");
         }
-        
+
     }
-    
+
     /** Answer a call that has appeared at a particular terminal
      *
      * @param call The system identifier for the call
@@ -130,10 +130,10 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         console.logEntry();
         SipPhone mySP = getSipPhoneByAddress(address);
         mySP.answerCall(call, address, terminal);
-        
+
     }
-    
-    
+
+
     /** Tell the provider to reserve a call id for future use.  The provider does not have to hang onto it.
      * Creation date: (2000-02-16 14:48:48)
      * @author: Richard Deadman
@@ -148,7 +148,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         SipCallId id = new SipCallId();
         return id ;
     }
-    
+
     /** Make a call.  Not that this follows the JTAPI sematics of an idle call
      * being created synchronusly (two connections).  Events from the raw provider
      * will indicate state transitions.
@@ -163,20 +163,20 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
      */
     public CallId createCall(CallId id, String address, String term, String dest) throws
     ResourceUnavailableException, PrivilegeViolationException, InvalidPartyException, InvalidArgumentException, RawStateException, MethodNotSupportedException
-    
+
     {
         console.logEntry();
         console.debug("id = " + id);
-        
+
         console.debug("trentative de connection  a " +address);
         //CREATION D'UN CALL (SIP)
         SipPhone mySP = getSipPhoneByAddress(address);
         mySP.createCall(id, address, term,  dest);
-        
+
         return id;
-        
+
     }
-    
+
     /** Get a list of available addresses.
      * This may be null if the Telephony (raw) Provider does not support Addresses!
      * If the Address set it too large, this will throw a ResourceUnavailableException
@@ -201,7 +201,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         }
         return ret;
     }
-    
+
     /** Get all the addresses associated with a terminal.
      * Creation date: (2000-06-02 12:30:54)
      * @author: Richard Deadman
@@ -221,7 +221,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(terminal));
             size++;
-            
+
         }
         String [] ret = new String [size];
         iter = sipPhoneVector.iterator();
@@ -236,7 +236,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         }
         return ret;
     }
-    
+
     /** Ask the raw provider to update the capabilities offered by the provider
      * This is expected to return a map of capability names to strings.  If the string starts with
      * 't' or 'T', the capability is turned on, otherwise it is turned off.  Alternatively Boolean values
@@ -255,7 +255,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         console.logEntry();
         return null;
     }
-    
+
     /** Get a list of available terminals.
      * This may be null if the Telephony (raw) Provider does not support Terminals.
      * If the Terminal set it too large, this will throw a ResourceUnavailableException
@@ -282,9 +282,9 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             i++;
         }
         return ret;
-        
+
     }
-    
+
     /** Get all the terminals associated with an address.
      * Creation date: (2000-02-11 12:30:54)
      * @author: Richard Deadman
@@ -304,7 +304,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address));
             size++;
-            
+
         }
         TermData[] ret = new TermData [size];
         iter = sipPhoneVector.iterator();
@@ -315,12 +315,12 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address));
             ret[i] =  new TermData(sp.getAddress(), true);
-            
+
             i++;
         }
         return ret;
     }
-    
+
     /** This allows for any context-specific parameters to be set.
      * The map may include such pairs as "name"="xxx" or "password"="yyy".
      * The provider is not active until this has
@@ -336,12 +336,12 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         console.logEntry();
         loadProperties();
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     /** Release a connection to a call (Connection).
      * This should block until the connection is released. The service provider does
      * not have to send a disconnect message for this connection, since it is generated by the framework.
@@ -358,7 +358,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         SipPhone mySP = getSipPhoneByAddress(address);
         mySP.SipHangup(call);
     }
-    
+
     /** Tell the provider that it may release a call id for future use.  This is necessary to ensure that
      * TelephonyProvider call ids are not reused until the Generic JTAPI Framework layer is notified of
      * the death of the call.
@@ -371,7 +371,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     {
         console.logEntry();
     }
-    
+
     /** Remove a listener for RawEvents
      *
      * @param ro Listener to remove
@@ -389,9 +389,9 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             + this.getClass().getName() + ", but it wasn't registered");
         }
     }
-    
-    
-    
+
+
+
     /** Perform any cleanup after my holder has finished with me.
      * Creation date: (2000-02-11 13:07:46)
      * @author: Richard Deadman
@@ -401,10 +401,10 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     {
         console.logEntry();
     }
-    
-    
-    
-    
+
+
+
+
     //initialisation du provider-----------------------------------------------------------
     //lecture des propriet?s et creation des adresees et des terminaux
     public void loadProperties()
@@ -418,7 +418,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             pIS.close();
             String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
             StringTokenizer st = new StringTokenizer(strPhone,",");
-            
+
             while (st.hasMoreTokens())
             {
                 pFile = new File(st.nextToken());
@@ -427,12 +427,12 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
                 SipPhone sipPhone = new SipPhone(properties,this);
                 sipPhoneVector.add(sipPhone);
                 console.debug("------------------------"+sipPhone.getAddress());
-                
+
                 pIS.close();
             }
             System.getProperties().putAll(properties);
-            
-            
+
+
         }
         //Catch IO & FileNotFound & NullPointer exceptions
         catch (Throwable exc)
@@ -442,13 +442,13 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             + "\nThis is only a warning.SipCommunicator will use defaults.",
             exc);
         }
-        
+
     }
-    
-    
+
+
     //methode utilitaires--------------------------------------
-  
-    
+
+
     private SipPhone getSipPhoneByAddress(String address)
     {
         SipPhone ret = null;
@@ -464,7 +464,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         return ret;
     }
     //fin methodes utilitaires
-    
+
     // methode de l'interphace SipPhoneListener
     public void sipCallActive(CallId id, int cause)
     {
@@ -476,7 +476,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         console.logEntry();
         listener.connectionInProgress(id, address, cause);
     }
-    
+
     void sipConnectionAlerting(CallId id, String address, int cause)
     {
         console.logEntry();
@@ -489,7 +489,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     public void sipConnectionCallDelivery(CallId id, String address, int cause)
     {console.logEntry();
     }
-    
+
     public void sipConnectionConnected(CallId id, String address, int cause)
     {
         console.logEntry();
@@ -500,13 +500,14 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     public void sipConnectionDisconnected(CallId id, String address, int cause)
     {
         this.releaseCallId(id);
+        listener.connectionDisconnected(id, address, cause);
         console.logEntry();
     }
     public void sipConnectionFailed(CallId id, String address, int cause)
     {
         console.logEntry();
     }
-    
+
     public void sipTerminalConnectionCreated(CallId id, String address, String terminal, int cause)
     {
         console.logEntry();
@@ -523,23 +524,23 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     {
         return true;
     }
-    
+
     public boolean freeMedia(String terminal, int type)
     {
         return true;
     }
-    
+
     public boolean isMediaTerminal(String terminal)
     {
         return true;
     }
-    
+
     public void play(String terminal, String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException
     {
         console.logEntry();
         try
         {
-            
+
             String[] add = this.getAddresses(terminal);
             for(int i=0; i < add.length; i++)
             {
@@ -550,17 +551,17 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         catch (javax.telephony.InvalidArgumentException ex)
         {
             console.debug(ex.toString());
-            
+
         }
-        
+
     }
-    
+
     public void record(String terminal, String streamId, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException
     {
         console.logEntry();
         try
         {
-            
+
             String[] add = this.getAddresses(terminal);
             for(int i=0; i < add.length; i++)
             {
@@ -571,21 +572,21 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         catch (javax.telephony.InvalidArgumentException ex)
         {
             console.debug(ex.toString());
-            
+
         }
-        
-        
+
+
     }
-    
+
     public RawSigDetectEvent retrieveSignals(String terminal, int num, javax.telephony.media.Symbol[] patterns, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException
     {
         return null;
     }
-    
+
     public void sendSignals(String terminal, javax.telephony.media.Symbol[] syms, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException
     {
     }
-    
+
     public void stop(String terminal)
     {
         console.logEntry();
@@ -601,10 +602,10 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
         catch (javax.telephony.InvalidArgumentException ex)
         {
             console.debug(ex.toString());
-            
+
         }
     }
-    
+
     public void triggerRTC(String terminal, javax.telephony.media.Symbol action)
     {
     }
@@ -636,9 +637,9 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
 			        } catch(IOException ioEx) {
 			        	// keep looping
 			        }
-	            }	
+	            }
 	        } catch(javax.telephony.InvalidArgumentException ex) {
-		        // couldn't get the addresses -- fall through and return null	
+		        // couldn't get the addresses -- fall through and return null
 			}
 		}
 		return null;
@@ -647,5 +648,5 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
 	public void setPrivateData(CallId call, String address, String terminal, Object data) {
 		// we don't support this
 	}
-    
+
 }
