@@ -78,6 +78,8 @@ import javax.media.rtp.event.*;
 
 import java.util.Properties;
 import java.util.*;
+import com.sun.media.rtp.RTPSessionMgr;
+import java.io.IOException;
 /**
  * AVReceiver to receive RTP transmission using the new RTP API.
  */
@@ -91,7 +93,7 @@ ControllerListener, SendStreamListener
     private RTPManager mgrs[] = null;
     boolean dataReceived = false;
     //private Object dataSync = new Object();
-    
+
     private int bindRetries = 3;
     private Properties sipProp;
     private Processor processor = null;
@@ -103,8 +105,8 @@ ControllerListener, SendStreamListener
         this.sipProp = new Properties() ;
         this.sipProp.putAll(sipProp);
         String retries = null;
-        
-        
+
+
         if((retries = sipProp.getProperty("net.java.sip.communicator.media.RECEIVER_BIND_RETRIES")) != null)
         try
         {
@@ -115,12 +117,12 @@ ControllerListener, SendStreamListener
             console.error(retries + " is not a valid number. ignoring property", ex);
         }
     }
-    
+
     void setMediaManager(MediaManager mManager)
     {
         this.mediaManager = mManager;
     }
-    
+
     protected boolean initialize()
     {
         try
@@ -204,7 +206,7 @@ ControllerListener, SendStreamListener
                     {
                         bc.setBufferLength(350);
                     }
-                    
+
                     mgrs[i].addTarget(destAddr);//ajout de l'address
                     break; //port retries
                 } //port retries
@@ -219,12 +221,100 @@ ControllerListener, SendStreamListener
         console.logExit();
         return true;
     }
-    
+
+    /**
+   *
+   * @param remoteAddr String
+   * @param ports ArrayList
+   * @throws MediaException
+   */
+  protected void initialize2(ArrayList ports) throws
+          MediaException {
+
+      console.logEntry();
+
+      mgrs = new RTPManager[sessions.length];
+
+      for (int i = 0; i < sessions.length; i++) {
+
+          SessionLabel session = new SessionLabel(sessions[0]);
+
+          console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost() + " localPort: " + session.port);
+          console.debug("IP remoteHostAVRECV: " + session.addr + " remotePort: " +  (Integer) ports.get(0) );
+
+          InetSocketAddress dialogLocalAddr = new InetSocketAddress(
+          mediaManager.getLocalHost(), session.port /*localPort*/);
+
+          Integer localPort = new Integer(session.port);
+          InetAddress rtpLocalAddress = dialogLocalAddr.getAddress();
+          SessionAddress local = new SessionAddress(rtpLocalAddress,
+                  localPort);
+
+          mgrs[i] = mediaManager.getRtpManager(new SessionAddress(
+                  mediaManager.
+                  getLocalHost(), session.port));
+          if (mgrs[i] == null) {
+              mgrs[i] = RTPManager.newInstance();
+              mediaManager.putRtpManager(new SessionAddress(mediaManager.
+                      getLocalHost(), session.port), mgrs[i]);
+          }
+
+          mgrs[i].addSessionListener(this);
+          mgrs[i].addReceiveStreamListener(this);
+
+          try {
+              mgrs[i].initialize(local);
+          } catch (IOException ex) {
+              ex.printStackTrace();
+          } catch (InvalidSessionAddressException ex) {
+              ex.printStackTrace();
+          }
+
+          // Now get the real local ports from the manager
+          //RTPSessionMgr smgr = (RTPSessionMgr) mgrs[i];
+          //int _controlPort = smgr.getLocalSessionAddress().getControlPort();
+          //int _dataPort = smgr.getLocalSessionAddress().getDataPort();
+
+          InetSocketAddress dialogRemoteAddr = new InetSocketAddress(
+                  /*remoteAddress*/session.addr, /*remotePort*/
+                  ((Integer) ports.get(0)).intValue());
+
+          InetAddress bogusAddress = dialogRemoteAddr.getAddress();
+          InetAddress rtpRemoteAddress = null;
+          try {
+              rtpRemoteAddress = InetAddress.getByAddress(InetAddress.
+                      getLocalHost().getHostName(),
+                      bogusAddress.getAddress());
+          } catch (UnknownHostException ex2) {
+              ex2.printStackTrace();
+          }
+          SessionAddress sessionAddress = new SessionAddress(rtpRemoteAddress,
+                  ((Integer) ports.get(0)).intValue());
+
+          //set buffer parameters
+          BufferControl bc = (BufferControl) mgrs[i].getControl(
+                  "javax.media.control.BufferControl");
+          if (bc != null) {
+              bc.setBufferLength(4098);
+          }
+          //add target to manager
+          try {
+              mgrs[i].addTarget(sessionAddress);
+          } catch (IOException ex1) {
+              ex1.printStackTrace();
+          } catch (InvalidSessionAddressException ex1) {
+              ex1.printStackTrace();
+          }
+          console.logExit();
+      }
+  }
+
+
     public boolean isDone()
     {
         return false;
     }
-    
+
     /**
      * Close the players and the session managers.
      */
@@ -258,7 +348,7 @@ ControllerListener, SendStreamListener
                     {
                         console.debug(ex.toString());
                     }
-                    
+
                 }
             }
         }
@@ -324,7 +414,7 @@ ControllerListener, SendStreamListener
             console.logExit();
         }
     }
-    
+
     /**
      * ReceiveStreamListener
      */
@@ -333,10 +423,10 @@ ControllerListener, SendStreamListener
         try
         {
             console.logEntry();
-            
+
             Participant participant = evt.getParticipant(); // could be null.
             ReceiveStream stream = evt.getReceiveStream(); // could be null.
-            
+
             if (evt instanceof NewReceiveStreamEvent)
             {
                 try
@@ -357,13 +447,13 @@ ControllerListener, SendStreamListener
                             console.debug("Recevied new RTP stream");
                         }
                     }
-                    
+
                     processor = Manager.createProcessor(ds);
                     this.configureProcessor(processor);
-                    
+
                     processor.realize();
-                    
-                    
+
+
                 }
                 catch (Exception e)
                 {
@@ -402,7 +492,7 @@ ControllerListener, SendStreamListener
             console.logExit();
         }
     }
-    
+
     /**
      * ControllerListener for the Players.
      */
@@ -444,7 +534,7 @@ ControllerListener, SendStreamListener
             console.logExit();
         }
     }
-    
+
     /**
      * A utility class to parse the session addresses.
      */
@@ -515,14 +605,14 @@ ControllerListener, SendStreamListener
                 }
                 if (portStr != null)
                 {
-                    
+
                     Integer integer = Integer.valueOf(portStr);
                     if (integer != null)
                     {
                         port = integer.intValue();
                     }
-                    
-                    
+
+
                 }
                 else
                 {
@@ -550,26 +640,26 @@ ControllerListener, SendStreamListener
             }
         }
     }
-    
+
     public void update(SendStreamEvent event)
     {
         console.debug(
         "received the following JMF Session event - "
         + event.getClass().getName());
     }
-    
+
     public Processor getProcessor()
     {
         return processor;
     }
-    
-    
+
+
     protected void configureProcessor(Processor p) throws MediaException
     {
         processor = p;
         try
         {
-            
+
             console.logEntry();
             if (processor == null)
             {
@@ -589,16 +679,16 @@ ControllerListener, SendStreamListener
             }
             // Get the tracks from the processor
             TrackControl[] tracks = processor.getTrackControls();
-            
+
             console.debug("-----"+ tracks[0].getFormat());
             int t = tracks[0].getSupportedFormats().length;
             for(int i=0;i<t;i++)
             {
                 console.debug("--------------------------------------"+tracks[0].getSupportedFormats()[i]);
             }
-            
-            
-            
+
+
+
             // Do we have atleast one track?
             if (tracks == null || tracks.length < 1)
             {
@@ -610,16 +700,16 @@ ControllerListener, SendStreamListener
             // Track.getSupportedFormats to only valid RTP formats.
             //   ContentDescriptor cd = new ContentDescriptor(ContentDescriptor.RAW_RTP);
             //kk
-            
+
           FileTypeDescriptor fd = new FileTypeDescriptor(FileTypeDescriptor.BASIC_AUDIO);
-        
+
             processor.setContentDescriptor(fd);
-            
-            
+
+
             //
             // processor.setContentDescriptor(new AudioFileFormat(AudioFileFormat.Type.WAVE));
-            
-            
+
+
         }
         finally
         {
@@ -635,15 +725,15 @@ ControllerListener, SendStreamListener
     {
         return stateLock;
     }
-    
+
     void setFailed()
     {
         failed = true;
     }
-    
+
     protected synchronized boolean waitForState(Processor p, int state)
     {
-        
+
         p.addControllerListener(new StateListener());
         failed = false;
         // Call the required method on the processor
@@ -744,7 +834,7 @@ ControllerListener, SendStreamListener
                     try
                     {
                         processor.stop();
-                        
+
                     }catch(Exception ex)
                     {
                         console.debug(ex.toString());
@@ -757,5 +847,5 @@ ControllerListener, SendStreamListener
             }
         }
     }
-    
+
 } // end of AVReceive2
