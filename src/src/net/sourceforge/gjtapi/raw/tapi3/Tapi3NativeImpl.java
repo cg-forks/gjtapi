@@ -194,7 +194,29 @@ public class Tapi3NativeImpl implements Tapi3Native {
      */
     public void callback(int methodID, int callID, String address, int jniCause, String[] callInfo) {
         if(provider != null) {
-            provider.callback(methodID, callID, address, jniCause, callInfo);
+          // I'm not sure what happens to the params after the callback - so I copy them
+          final int tMethodID = methodID;
+          final int tCallID = callID;
+          final String tAddress = "" + address;
+          final int tJniCause = jniCause;
+          final String[] tCallInfo;
+          if(callInfo != null)
+          {
+            tCallInfo = new String[callInfo.length];
+            for(int i = 0; i < callInfo.length; i++)
+              if(callInfo[i] != null)
+                tCallInfo[i] = "" + callInfo[i];
+          }
+          else
+            tCallInfo = null;
+          Thread callbackThread = new Thread(new Runnable()
+          {
+            public void run()
+            {
+              provider.callback(tMethodID, tCallID, tAddress, tJniCause, tCallInfo);
+            }
+          });
+          callbackThread.start();
         } else {
             Tapi3Provider.getLogger().error("Callback " + methodID + " called, but no provider registered.");
         }

@@ -392,7 +392,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                 case METHOD_CONNECTION_IN_PROGRESS:
                     // events added because there was no information about the called number in a jtapi call
                     listener.terminalConnectionCreated(tapi3CallID, address, terminal, eventCause);
-                    listener.connectionAlerting(tapi3CallID, privateData.getCalledNumber(), eventCause);
+                    if(privateData != null)
+                      listener.connectionAlerting(tapi3CallID, privateData.getCalledNumber(), eventCause);
+                    else //in case there was no callinfo ... not very good this way (should be improved)
+                      listener.connectionAlerting(tapi3CallID, address, eventCause);
                     // events add till here
                     listener.connectionInProgress(tapi3CallID, address, eventCause);
                     break;
