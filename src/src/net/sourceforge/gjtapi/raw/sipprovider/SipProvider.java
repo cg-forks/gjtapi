@@ -411,9 +411,8 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     {
         try
         {
-            File pFile = new File("sip-provider.properties");
-            FileInputStream pIS = new FileInputStream(pFile);
-            System.out.println(pIS.toString());
+            InputStream pIS = SipProvider.class.getResourceAsStream(
+                        "/sip-provider.properties");
             properties.load(pIS);
             pIS.close();
             String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
@@ -421,28 +420,27 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
 
             while (st.hasMoreTokens())
             {
-                pFile = new File(st.nextToken());
-                pIS = new FileInputStream(pFile);
+                pIS = SipProvider.class.getResourceAsStream("/" + 
+                        st.nextToken());
                 properties.load(pIS);
+                pIS.close();
+
                 SipPhone sipPhone = new SipPhone(properties,this);
                 sipPhoneVector.add(sipPhone);
                 console.debug("------------------------"+sipPhone.getAddress());
-
-                pIS.close();
             }
             System.getProperties().putAll(properties);
 
 
         }
         //Catch IO & FileNotFound & NullPointer exceptions
-        catch (Throwable exc)
+        catch (Exception exc)
         {
             console.warn(
             "Warning:Failed to load properties!"
             + "\nThis is only a warning.SipCommunicator will use defaults.",
             exc);
         }
-
     }
 
 
