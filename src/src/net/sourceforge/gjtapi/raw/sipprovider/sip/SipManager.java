@@ -287,30 +287,21 @@ public class SipManager implements SipListener
             }
             try
             {
-                boolean successfullyBound = false;
-                while (!successfullyBound)
-                {
-                    try
-                    {
-                        //try and capture the firewall mapping for this address
-                        //just befre it gets occuppied by the stack
-                        publicIpAddress = NetworkAddressManager.
-                        getPublicAddressFor(localPort);
+                //try and capture the firewall mapping for this address
+                //just befre it gets occuppied by the stack
+                publicIpAddress = NetworkAddressManager.
+                getPublicAddressFor(localPort);
 
-                        listeningPoint = sipStack.createListeningPoint(localPort, transport);
-                    }
-                    catch (InvalidArgumentException ex)
-                    {
-                        //choose another port between 1024 and 65000
-                        console.error("error binging stack to port " + localPort +
-                        ". Will try another port", ex);
+                listeningPoint = sipStack.createListeningPoint(localPort, transport);
+            }
+            catch (InvalidArgumentException ex)
+            {
+                //choose another port between 1024 and 65000
+                console.error("error binging stack to port " + localPort + ".",
+                        ex);
 
-                        localPort = (int) ( (65000 - 1024) * Math.random()) +
-                        1024;
-                        continue;
-                    }
-                    successfullyBound = true;
-                }
+                throw new CommunicationsException(
+                        "error binging stack to port " + localPort, ex);
             }
             catch (TransportNotSupportedException ex)
             {
