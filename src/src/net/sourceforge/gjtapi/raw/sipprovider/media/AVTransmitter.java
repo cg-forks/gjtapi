@@ -306,7 +306,7 @@ class AVTransmitter {
             //localAddr = new SessionAddress(mediaManCallback.getLocalHost(),((Integer)ports.get(0)).intValue() );
             Integer localPort = new Integer(mediaManCallback.getAudioPort());
             localAddr = new SessionAddress(mediaManCallback.getLocalHost(),
-                                           localPort);
+                                           localPort.intValue());
             destAddr = new SessionAddress(remoteAddress,
                                           ((Integer) ports.get(0)).intValue());
 

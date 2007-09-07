@@ -248,7 +248,7 @@ ControllerListener, SendStreamListener
           Integer localPort = new Integer(session.port);
           InetAddress rtpLocalAddress = dialogLocalAddr.getAddress();
           SessionAddress local = new SessionAddress(rtpLocalAddress,
-                  localPort);
+                  session.port);
 
           mgrs[i] = mediaManager.getRtpManager(new SessionAddress(
                   mediaManager.
