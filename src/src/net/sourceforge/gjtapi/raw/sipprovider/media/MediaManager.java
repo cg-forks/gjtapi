@@ -265,12 +265,7 @@ public class MediaManager implements Serializable {
     public void start() throws MediaException {
         try {
             console.logEntry();
-            try {
-                sdpFactory = SdpFactory.getInstance();
-            } catch (SdpException exc) {
-                console.error("Failed to create sdpFactory", exc);
-                throw new MediaException("Failed to create sdpFactory", exc);
-            }
+            sdpFactory = SdpFactory.getInstance();
 
             mediaSource = sipProp.getProperty(
                     "net.java.sip.communicator.media.MEDIA_SOURCE");
@@ -1052,7 +1047,13 @@ public class MediaManager implements Serializable {
                             + " trying to connec to to datasource!", ex);
                 }
                 processor = Manager.createProcessor(dataSource);
-                procUtility.waitForState(processor, Processor.Configured);
+                boolean success =
+                    procUtility.waitForState(processor, Processor.Configured);
+                if (!success) {
+                    throw new MediaException(
+                            "Media manager could not create a processor\n"
+                            + "for the specified data source");
+                }
             } catch (NoProcessorException ex) {
                 console.error(
                         "Media manager could not create a processor\n"
