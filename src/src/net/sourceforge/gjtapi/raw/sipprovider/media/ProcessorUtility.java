@@ -99,6 +99,9 @@ class ProcessorUtility
             setFailed();
             // All controller events, send a notification
             // to the waiting thread in waitForState method.
+            synchronized (getStateLock()) {
+                getStateLock().notifyAll();
+            }
         }
         if (ce instanceof ControllerEvent) {
             synchronized (getStateLock()) {
@@ -131,11 +134,9 @@ class ProcessorUtility
                 }
             }
         }
-        if (failed) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        
+        p.removeControllerListener(this);
+
+        return !failed;
     }
 }
