@@ -57,11 +57,16 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.common;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import org.apache.log4j.*;
+import java.io.File;
+import java.util.Enumeration;
+
+import org.apache.log4j.Category;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.Priority;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * <p>Title: </p>
@@ -85,101 +90,8 @@ public class Console
     		PropertyConfigurator.configure(LOG4J_PROPERTY_FILE);
     	}
     }
-//-------------------- Messages --------------------------
-    public static void showMsg(String message)
-    {
-        showMsg("Message", message);
-    }
 
-    public static void showMsg(String title, String message)
-    {
-        JOptionPane.showMessageDialog(null, message,
-                                      title, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public static void showDetailedMsg(String message, String details)
-    {
-        ConsoleUI.showMsg("Message", message, details, ConsoleUI.MESSAGE_ICON);
-    }
-
-    public static void showDetailedMsg(String title, String message,
-                                       String details)
-    {
-        ConsoleUI.showMsg(title, message, details, ConsoleUI.MESSAGE_ICON);
-    }
-
-//------------------- Errors -----------------------------
-    public static void showError(String msg)
-    {
-        showError("Error!", msg);
-    }
-
-    public static void showError(String title, String msg)
-    {
-        showError(title, msg, msg);
-    }
-
-    public static void showError(String title, String msg, String detailedMsg)
-    {
-//        JOptionPane.showMessageDialog(null, msg + "\nDetails:\n" + detailedMsg,
-//                                      title,
-//                                      JOptionPane.ERROR_MESSAGE);
-        ConsoleUI.showMsg(title, msg, detailedMsg, ConsoleUI.ERROR_ICON);
-    }
-
-//------------------- Exceptions --------------------------
-    public static void showException(Throwable exc)
-    {
-        showException("The following exception occurred:\n"
-                      + exc.getMessage(),
-                      exc);
-    }
-
-    public static void showException(String msg, Throwable exc)
-    {
-        showException(exc.getClass().getName(), msg, exc);
-    }
-
-    public static void showException(String title, String msg, Throwable exc)
-    {
-        StringWriter writer = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(writer);
-        exc.printStackTrace(printWriter);
-        if (debugMode) {
-            exc.printStackTrace();
-        }
-        showError(title, msg, writer.toString());
-        printWriter.close();
-        try {
-            writer.close();
-        }
-        catch (IOException ex) {}
-    }
-
-    public static void showNonFatalException(String msg, Throwable exc)
-    {
-        showNonFatalException(exc.getClass().getName(), msg, exc);
-    }
-
-    public static void showNonFatalException(String title,
-                                             String msg,
-                                             Throwable exc)
-    {
-        StringWriter writer = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(writer);
-        exc.printStackTrace(printWriter);
-        if (debugMode) {
-            exc.printStackTrace(System.out);
-        }
-        ConsoleUI.showMsg(title, msg, writer.toString(), ConsoleUI.ERROR_ICON);
-        printWriter.close();
-        try {
-            writer.close();
-        }
-        catch (IOException ex) {}
-    }
-
-//---------------- Printing Debug Info -----------------------------------
+    //---------------- Printing Debug Info -----------------------------------
     /**
      * Prints the string representation of obj
      * @param obj the object to print
@@ -202,7 +114,7 @@ public class Console
         System.out.print(obj);
     }
 
-//--------------- LOGGER ENCAPSULATION -----------------------------------
+    //--------------- LOGGER ENCAPSULATION -----------------------------------
     // ------------------------------------------------------------- Attributes
     private static boolean initialized = false;
     private static String LAYOUT = "%r [%t] %p %c{2} %x - %m%n";

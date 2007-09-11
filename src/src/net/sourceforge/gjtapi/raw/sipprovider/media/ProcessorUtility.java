@@ -58,7 +58,12 @@
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
 
-import javax.media.*;
+import javax.media.ControllerClosedEvent;
+import javax.media.ControllerEvent;
+import javax.media.ControllerListener;
+import javax.media.Processor;
+
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -75,12 +80,20 @@ import javax.media.*;
 class ProcessorUtility
     implements ControllerListener
 {
-    Integer stateLock = new Integer(0);
+    /** Logger for this class. */
+    protected static Console console = Console.getConsole(MediaManager.class);
+    /** State lock for a wait/notify mechanism. */
+    private Integer stateLock = new Integer(0);
+    /** <code>true</code> if the waiting failed. */
+    private boolean failed = false;
+    
+    /**
+     * Constructs a new object.
+     */
     public ProcessorUtility()
     {
     }
 
-    private boolean failed = false;
     Integer getStateLock()
     {
         return stateLock;
@@ -97,11 +110,6 @@ class ProcessorUtility
         // realize, the processor will be closed
         if (ce instanceof ControllerClosedEvent) {
             setFailed();
-            // All controller events, send a notification
-            // to the waiting thread in waitForState method.
-            synchronized (getStateLock()) {
-                getStateLock().notifyAll();
-            }
         }
         if (ce instanceof ControllerEvent) {
             synchronized (getStateLock()) {
@@ -112,6 +120,10 @@ class ProcessorUtility
 
     synchronized boolean waitForState(Processor p, int state)
     {
+        if (console.isDebugEnabled()) {
+            console.debug("waiting for processor state " + state);
+        }
+            
         p.addControllerListener(this);
         failed = false;
         // Call the required method on the processor
@@ -123,8 +135,7 @@ class ProcessorUtility
         }
         // Wait until we get an event that confirms the
         // success of the method, or a failure event.
-        // See StateListener inner class
-        while (p.getState() < state && !failed) {
+        while ((p.getState()) != state && !failed) {
             synchronized (getStateLock()) {
                 try {
                     getStateLock().wait();
@@ -136,6 +147,10 @@ class ProcessorUtility
         }
         
         p.removeControllerListener(this);
+
+        if (console.isDebugEnabled()) {
+            console.debug("reached processor state " + state);
+        }
 
         return !failed;
     }

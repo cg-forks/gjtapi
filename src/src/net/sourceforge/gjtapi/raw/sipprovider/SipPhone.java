@@ -196,7 +196,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         }
         catch (CommunicationsException exc)
         {
-            Console.showException("Could not properly terminate call!\n"
+            console.warn("Could not properly terminate call!\n"
             + "(This is not a fatal error)",
             exc
             );
@@ -284,7 +284,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
                 }
                 catch (MediaException ex)
                 {
-                    Console.showException(        "The following exception occurred while trying to open media connection:\n"
+                    console.error("The following exception occurred while trying to open media connection:\n"
                     + ex.getMessage(),           ex);
                 }
                 console.debug("+++++++++++++          ++++++      +++++ DIIIS conecTTTTEDDD"+ call.getRemoteName());
@@ -435,10 +435,6 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             catch (MediaException exc)
             {
                 console.error("Failed to start mediaManager", exc);
-                Console.showException(
-                "The following exception occurred while initializing media!\n"
-                + exc.getMessage(),
-                exc);
             }
             mediaManager.addMediaListener(this);
 
@@ -460,7 +456,7 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             }
             catch (CommunicationsException exc)
             {
-                Console.showException(
+                console.warn(
                 "An exception occurred while initializing communication stack!\n"
                 + "You won't be able to send or receive calls",
                 exc);
@@ -475,11 +471,6 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             {
                 console.error(
                 "An exception occurred while trying to register, exc");
-                Console.showException(
-                "Failed to register!\n"
-                + exc.getMessage() + "\n"
-                + "This is a warning only. The phone would still function",
-                exc);
             }
         }
         finally

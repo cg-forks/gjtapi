@@ -1781,11 +1781,10 @@ public class SipManager implements SipListener
             else
             {
                 //Just show an error for now
-                Console.showError("TimeOut Error!",
-                "Received a TimeoutEvent while waiting on a message"
-                + "\n(Check Details to see the message that caused it)",
-                request.toString()
-                );
+                console.error("TimeOut Error!:"
+                        + "Received a TimeoutEvent while waiting on a message"
+                        + "\n(Check Details to see the message that caused it)\n"
+                        + request.toString());
             }
         }
         finally

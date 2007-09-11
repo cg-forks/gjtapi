@@ -258,13 +258,11 @@ public class RegisterProcessing
             }
             catch (ParseException ex) {
                 //Should never happen
-                console.error("Corrupt Sip Stack");
-                Console.showError("Corrupt Sip Stack");
+                console.error("Corrupt Sip Stack", ex);
             }
             catch (InvalidArgumentException ex) {
                 //Should never happen
-                console.error("The application is corrupt");
-                Console.showError("The application is corrupt!");
+                console.error("The application is corrupt", ex);
             }
             //To Header
             ToHeader toHeader = null;
