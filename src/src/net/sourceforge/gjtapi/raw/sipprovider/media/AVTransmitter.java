@@ -79,13 +79,12 @@ import javax.media.rtp.*;
 
 class AVTransmitter {
     protected static Console console = Console.getConsole(AVTransmitter.class);
-    // Input MediaLocator
-    // Can be a file or http or capture source
+    /** Input MediaLocator. Can be a file or http or capture source */
     protected MediaLocator locator;
     protected String ipAddress;
     protected Processor processor = null;
     protected RTPManager rtpMgrs[];
-    //Used by mobility - keeps rtpMgrs[] corresponding addresses
+    /** Used by mobility - keeps rtpMgrs[] corresponding addresses. */
     protected SessionAddress sessionAddresses[] = null;
 
     protected DataSource dataOutput = null;
@@ -93,6 +92,8 @@ class AVTransmitter {
     protected ArrayList formatSets = null;
     protected MediaManager mediaManCallback = null;
     private SendStream sendStream;
+    /** Utility to delay until a processor state has been reached. */
+    protected ProcessorUtility procUtility = new ProcessorUtility();
 
     public AVTransmitter(Processor processor,
                          String ipAddress,
@@ -188,7 +189,8 @@ class AVTransmitter {
             // Wait for the processor to configure
             boolean result = true;
             if (processor.getState() < Processor.Configured) {
-                result = waitForState(processor, Processor.Configured);
+                result = procUtility.waitForState(processor, 
+                        Processor.Configured);
             }
             if (result == false) {
                 console.error("Couldn't configure processor");
@@ -256,7 +258,7 @@ class AVTransmitter {
             }
             // Realize the processor. This will internally create a flow
             // graph and attempt to create an output datasource
-            result = waitForState(processor, Controller.Realized);
+            result = procUtility.waitForState(processor, Controller.Realized);
             if (result == false) {
                 console.error("Couldn't realize processor");
                 throw new MediaException("Couldn't realize processor");
@@ -412,84 +414,6 @@ class AVTransmitter {
             return -1;
         } finally {
             console.logExit();
-        }
-    }
-
-    /****************************************************************
-     * Convenience methods to handle processor's state changes.
-     ****************************************************************/
-    protected Integer stateLock = new Integer(0);
-    protected boolean failed = false;
-    Integer getStateLock() {
-        return stateLock;
-    }
-
-    void setFailed() {
-        failed = true;
-    }
-
-    protected synchronized boolean waitForState(Processor p, int state) {
-
-        p.addControllerListener(new StateListener());
-        failed = false;
-        // Call the required method on the processor
-        if (state == Processor.Configured) {
-            p.configure();
-        } else if (state == Processor.Realized) {
-            p.realize();
-        }
-        // Wait until we get an event that confirms the
-        // success of the method, or a failure event.
-        // See StateListener inner class
-        while (p.getState() < state && !failed) {
-            synchronized (getStateLock()) {
-                try {
-                    getStateLock().wait();
-                } catch (InterruptedException ie) {
-                    return false;
-                }
-            }
-        }
-        if (failed) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /****************************************************************
-     * Inner Classes
-     ****************************************************************/
-    class StateListener implements ControllerListener {
-        public void controllerUpdate(ControllerEvent ce) {
-            try {
-                console.logEntry();
-                console.debug(ce.toString());
-                // If there was an error during configure or
-                // realize, the processor will be closed
-                if (ce instanceof ControllerClosedEvent) {
-                    setFailed();
-                    // All controller events, send a notification
-                    // to the waiting thread in waitForState method.
-                }
-                if (ce instanceof ControllerEvent) {
-                    synchronized (getStateLock()) {
-                        getStateLock().notifyAll();
-                    }
-                }
-                //stop the stream at the end of the audio file
-                if (ce instanceof EndOfMediaEvent) {
-                    try {
-                        sendStream.stop();
-                        processor.stop();
-
-                    } catch (Exception ex) {
-                        console.debug(ex.toString());
-                    }
-                }
-            } finally {
-                console.logExit();
-            }
         }
     }
 
