@@ -2,9 +2,9 @@ package net.sourceforge.gjtapi.raw.sipprovider;
 
 /*
     Copyright (c) 2002 8x8 Inc. (www.8x8.com)
- 
+
     All rights reserved.
- 
+
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the
     "Software"), to deal in the Software without restriction, including
@@ -14,7 +14,7 @@ package net.sourceforge.gjtapi.raw.sipprovider;
     copyright notice(s) and this permission notice appear in all copies of
     the Software and that both the above copyright notice(s) and this
     permission notice appear in supporting documentation.
- 
+
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
     OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
@@ -24,7 +24,7 @@ package net.sourceforge.gjtapi.raw.sipprovider;
     FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
     NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
     WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- 
+
     Except as contained in this notice, the name of a copyright holder
     shall not be used in advertising or otherwise to promote the sale, use
     or other dealings in this Software without prior written authorization
@@ -189,9 +189,9 @@ public class TestCallListener implements TerminalConnectionListener
             System.err.println("Usage: java net.sourceforge.gjtapi.test.TestCallListener Provider from to");
             // System.exit(1);
         }
-        
-        test("net.sourceforge.gjtapi.raw.sip.SipProvider", "sip:pingtel@192.168.0.2", "sip:pingtelP@192.168.0.22");
-        
+
+        test("net.sourceforge.gjtapi.raw.sipprovider.SipProvider", "sip:pingtel@192.168.0.2", "sip:pingtelP@192.168.0.22");
+
     }
     /**
      * multiCallMetaMergeEnded method comment.
@@ -229,7 +229,7 @@ public class TestCallListener implements TerminalConnectionListener
     protected static void prompt() throws IOException
     {
         InputStream in = System.in;
-        
+
         System.out.println("Hit return to continue...");
         // wait
         in.read();
@@ -312,13 +312,13 @@ public class TestCallListener implements TerminalConnectionListener
     public static void test(String providerName, String fromAddr, String toAddr)
     {
         java.io.PrintStream out = System.out;
-        
+
         // Get a JTAPI Peer
         JtapiPeer peer = null;
            System.out.println("n?me = " + providerName);
         try
         {
-           
+
             peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");
             out.println("1.1: Successfully loaded the JTapi Peer");
         } catch (JtapiPeerUnavailableException jpue)
@@ -327,12 +327,12 @@ public class TestCallListener implements TerminalConnectionListener
             jpue.printStackTrace();
             System.exit(1);
         }
-        
+
         // Ask it for the Emulator Provider
         Provider prov = null;
         try
         {
-         
+
             prov = peer.getProvider(providerName);
             out.println("1.2: Successfully loaded Provider");
         } catch (ProviderUnavailableException pue)
@@ -341,14 +341,14 @@ public class TestCallListener implements TerminalConnectionListener
             pue.printStackTrace();
             System.exit(1);
         }
-        
+
         try
         {
             // Load the Terminal
             out.print("2.1: Attempting to get address...");
             Address addr = prov.getAddress(fromAddr);
             Address addr2 = prov.getAddress("sip:kim@192.168.0.2");
-            
+
             out.println(" success."+ addr.toString());
             out.println(" success."+ addr2.toString());
             // Make the Call
@@ -356,18 +356,18 @@ public class TestCallListener implements TerminalConnectionListener
             Call c = prov.createCall();
             // Call c2 = prov.createCall();
             out.println(" success.");
-            
+
             // assocate a listener with the call
             out.print("3.3: Setting Listener on the call...");
             c.addCallListener(new TestCallListener());
             //  c2.addCallListener(new TestCallListener());
             out.println(" success.");
-            
+
             out.print("4.3: Attempting to get terminals for an address...");
             Terminal[] ts = addr.getTerminals();
             // Terminal[] ts2 = addr2.getTerminals();
             out.println(" success.");
-            
+
             out.print("3.1: Attempting to connect call...");
             c.connect(ts[1], addr, "sip:pingtelP@192.168.0.22");
             // c2.connect(ts2[0], addr, "sip:pingtelP@192.168.0.22");
@@ -375,12 +375,12 @@ public class TestCallListener implements TerminalConnectionListener
             Thread.sleep(10000);
             // (c2.getConnections()[0]).disconnect();
             // Notify progress
-            
+
             //  Create a media service
             out.print("Attempting to create a Media Service...");
             GenericMediaService ms = new GenericMediaService((MediaProvider)prov);
             out.println(" success.");
-            
+
             // find the outgoing terminal
             out.print("2.4: Attempting to get a Terminal by name...");
             Terminal t = prov.getTerminal(fromAddr);
@@ -392,13 +392,13 @@ public class TestCallListener implements TerminalConnectionListener
             out.println(" success.");
             prompt();
             out.println("1 -------------------------------------------------------------------------------");
-            
+
             // play a message
            out.print("13.4: Attempting to play on a Media Service...");
              System.out.println("Play++++++++++++++++++++++++++++++++++++++");
             ms.play("file://test.au", 11, null, null);
             System.out.println("record++++++++++++++++++++++++++++++++++++++");
-            
+
            prompt();
             System.out.println("record++++++++++++++++++++++++++++++++++++++");
             ms.stop();
@@ -411,7 +411,7 @@ public class TestCallListener implements TerminalConnectionListener
             ms.stop();*/
             out.println("3 -------------------------------------------------------------------------------");
             // Thread.sleep(10);
-         
+
             System.out.println("Provider shutting down");
             prov.shutdown();
             Thread.sleep(10);
