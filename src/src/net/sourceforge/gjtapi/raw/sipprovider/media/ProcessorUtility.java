@@ -57,7 +57,6 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
-
 import javax.media.ControllerClosedEvent;
 import javax.media.ControllerEvent;
 import javax.media.ControllerListener;
@@ -66,46 +65,61 @@ import javax.media.Processor;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 
 /**
- * <p>Title: SIP COMMUNICATOR</p>
- * <p>Description:JAIN-SIP Audio/Video phone application</p>
- * <p>Copyright: Copyright (c) 2003</p>
- * <p>Organisation: LSIIT laboratory (http://lsiit.u-strasbg.fr) </p>
- * <p>Network Research Team (http://www-r2.u-strasbg.fr))</p>
- * <p>Louis Pasteur University - Strasbourg - France</p>
- * <p>Division Chief: Thomas Noel</p>
+ * <p>
+ * Title: SIP COMMUNICATOR
+ * </p>
+ * <p>
+ * Description:JAIN-SIP Audio/Video phone application
+ * </p>
+ * <p>
+ * Copyright: Copyright (c) 2003
+ * </p>
+ * <p>
+ * Organisation: LSIIT laboratory (http://lsiit.u-strasbg.fr)
+ * </p>
+ * <p>
+ * Network Research Team (http://www-r2.u-strasbg.fr))
+ * </p>
+ * <p>
+ * Louis Pasteur University - Strasbourg - France
+ * </p>
+ * <p>
+ * Division Chief: Thomas Noel
+ * </p>
+ * 
  * @author Emil Ivov (http://www.emcho.com)
  * @version 1.1
- *
+ * 
  */
-class ProcessorUtility
-    implements ControllerListener
-{
+class ProcessorUtility implements ControllerListener {
     /** Logger for this class. */
-    protected static Console console = Console.getConsole(MediaManager.class);
+    protected static Console console = Console
+            .getConsole(ProcessorUtility.class);
+
     /** State lock for a wait/notify mechanism. */
     private Integer stateLock = new Integer(0);
+
     /** <code>true</code> if the waiting failed. */
     private boolean failed = false;
-    
+
     /**
      * Constructs a new object.
      */
-    public ProcessorUtility()
-    {
+    public ProcessorUtility() {
     }
 
-    Integer getStateLock()
-    {
+    Integer getStateLock() {
         return stateLock;
     }
 
-    void setFailed()
-    {
+    void setFailed() {
         failed = true;
     }
 
-    public void controllerUpdate(ControllerEvent ce)
-    {
+    public void controllerUpdate(ControllerEvent ce) {
+        if (console.isDebugEnabled()) {
+            console.debug("received update event " + ce);
+        }
         // If there was an error during configure or
         // realize, the processor will be closed
         if (ce instanceof ControllerClosedEvent) {
@@ -118,34 +132,33 @@ class ProcessorUtility
         }
     }
 
-    synchronized boolean waitForState(Processor p, int state)
-    {
+    synchronized boolean waitForState(Processor p, int state) {
         if (console.isDebugEnabled()) {
-            console.debug("waiting for processor state " + state);
+            console.debug("waiting for processor state " + state + "...");
         }
-            
+
         p.addControllerListener(this);
         failed = false;
         // Call the required method on the processor
-        if (state == Processor.Configured) {
+        if (p.getState() != Processor.Configured
+                && state == Processor.Configured) {
             p.configure();
-        }
-        else if (state == Processor.Realized) {
+        } else if (p.getState() != Processor.Realized
+                && state == Processor.Realized) {
             p.realize();
         }
         // Wait until we get an event that confirms the
         // success of the method, or a failure event.
-        while ((p.getState()) != state && !failed) {
+        while ((p.getState() != state) && !failed) {
             synchronized (getStateLock()) {
                 try {
                     getStateLock().wait();
-                }
-                catch (InterruptedException ie) {
+                } catch (InterruptedException ie) {
                     return false;
                 }
             }
         }
-        
+
         p.removeControllerListener(this);
 
         if (console.isDebugEnabled()) {
