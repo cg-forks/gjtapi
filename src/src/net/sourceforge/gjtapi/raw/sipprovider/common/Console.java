@@ -195,58 +195,57 @@ public class Console
      */
     public void trace(Object message, Throwable t)
     {
-            logger.log(TraceLevel.TRACE, message, t);
+        logger.log(TraceLevel.TRACE, message, t);
     }
 
     public void debug(Object message, Throwable t)
     {
-        logger.debug(message, t);
+        logger.log(this.getClass().getName(), Level.DEBUG, message, t);
     }
 
     public void debug(Object message)
     {
-        logger.debug(message);
+        logger.log(this.getClass().getName(), Level.DEBUG, message, null);
     }
 
     public void info(Object message, Throwable t)
     {
-        logger.info(message, t);
+        logger.log(this.getClass().getName(), Level.INFO, message, t);
     }
 
     public void info(Object message)
     {
-        logger.info(message);
+        logger.log(this.getClass().getName(), Level.INFO, message, null);
     }
 
     public void warn(Object message, Throwable t)
     {
-        logger.warn(message, t);
+        logger.log(this.getClass().getName(), Level.WARN, message, t);
     }
 
     public void warn(Object message)
     {
-        logger.warn(message);
+        logger.log(this.getClass().getName(), Level.WARN, message, null);
     }
 
     public void error(Object message, Throwable t)
     {
-        logger.error(message, t);
+        logger.log(this.getClass().getName(), Level.ERROR, message, t);
     }
 
     public void error(Object message)
     {
-        logger.error(message);
+        logger.log(this.getClass().getName(), Level.ERROR, message, null);
     }
 
     public void fatal(Object message, Throwable t)
     {
-        logger.fatal(message, t);
+        logger.log(this.getClass().getName(), Level.FATAL, message, t);
     }
 
     public void fatal(Object message)
     {
-        logger.fatal(message);
-        logger.isDebugEnabled();
+        logger.log(this.getClass().getName(), Level.FATAL, message, null);
     }
 
     public boolean isDebugEnabled()
