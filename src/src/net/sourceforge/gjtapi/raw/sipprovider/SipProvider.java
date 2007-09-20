@@ -68,6 +68,7 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.SipManager;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import java.util.*;
 import java.io.*;
+
 import net.sourceforge.gjtapi.*;
 
 import javax.media.IncompatibleSourceException;
@@ -409,29 +410,21 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
     //lecture des propriet?s et creation des adresees et des terminaux
     public void loadProperties()
     {
+    	InputStream in = null;
         try
         {
-            InputStream pIS = SipProvider.class.getResourceAsStream(
+            in = SipProvider.class.getResourceAsStream(
                         "/sip-provider.properties");
-            properties.load(pIS);
-            pIS.close();
+            properties.load(in);
+            System.getProperties().putAll(properties);
             String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
             StringTokenizer st = new StringTokenizer(strPhone,",");
-
             while (st.hasMoreTokens())
             {
-                pIS = SipProvider.class.getResourceAsStream("/" + 
-                        st.nextToken());
-                properties.load(pIS);
-                pIS.close();
-
-                SipPhone sipPhone = new SipPhone(properties,this);
+                SipPhone sipPhone = new SipPhone("/" + st.nextToken(), this);
                 sipPhoneVector.add(sipPhone);
                 console.debug("------------------------"+sipPhone.getAddress());
             }
-            System.getProperties().putAll(properties);
-
-
         }
         //Catch IO & FileNotFound & NullPointer exceptions
         catch (Exception exc)
@@ -440,6 +433,15 @@ public class SipProvider implements MediaTpi, PrivateDataTpi
             "Warning:Failed to load properties!"
             + "\nThis is only a warning.SipCommunicator will use defaults.",
             exc);
+        }
+        finally {
+        	if (in != null) {
+        		try {
+					in.close();
+				} catch (IOException e) {
+					console.debug("error closing input stream", e);
+				}
+        	}
         }
     }
 

@@ -62,10 +62,33 @@
 
 package net.sourceforge.gjtapi.raw.sipprovider;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Vector;
+
+import javax.telephony.ConnectionEvent;
+import javax.telephony.Event;
+import javax.telephony.InvalidArgumentException;
+import javax.telephony.InvalidPartyException;
+import javax.telephony.MethodNotSupportedException;
+import javax.telephony.PrivilegeViolationException;
+import javax.telephony.ResourceUnavailableException;
+
+import net.sourceforge.gjtapi.CallId;
+import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.TermData;
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
+import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
+import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
+import net.sourceforge.gjtapi.raw.sipprovider.media.MediaException;
+import net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.SipManager;
-import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SecurityAuthority;
-import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallRejectedEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallStateEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CommunicationsErrorEvent;
@@ -73,17 +96,8 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CommunicationsListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.MessageEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.RegistrationEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.UnknownMessageEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.media.MediaException;
-import net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager;
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaListener;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
-import java.util.*;
-import net.sourceforge.gjtapi.*;
-import javax.telephony.*;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
+import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SecurityAuthority;
+import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 
 //import com.sun.jndi.cosnaming.IiopUrl.Address;
 /**
@@ -105,14 +119,44 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
     private String address ;
     private SipProvider sipProvider;
     public Properties sipProp;
-    /** Add an observer for RawEvents
-     *
-     * @param ro New event listener
-     * @return void
-     *
+
+    /**
+     * Constructs a new object.
+     * @param propResource Name of the resource containing properties for this 
+     * 		phone
+     * @param sipProvider the provider
+     * @throws IOException Error loading the properties.
      */
-    //constructeur
-    public SipPhone( Properties sipProperties , SipProvider sipProvider)
+    public SipPhone(String propResource , SipProvider sipProvider)
+    	throws IOException
+    {
+    	sipProp = new Properties();
+    	InputStream in = null;
+    	try {
+        	in = SipPhone.class.getResourceAsStream(propResource);
+    		sipProp.load(in);
+            System.getProperties().putAll(sipProp);
+    	} finally {
+    		if (in != null) {
+    			in.close();
+    		}
+    	}
+
+        mediaManager = new MediaManager(sipProp);
+
+        this.sipProvider = sipProvider;
+        sipManager = new SipManager(sipProp);
+        this.launch();
+        address = "sip:" + sipManager.getLocalUser() 
+        	+ "@" + sipManager.getLocalHostAddress() ;
+    }
+    
+    /**
+     * Constructs a new object.
+     * @param sipProperties properties for this phone
+     * @param sipProvider the provider
+     */
+    public SipPhone(Properties sipProperties, SipProvider sipProvider)
     {
         sipProp = new Properties() ;
         sipProp.putAll(sipProperties);
@@ -121,9 +165,10 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         this.sipProvider = sipProvider;
         sipManager = new SipManager(sipProp);
         this.launch();
-        address = "sip:" + sipManager.getLocalUser() + "@" + sipManager.getLocalHostAddress() ;
-
+        address = "sip:" + sipManager.getLocalUser() 
+        	+ "@" + sipManager.getLocalHostAddress() ;
     }
+    
     public String getAddress()
     {
         return address;
