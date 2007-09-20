@@ -102,10 +102,13 @@ class ProcessorUtility implements ControllerListener {
     /** <code>true</code> if the waiting failed. */
     private boolean failed = false;
 
+    private String name;
+
     /**
      * Constructs a new object.
      */
-    public ProcessorUtility() {
+    public ProcessorUtility(String name) {
+        this.name = name;
     }
 
     Integer getStateLock() {
@@ -118,7 +121,7 @@ class ProcessorUtility implements ControllerListener {
 
     public void controllerUpdate(ControllerEvent ce) {
         if (console.isDebugEnabled()) {
-            console.debug("received update event " + ce);
+            console.debug(name + ": received update event " + ce);
         }
         // If there was an error during configure or
         // realize, the processor will be closed
@@ -132,39 +135,75 @@ class ProcessorUtility implements ControllerListener {
         }
     }
 
-    synchronized boolean waitForState(Processor p, int state) {
+    /**
+     * Delays until the processor has reached the given state.
+     * 
+     * @param processor
+     *            the processor
+     * @param state
+     *            the state to reach.
+     * @return <code>true</code> if the state has been reached.
+     */
+    synchronized boolean waitForState(Processor processor, int state) {
         if (console.isDebugEnabled()) {
-            console.debug("waiting for processor state " + state + "...");
+            console.debug(name + ": waiting for processor state "
+                    + state2String(state) + " ("
+                    + state2String(processor.getState()) + ")...");
         }
 
-        p.addControllerListener(this);
+        processor.addControllerListener(this);
         failed = false;
-        // Call the required method on the processor
-        if (p.getState() != Processor.Configured
-                && state == Processor.Configured) {
-            p.configure();
-        } else if (p.getState() != Processor.Realized
-                && state == Processor.Realized) {
-            p.realize();
-        }
         // Wait until we get an event that confirms the
         // success of the method, or a failure event.
-        while ((p.getState() != state) && !failed) {
+        while ((processor.getState() < state) && !failed) {
             synchronized (getStateLock()) {
                 try {
-                    getStateLock().wait();
+                    getStateLock().wait(300);
                 } catch (InterruptedException ie) {
                     return false;
                 }
             }
+            
+            System.out.println(state2String(processor.getState()));
         }
 
-        p.removeControllerListener(this);
+        processor.removeControllerListener(this);
 
         if (console.isDebugEnabled()) {
-            console.debug("reached processor state " + state);
+            console.debug(name + ": reached processor state "
+                    + state2String(state));
         }
 
         return !failed;
+    }
+
+    /**
+     * Determines a string representation for the given state.
+     * 
+     * @param state
+     *            the state
+     * @return human readable description of th estate.
+     */
+    private String state2String(int state) {
+        switch (state) {
+        case Processor.Configured:
+            return "configured";
+        case Processor.Configuring:
+            return "configuring";
+        case Processor.Prefetched:
+            return "prefetched";
+        case Processor.Prefetching:
+            return "prefetching";
+        case Processor.Realized:
+            return "realized";
+        case Processor.Realizing:
+            return "realizing";
+        case Processor.Started:
+            return "started";
+        case Processor.Unrealized:
+            return "unrealized";
+        default:
+            return Integer.toString(state);
+        }
     }
 }

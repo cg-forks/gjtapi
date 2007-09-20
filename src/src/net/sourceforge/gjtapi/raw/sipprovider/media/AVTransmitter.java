@@ -93,7 +93,7 @@ class AVTransmitter {
     protected MediaManager mediaManCallback = null;
     private SendStream sendStream;
     /** Utility to delay until a processor state has been reached. */
-    protected ProcessorUtility procUtility = new ProcessorUtility();
+    protected ProcessorUtility procUtility = new ProcessorUtility("AVTransmitter");
 
     public AVTransmitter(Processor processor,
                          String ipAddress,

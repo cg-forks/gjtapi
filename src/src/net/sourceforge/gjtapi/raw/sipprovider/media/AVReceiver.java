@@ -58,17 +58,6 @@
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-/**
- * <p>Title: SIP COMMUNICATOR</p>
- * <p>Description:JAIN-SIP Audio/Video phone application</p>
- * <p>Copyright: Copyright (c) 2003</p>
- * <p>Organisation: LSIIT laboratory (http://lsiit.u-strasbg.fr) </p>
- * <p>Network Research Team (http://www-r2.u-strasbg.fr))</p>
- * <p>Louis Pasteur University - Strasbourg - France</p>
- * @author Emil Ivov (http://www.emcho.com)
- * @version 1.1
- *
- */
 import java.net.*;
 import javax.media.*;
 import javax.media.control.*;
@@ -78,10 +67,18 @@ import javax.media.rtp.event.*;
 
 import java.util.Properties;
 import java.util.*;
-import com.sun.media.rtp.RTPSessionMgr;
 import java.io.IOException;
 /**
  * AVReceiver to receive RTP transmission using the new RTP API.
+ * 
+ * <p>Title: SIP COMMUNICATOR</p>
+ * <p>Description:JAIN-SIP Audio/Video phone application</p>
+ * <p>Copyright: Copyright (c) 2003</p>
+ * <p>Organisation: LSIIT laboratory (http://lsiit.u-strasbg.fr) </p>
+ * <p>Network Research Team (http://www-r2.u-strasbg.fr))</p>
+ * <p>Louis Pasteur University - Strasbourg - France</p>
+ * @author Emil Ivov (http://www.emcho.com)
+ * @version 1.1
  */
 class AVReceiver    implements ReceiveStreamListener, SessionListener,
 ControllerListener, SendStreamListener
@@ -99,6 +96,10 @@ ControllerListener, SendStreamListener
     private Processor processor = null;
     public DataSource ds;
     protected ArrayList formatSets = null;
+    
+    /** Utility to wait for processor state changes. */
+    private ProcessorUtility procUtility = new ProcessorUtility("AVReceiver");
+    
     public AVReceiver(String sessions[],Properties sipProp)
     {
         this.sessions = sessions;
@@ -667,11 +668,9 @@ ControllerListener, SendStreamListener
                 throw new MediaException("Processor is null.");
             }
             // Wait for the processor to configure
-            boolean result = true;
-            if (processor.getState() < Processor.Configured)
-            {
-                result = waitForState(processor, Processor.Configured);
-            }
+//            processor.addControllerListener(new StateListener());
+            boolean result = procUtility.waitForState(processor, 
+                    Processor.Configured);
             if (result == false)
             {
                 console.error("Couldn't configure processor");
@@ -682,9 +681,12 @@ ControllerListener, SendStreamListener
 
             console.debug("-----"+ tracks[0].getFormat());
             int t = tracks[0].getSupportedFormats().length;
-            for(int i=0;i<t;i++)
-            {
-                console.debug("--------------------------------------"+tracks[0].getSupportedFormats()[i]);
+            if (console.isDebugEnabled()) {
+                for(int i=0;i<t;i++)
+                {
+                    console.debug("supported format: "
+                            + tracks[0].getSupportedFormats()[i]);
+                }
             }
 
 
@@ -716,61 +718,7 @@ ControllerListener, SendStreamListener
             console.logExit();
         }
     }
-    /****************************************************************
-     * Convenience methods to handle processor's state changes.
-     ****************************************************************/
-    protected Integer stateLock = new Integer(0);
-    protected boolean failed = false;
-    Integer getStateLock()
-    {
-        return stateLock;
-    }
 
-    void setFailed()
-    {
-        failed = true;
-    }
-
-    protected synchronized boolean waitForState(Processor p, int state)
-    {
-
-        p.addControllerListener(new StateListener());
-        failed = false;
-        // Call the required method on the processor
-        if (state == Processor.Configured)
-        {
-            p.configure();
-        }
-        else if (state == Processor.Realized)
-        {
-            p.realize();
-        }
-        // Wait until we get an event that confirms the
-        // success of the method, or a failure event.
-        // See StateListener inner class
-        while (p.getState() < state && !failed)
-        {
-            synchronized (getStateLock())
-            {
-                try
-                {
-                    getStateLock().wait();
-                }
-                catch (InterruptedException ie)
-                {
-                    return false;
-                }
-            }
-        }
-        if (failed)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
     protected int findFirstMatchingFormat(Format[] hayStack, ArrayList needles)
     {
         try
@@ -812,21 +760,8 @@ ControllerListener, SendStreamListener
             try
             {
                 console.logEntry();
-                console.debug(ce.toString());
-                // If there was an error during configure or
-                // realize, the processor will be closed
-                if (ce instanceof ControllerClosedEvent)
-                {
-                    setFailed();
-                    // All controller events, send a notification
-                    // to the waiting thread in waitForState method.
-                }
-                if (ce instanceof ControllerEvent)
-                {
-                    synchronized (getStateLock())
-                    {
-                        getStateLock().notifyAll();
-                    }
+                if (console.isDebugEnabled()) {
+                    console.debug(ce.toString());
                 }
                 //stop the stream at the end of the audio file
                 if (ce instanceof EndOfMediaEvent)

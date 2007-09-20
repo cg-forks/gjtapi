@@ -57,22 +57,53 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaListener;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.media.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
+
+import javax.media.CaptureDeviceInfo;
+import javax.media.DataSink;
+import javax.media.Format;
+import javax.media.IncompatibleSourceException;
+import javax.media.Manager;
+import javax.media.MediaLocator;
+import javax.media.NoDataSourceException;
+import javax.media.NoProcessorException;
+import javax.media.Player;
+import javax.media.Processor;
 import javax.media.control.TrackControl;
-import javax.media.format.*;
-import javax.media.protocol.*;
-import javax.sdp.*;
-import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
+import javax.media.format.AudioFormat;
+import javax.media.format.VideoFormat;
+import javax.media.protocol.ContentDescriptor;
+import javax.media.protocol.DataSource;
 import javax.media.rtp.RTPManager;
 import javax.media.rtp.SessionAddress;
+import javax.sdp.Connection;
+import javax.sdp.Media;
+import javax.sdp.MediaDescription;
+import javax.sdp.Origin;
+import javax.sdp.SdpConstants;
+import javax.sdp.SdpException;
+import javax.sdp.SdpFactory;
+import javax.sdp.SdpParseException;
+import javax.sdp.SessionDescription;
+import javax.sdp.SessionName;
+import javax.sdp.TimeDescription;
+import javax.sdp.Version;
+
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
+import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
+import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
+import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaListener;
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -94,7 +125,7 @@ public class MediaManager implements Serializable {
     protected Vector avTransmitters = new Vector();
     protected AVReceiver avReceiver;
     protected SdpFactory sdpFactory;
-    protected ProcessorUtility procUtility = new ProcessorUtility();
+    protected ProcessorUtility procUtility = new ProcessorUtility("MediaManager");
     //media devices
     protected CaptureDeviceInfo audioDevice = null;
     protected CaptureDeviceInfo videoDevice = null;
@@ -139,8 +170,8 @@ public class MediaManager implements Serializable {
      * The list is used by transmitters and receivers so that receiving and transmitting
      * from the same port simultaneousl is possible
      */
-    protected Hashtable activeRtpManagers = new Hashtable();
-    protected Hashtable sessions = new Hashtable();
+    protected Map activeRtpManagers = new Hashtable();
+    protected Map sessions = new Hashtable();
     protected RTPManager rtpManager;
 
     protected String mediaSource = null;
@@ -163,6 +194,12 @@ public class MediaManager implements Serializable {
     }
 
 
+    /**
+     * Reads the audio from the given url and publishes it to all transmitters.
+     * @param url the url pointing to an audio data source
+     * @throws MediaException
+     *         Error playing the audio.
+     */
     public void play(String url) throws MediaException {
 
         console.logEntry();
@@ -171,7 +208,6 @@ public class MediaManager implements Serializable {
         avDataSource = createDataSource(locator);
         if (avDataSource != null) {
             initProcessor(avDataSource);
-
         }
 
         for (int i = avTransmitters.size() - 1; i >= 0; i--) {
@@ -233,7 +269,7 @@ public class MediaManager implements Serializable {
     }
 
     /**
-     * Get the datasource for a Sip session.
+     * Gets the datasource for a Sip session.
      * @return
      */
     public DataSource getDataSource() throws IncompatibleSourceException,
@@ -278,6 +314,11 @@ public class MediaManager implements Serializable {
         }
     }
 
+    /**
+     * Creates the {@link DataSource} for the given {@link MediaLocator}.
+     * @param locator the medi loactor
+     * @return created data source.
+     */
     protected DataSource createDataSource(MediaLocator locator) {
         try {
             console.logEntry();
@@ -290,7 +331,7 @@ public class MediaManager implements Serializable {
                 }
                 return Manager.createDataSource(locator);
             } catch (NoDataSourceException ex) {
-                //The failure only concens us
+                //The failure only concerns us
                 if (console.isDebugEnabled()) {
                     console.debug("Coud not create data source for " +
                                   locator.toExternalForm(), ex);
@@ -1047,6 +1088,7 @@ public class MediaManager implements Serializable {
                             + " trying to connec to to datasource!", ex);
                 }
                 processor = Manager.createProcessor(dataSource);
+                processor.configure();
                 boolean success =
                     procUtility.waitForState(processor, Processor.Configured);
                 if (!success) {
@@ -1075,7 +1117,9 @@ public class MediaManager implements Serializable {
                     ContentDescriptor.RAW_RTP));
             TrackControl[] trackControls = processor.getTrackControls();
 
-            console.debug("We will be able to transmit in:");
+            if (console.isDebugEnabled()) {
+                console.debug("We will be able to transmit in:");
+            }
             for (int i = 0; i < trackControls.length; i++) {
                 Format[] formats = trackControls[i].getSupportedFormats();
                 for (int j = 0; j < formats.length; j++) {
@@ -1128,11 +1172,7 @@ public class MediaManager implements Serializable {
      * Removes all rtp managers from the rtp manager cache.
      */
     synchronized void removeAllRtpManagers() {
-        Enumeration rtpManages = activeRtpManagers.keys();
-        while (rtpManages.hasMoreElements()) {
-            SessionAddress item = (SessionAddress) rtpManages.nextElement();
-            activeRtpManagers.remove(item);
-        }
+        activeRtpManagers.clear();
     }
 
 
@@ -1170,38 +1210,5 @@ public class MediaManager implements Serializable {
         } finally {
             console.logExit();
         }
-    }
-
-    protected synchronized boolean waitForState(Processor p, int state) {
-
-        boolean failed = false;
-        // Call the required method on the processor
-        if (state == Processor.Configured) {
-            p.configure();
-        } else if (state == Processor.Realized) {
-            p.realize();
-        }
-        // Wait until we get an event that confirms the
-        // success of the method, or a failure event.
-        // See StateListener inner class
-        while (p.getState() < state && !failed) {
-            synchronized (getStateLock()) {
-                try {
-                    getStateLock().wait();
-                } catch (InterruptedException ie) {
-                    return false;
-                }
-            }
-        }
-        if (failed) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    protected Integer stateLock = new Integer(0);
-    Integer getStateLock() {
-        return stateLock;
     }
 }
