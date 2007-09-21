@@ -2,6 +2,8 @@ ProviderClass = net.sourceforge.gjtapi.raw.modem.ModemProvider
 ## The following should be set to the concrete "Modem" implementation specific to a modem
 ModemClass=net.sourceforge.gjtapi.raw.modem.AccuraV92
 #ModemClass=net.sourceforge.gjtapi.raw.modem.Zoom3049Conexant
+#ModemClass=net.sourceforge.gjtapi.raw.modem.PropertiesModem
+#properties.modem.config=DefaultModem.props
 
 # These are the true capabilities
 answer = t
