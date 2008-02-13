@@ -943,11 +943,13 @@ public void setConferenceController(TerminalConnection tc) throws InvalidStateEx
 		int connSize = conns.length;
 		for (int i = 0; (i < connSize) && (!member); i++) {
 			TerminalConnection tcs[] = conns[i].getTerminalConnections();
-			int tcSize = tcs.length;
-			for (int j = 0; j < tcSize; j++) {
-				if (tcs[j].equals(tc)) {
-					member = true;
-					break;
+			if (tcs != null) {
+				int tcSize = tcs.length;
+				for (int j = 0; j < tcSize; j++) {
+					if (tcs[j].equals(tc)) {
+						member = true;
+						break;
+					}
 				}
 			}
 		}
