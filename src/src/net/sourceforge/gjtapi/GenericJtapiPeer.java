@@ -38,7 +38,10 @@ package net.sourceforge.gjtapi;
 
 import java.util.*;
 import java.io.*;
+import java.net.URL;
+
 import javax.telephony.*;
+
 import net.sourceforge.gjtapi.raw.*;
 
 public class GenericJtapiPeer implements JtapiPeer {
@@ -47,6 +50,8 @@ public class GenericJtapiPeer implements JtapiPeer {
 	private final static String DEFAULT_PROVIDER = "DefaultProvider";
 	private final static String PROV_PREFIX = "PROVIDER_";
 	private final static String PROV_CLASS_KEY = "ProviderClass";
+	private final static String PROV_PROP_SUFFIX = ".gjtapi";
+	private final static String PROV_AUTOPROPERTY = "provider.gjtapi";
 	
 	// key for the property for disconnecting a Connection when a MediaService releases
 	private final String MEDIA_RELEASE_DISCONNECT = "mediaReleaseDisconnect";
@@ -148,15 +153,29 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	}
 
 	// look up provider in loaded Properties
-	String providerFileName = (String) this.getProviders().get(provName);
-	// if the name is not in the resources list
-	if (providerFileName == null)
-		providerFileName = provName;
+	Object providerHandle = this.getProviders().get(provName);
+	InputStream is = null;
+	String providerFileName = null;
+	if (providerHandle instanceof URL) {
+		try {
+			is = ((URL)providerHandle).openStream();
+		} catch (IOException ioe) {
+			ProviderUnavailableException pue = new ProviderUnavailableException(ProviderUnavailableException.CAUSE_UNKNOWN, "Could not open resource: " + providerHandle);
+			pue.setStackTrace(ioe.getStackTrace());
+			throw pue;
+		}
+	} else {
+		providerFileName = (String)providerHandle;
+		// if the name is not in the resources list
+		if (providerFileName == null)
+			providerFileName = provName;
+		
+		is = this.findResource(providerFileName);
+	}
 	String providerClassName = null;
-	
+
 	// See if this is a Property file or a call name
 	Properties provProps = new Properties();
-	InputStream is = this.findResource(providerFileName);
 	if (is != null) {
 		try {
 			provProps.load(is);
@@ -243,8 +262,11 @@ private void loadResources() {
 			if (disconnect != null && disconnect.length() > 0 && Character.toLowerCase(disconnect.charAt(0)) != 't')
 				this.disconnectMediaOnRelease = false;
 		}
-
 	}
+	
+	// Now look for any providers property files in the resource directory with the right suffix
+	// or in the jar files
+	this.findAutoProviders(provs);
 	
 }
 /**
@@ -345,4 +367,94 @@ private InputStream findResource(String resourceName) {
 	// now let's check the classpath
 	return this.getClass().getResourceAsStream("/" + resourceName);
 }
+
+/**
+ * Find providers in the resource directories based on the naming suffix
+ * @param providers The name-class lookup table
+ */
+private void findAutoProviders(Hashtable providers) {
+	// load all resource files ending in .gjtapi on the resource or user directory
+	
+	// first we see if we should check for a resource directory
+	HashSet directories = new HashSet();
+	String resourceDir = System.getProperty(RESOURCE_DIR);
+	if (resourceDir != null) {
+		File resourceDirectory = new File(resourceDir);
+		if (resourceDirectory.exists() && resourceDirectory.isDirectory()) {
+			directories.add(resourceDirectory);
+		}
+	}
+	
+	// now add the home directory
+	File userDirectory = new File(System.getProperty("user.dir"));
+	if (userDirectory.exists() && userDirectory.isDirectory()) {
+		directories.add(userDirectory);
+	}
+	
+	Iterator it = directories.iterator();
+	while(it.hasNext()) {
+		File resourceDirectory = (File)it.next();
+		// find all the auto-load files
+		File[] resources = resourceDirectory.listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.endsWith(PROV_PROP_SUFFIX);
+			}
+		});
+		// load each file
+		for(int i = 0; i<resources.length; i++) {
+			try {
+				File resource = resources[i];
+				String fullName = resource.getName();
+				String name = fullName.substring(0, fullName.length()-PROV_PROP_SUFFIX.length());
+				// only add if name is unique
+				if (!providers.containsKey(name)) {
+					providers.put(name, resource.getCanonicalPath());
+				}
+			} catch (IOException ioe) {
+				// no-op
+			}
+		}
+	}
+
+	// Now look for provider.gjtapi classes on the classpath
+	try {
+		Enumeration cpResources = ClassLoader.getSystemResources(PROV_AUTOPROPERTY);
+		while(cpResources.hasMoreElements()) {
+			URL cpResource = (URL)cpResources.nextElement();
+			// find the name as the jar part of the resource
+			String jarPath = cpResource.getPath();
+			if(jarPath != null) {
+				// check if we have a jar file or a local file
+				int tailLocation = jarPath.lastIndexOf(".jar!/" + PROV_AUTOPROPERTY);
+				if(tailLocation != -1) {
+					jarPath = jarPath.substring(0, tailLocation+4);
+					// find the name of the jar file
+					tailLocation = jarPath.lastIndexOf('/');
+					if(tailLocation != -1) {
+						jarPath = jarPath.substring(tailLocation+1);
+					}
+				}
+				else {
+					// find the suffix of the file
+					tailLocation = jarPath.lastIndexOf('/');
+					if(tailLocation != -1) {
+						jarPath = jarPath.substring(tailLocation+1);
+						tailLocation = jarPath.lastIndexOf(PROV_PROP_SUFFIX);
+						if(tailLocation != -1) {
+							jarPath = jarPath.substring(0, jarPath.length()-PROV_PROP_SUFFIX.length());
+						}
+					}
+				}
+			}
+			
+			// Now add if new
+			if ((jarPath != null) && (!providers.containsKey(jarPath))) {
+				providers.put(jarPath, cpResource);
+			}
+		}
+	} catch (IOException ioe) {
+		// no-op
+	}
+}
+
 }
