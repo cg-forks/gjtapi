@@ -309,6 +309,8 @@ public class MediaManager implements Serializable {
             //DataSource audioDataSource = null;
 
             isStarted = true;
+        } catch (SdpException sdpEx) {
+        	throw new MediaException(sdpEx);
         } finally {
             console.logExit();
         }
