@@ -171,6 +171,17 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 			providerFileName = provName;
 		
 		is = this.findResource(providerFileName);
+		if (is == null) {
+			// try to load from the file system
+			File file = new File(providerFileName);
+			if(file.exists() && file.canRead() && file.isFile()) {
+				try {
+					is = new FileInputStream(file);
+				} catch (FileNotFoundException fnfe) {
+					// fall through
+				}
+			}
+		}
 	}
 	String providerClassName = null;
 
