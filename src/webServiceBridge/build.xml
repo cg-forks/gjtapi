@@ -21,7 +21,7 @@
 	<property name="gjtapiws" value="GjtapiWS" /> 
 	<property name="path" value="/${gjtapiws}"/>
 	
-	<property name="jwsdp.home" value="/usr/local/jwsdp-1.1"/>
+	<property name="jwsdp.home" value="/home/rdeadman/jwsdp-2.0"/>
 
 	<!-- Configure properties to access the Manager application -->
 	<property name="url" value="http://localhost:8080/manager"/> 
@@ -79,11 +79,14 @@
     <pathelement location="${xsdlib.jar}"/>
     <pathelement location="${jax-qname.jar}"/>
     <pathelement location="${ant.jar}"/>
+  	<pathelement location="${jwsdp.home}/fastinfoset/lib/FastInfoset.jar"/>
+  	<pathelement location="${jwsdp.home}/sjsxp/lib/jsr173_api.jar"/>
   </path>
   
   <path id="jtapi.files">
 	<pathelement location="${jtapi.jar}"/>
 	<pathelement location="${gjtapi.jar}"/>
+  	<pathelement location="${gjtapi-remote.jar}"/>
   </path>
 
   <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
@@ -144,7 +147,7 @@
   <target name="create-war" depends="generate-server">
     <war warfile="${build}/${appname}-raw.war"
          webxml="web.xml">
-        <webinf dir="${basedir}" includes="*.wsdl,jaxrpc-ri.xml"/>
+        <webinf dir="${basedir}" includes="*.wsdl,jaxrpc-ri.xml,model.gz"/>
         <webinf dir="${basedir}" includes="${webapp.jaxrpc.file}" defaultexcludes="no"/>
         <webinf dir="${build}" includes="${model.rpcenc.file}" defaultexcludes="no"/>
         <classes dir="${build}/classes/server" includes="**/*.class" defaultexcludes="no"/>

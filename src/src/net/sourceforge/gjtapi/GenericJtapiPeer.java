@@ -440,7 +440,12 @@ private void findAutoProviders(Hashtable providers) {
 				if(tailLocation != -1) {
 					jarPath = jarPath.substring(0, tailLocation+4);
 					// find the name of the jar file
+						// test for fully qualified name
 					tailLocation = jarPath.lastIndexOf('/');
+					if(tailLocation == -1) {
+						// or relative name
+						tailLocation = jarPath.lastIndexOf(':');
+					}
 					if(tailLocation != -1) {
 						jarPath = jarPath.substring(tailLocation+1);
 					}

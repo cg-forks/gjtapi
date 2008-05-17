@@ -1,0 +1,15 @@
+ProviderClass = net.sourceforge.gjtapi.raw.tapi3.Tapi3Provider
+tapi3.impl.class = net.sourceforge.gjtapi.raw.tapi3.Tapi3NativeImpl
+
+# tapi3.log.out = C:\\tapi3.log
+# tapi3.log.out = ${user.dir}\\tapi3-${user.name}.log
+# tapi3.log.out = console
+# tapi3.log.class = net.sourceforge.gjtapi.raw.tapi3.logging.NullLogger
+tapi3.log.class = net.sourceforge.gjtapi.test.tapi3.Tapi3Logger
+
+# tapi3.native.log.out = C:\\tapi3dll.log
+tapi3.native.log.out = ${user.dir}\\tapi3dll.log
+
+tapi3.native.swapOnHold = false
+
+# tapi3.native.handoff = dialer.exe

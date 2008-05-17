@@ -1,15 +1,21 @@
-DefaultProvider = Tapi3
+DefaultProvider = Emulator
+#DefaultProvider = Tapi3
 PROVIDER_Emulator = net.sourceforge.gjtapi.raw.emulator.EmProvider
-PROVIDER_Rmi = net.sourceforge.gjtapi.raw.remote.RmiProvider
 PROVIDER_Mux = net.sourceforge.gjtapi.raw.mux.MuxProvider
+PROVIDER_Inverter = net.sourceforge.gjtapi.raw.invert.InvertProvider
 PROVIDER_Emulator6 = Emulator6.props
-PROVIDER_DialogicGC = DialogicGC.props
-PROVIDER_Corba = net.sourceforge.gjtapi.raw.remote.CorbaProvider
-PROVIDER_Modem = Modem.props
-PROVIDER_Sip = net.sourceforge.gjtapi.raw.sipprovider.SipProvider
-PROVIDER_Tapi3 = Tapi3.props
-PROVIDER_Asterisk = Asterisk.props
-PROVIDER_Xtapi = net.sourceforge.gjtapi.raw.xtapi.XtapiProvider
+
+## No longer in core -- require *.gjtapi files
+#PROVIDER_Rmi = net.sourceforge.gjtapi.raw.remote.RmiProvider
+#PROVIDER_Corba = net.sourceforge.gjtapi.raw.remote.CorbaProvider
+#PROVIDER_Sip = net.sourceforge.gjtapi.raw.sipprovider.SipProvider
+#PROVIDER_Xtapi = net.sourceforge.gjtapi.raw.xtapi.XtapiProvider
+
+## The following providers should be autoloaded when their *.gjtapi file are found
+#PROVIDER_DialogicGC = DialogicGC.gjtapi
+#PROVIDER_Modem = Modem.gjtapi
+#PROVIDER_Tapi3 = Tapi3.gjtapi
+#PROVIDER_Asterisk = Asterisk.gjtapi
 
 # should the MediaService disconnect the Connection on a Terminal when the MediaService
 # is released? "t" enforces JTAPI specifications

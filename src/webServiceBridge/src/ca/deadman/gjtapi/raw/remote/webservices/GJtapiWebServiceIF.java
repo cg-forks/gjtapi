@@ -28,6 +28,7 @@ package ca.deadman.gjtapi.raw.remote.webservices;
 import java.util.HashMap;
 import java.util.Properties;
 import java.rmi.*;
+import net.sourceforge.gjtapi.TermData;
 
 /**
  * This is the JAX-RPC definition of the remote interface for a webservice bridge for GJTAPI.
