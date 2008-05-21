@@ -1,0 +1,1 @@
+java -cp redistrib/Jtapi-1.4.jar:gjtapi-v1.4-1.9.jar net.sourceforge.gjtapi.test.TestProviderLoad

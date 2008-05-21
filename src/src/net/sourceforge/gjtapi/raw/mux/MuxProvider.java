@@ -207,7 +207,6 @@ public boolean freeMedia(String terminal, int type) {
  * @param update A new String representation of a boolean value.
  */
 private Object gcd(Object existing, Object update) {
-	boolean oldFlag = false;
 	if ((existing instanceof String && ((String)existing).length() > 0 &&
 			Character.toLowerCase(((String)existing).charAt(0)) == 't') ||
 	    (existing instanceof Boolean && ((Boolean)existing).booleanValue()))
@@ -348,8 +347,6 @@ public CallData getCall(CallId id) {
 
 		// now map these to the sub-provider
 		if ((call != null) && (call.connections != null)) {
-			Map addrMap = this.getAddToMap();
-			Map termMap = this.getTermToMap();
 			// record all Addresses and Terminals
 			int connSize = call.connections.length;
 			for (int i = 0; i < connSize; i++) {
@@ -707,8 +704,6 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	}
 
 	// Now load each sub-provider
-	Map addMap = this.getAddToMap();
-	Vector addSet = new Vector();
 	Map subCaps = this.getSubToCaps();
 	
 	Iterator it = m.keySet().iterator();
@@ -746,13 +741,14 @@ public boolean isMediaTerminal(String terminal) {
 /**
  * Determine if the given sub-provider throttles calls.
  */
-private boolean isThrottled(TelephonyProvider rp) {
+/*private boolean isThrottled(TelephonyProvider rp) {
 	Properties props = (Properties)this.getSubToCaps().get(rp);
 	if (props != null) {
 		return Capabilities.resolve(props.get(Capabilities.THROTTLE));
 	}
 	return true;	// Assume it does
 }
+*/
 /**
  * Tell the remote provider to join two calls
  */
@@ -815,7 +811,6 @@ public CallId join(CallId call1, CallId call2, String address, String terminal) 
  * @param update A new String representation of a boolean value.
  */
 private Object lcd(Object existing, Object update) {
-	boolean oldFlag = false;
 	if ((existing instanceof String && ((String)existing).length() > 0 &&
 			Character.toLowerCase(((String)existing).charAt(0)) != 't') ||
 	    (existing instanceof Boolean && !((Boolean)existing).booleanValue()))

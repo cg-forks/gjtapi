@@ -39,6 +39,8 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public class SymbolHolder implements java.io.Serializable {
+	static final long serialVersionUID = -6638508529572869814L;
+	
 	private int value = 0;
 
 	private transient Symbol symbol = null;

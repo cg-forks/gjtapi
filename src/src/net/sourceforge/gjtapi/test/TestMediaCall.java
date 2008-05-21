@@ -107,7 +107,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		// answer args[1]
 		out.print("3.2: Attempting to get call connections...");
 		Connection cons[] = c.getConnections();
-		out.println(" success.");
+		out.println(" success: " + cons.length);
 
 		// force a wait
 		prompt();
@@ -118,8 +118,8 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		out.println(" success.");
 
 		// find the outgoing terminal
-		out.print("2.4: Attempting to get a Terminal by name...");
-		Terminal t = prov.getTerminal(fromAddr);
+		out.print("2.4b: Using first terminal on from address...");
+		Terminal t = ts[0];
 		out.println(" success.");
 
 		// bind the media service

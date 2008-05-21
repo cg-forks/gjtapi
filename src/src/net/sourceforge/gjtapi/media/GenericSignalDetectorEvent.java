@@ -37,6 +37,8 @@ import javax.telephony.media.*;
  * @author: 
  */
 public class GenericSignalDetectorEvent extends GenericResourceEvent implements SignalDetectorEvent {
+	static final long serialVersionUID = -5627163403891841155L;
+	
 	private int patternIndex = -1;
 	private SymbolHolder[] sigs = null;
 /**

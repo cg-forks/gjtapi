@@ -111,7 +111,7 @@ public static void test(String providerName, String fromAddr, String toAddr, Str
 		// answer args[1]
 		out.print("3.2: Attempting to get call connections...");
 		Connection cons[] = c.getConnections();
-		out.println(" success.");
+		out.println(" success: " + cons.length);
 
 		// force a wait
 		prompt();

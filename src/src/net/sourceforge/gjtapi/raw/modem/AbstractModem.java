@@ -28,8 +28,6 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public abstract class AbstractModem implements Modem{
-    private static final String     version_id =
-        "@(#)$Id$ Copyright Westhawk Ltd";
 
     protected int state;
     protected ModemIO io;

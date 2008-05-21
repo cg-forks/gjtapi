@@ -37,6 +37,8 @@ package net.sourceforge.gjtapi;
  * @author: Richard Deadman
  */
 public class TermData implements java.io.Serializable {
+	static final long serialVersionUID = -5353564600885755166L;
+	
 	public String terminal;
 	public boolean isMedia;		// does this terminal support media
 /**

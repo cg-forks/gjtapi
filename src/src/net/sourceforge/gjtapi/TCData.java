@@ -39,6 +39,8 @@ package net.sourceforge.gjtapi;
  * @author: Richard Deadman
  */
 public class TCData implements java.io.Serializable {
+	static final long serialVersionUID = 8943763315867425595L;
+	
 	public int tcState;
 	public TermData terminal;	// terminal name and media information
 /**

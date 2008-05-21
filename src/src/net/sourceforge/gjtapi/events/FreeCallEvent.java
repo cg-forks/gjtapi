@@ -66,12 +66,6 @@ public Call getCall() {
 	return call;
 }
 /**
- * getCall method comment.
- */
-private FreeCall getPrivateCall() {
-	return call;
-}
-/**
  * getSource method comment.
  */
 public java.lang.Object getSource() {

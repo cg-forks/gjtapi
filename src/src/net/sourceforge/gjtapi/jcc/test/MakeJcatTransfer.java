@@ -101,7 +101,7 @@ public static void test(String providerName, String fromAddr, String toAddr, Str
 		// Get an address
 		out.print("2.1: Attempting to get Jcat address...");
 		JcatAddress addr = (JcatAddress)prov.getAddress(fromAddr);
-		out.println(" success.");
+		out.println(" success:" + addr.getName());
 
 		// Make the Call
 		out.print("2.3: Attempting to create call...");
@@ -115,7 +115,7 @@ public static void test(String providerName, String fromAddr, String toAddr, Str
 		// Connect the call
 		out.print("3.1: Attempting to make a call...");
 		JcatConnection[] conns = c.connect(fromTerm, fromAddress, toAddr);
-		out.println(" success.");
+		out.println(" success:" + conns.length);
 
 		// Notify progress
 		System.out.println("Call Connected, press Enter to transfer...");

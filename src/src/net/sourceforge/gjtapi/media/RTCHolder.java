@@ -38,6 +38,8 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public class RTCHolder implements java.io.Serializable {
+	static final long serialVersionUID = 3598158952554758181L;
+	
 	private int trigger = 0;
 	private int action = 0;
 

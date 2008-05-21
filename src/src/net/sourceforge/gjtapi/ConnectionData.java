@@ -39,6 +39,8 @@ package net.sourceforge.gjtapi;
  * @author: Richard Deadman
  */
 public class ConnectionData implements java.io.Serializable {
+	static final long serialVersionUID = -4020360628696574225L;
+	
 	public int connState;
 	public String address;
 	public boolean isLocal;		// is this in the provider's domain

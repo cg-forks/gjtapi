@@ -59,7 +59,7 @@ public static void main(java.lang.String[] args) {
  * @author: Richard Deadman
  */
 protected static void prompt() throws IOException {
-	InputStream in = System.in;
+	//InputStream in = System.in;
 
 	System.out.println("Hit return to continue...");
 	// wait

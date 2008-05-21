@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="CallDispatcher.java">
+        <attr name="class_dependency_net.sourceforge.gjtapi.raw.sip.java.sip.communicator.sip.event.CallListener" stringvalue="CallDispatcher"/>
+    </fileobject>
+    <fileobject name="CommunicationsException.java">
+        <attr name="class_dependency_java.lang.Exception" stringvalue="CommunicationsException"/>
+    </fileobject>
+    <fileobject name="RegisterProcessing.java">
+        <attr name="class_dependency_java.util.TimerTask" stringvalue="RegisterProcessing.ReRegisterTask"/>
+    </fileobject>
+    <fileobject name="SipCommHop.java">
+        <attr name="class_dependency_java.lang.Object" stringvalue="SipCommHop"/>
+        <attr name="class_dependency_javax.sip.address.Hop" stringvalue="SipCommHop"/>
+    </fileobject>
+    <fileobject name="SipCommRouter.java">
+        <attr name="class_dependency_javax.sip.address.Router" stringvalue="SipCommRouter"/>
+    </fileobject>
+    <fileobject name="SipManager.java">
+        <attr name="class_dependency_javax.sip.SipListener" stringvalue="SipManager"/>
+    </fileobject>
+</attributes>

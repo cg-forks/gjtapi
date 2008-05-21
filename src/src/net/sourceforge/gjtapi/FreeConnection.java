@@ -126,15 +126,17 @@ FreeConnection(FreeCall fca,FreeAddress fad){
 public void disconnect() throws InvalidStateException, PrivilegeViolationException, MethodNotSupportedException, ResourceUnavailableException {
 
 		GenericProvider gp = (GenericProvider) call.getProvider();
-		try {
-			// this should block until the connection is released.
-			gp.getRaw().release(this.getAddress().getName(), call.getCallID());
-			
-			// now update the state
-			this.toDisconnected(Event.CAUSE_NORMAL);
-		} catch (RawStateException re) {
-			throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
-		}
+		// should check if we have already been disconnected
+		if (this.getState() != Connection.DISCONNECTED)
+			try {
+				// this should block until the connection is released.
+				gp.getRaw().release(this.getAddress().getName(), call.getCallID());
+				
+				// now update the state
+				this.toDisconnected(Event.CAUSE_NORMAL);
+			} catch (RawStateException re) {
+				throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
+			}
 }
 	/**
 	 * Resurrect the Address object from the Domain manager
@@ -352,6 +354,9 @@ void toAlerting(int cause) {
 		oldState == Connection.IDLE) {
 		this.setState(Connection.ALERTING);
 		
+		// Unless otherwise set, this is the called address for the call
+		this.call.setCalledAddress(this.getAddress(), false);
+		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnAlertingEv(cause, this));
 	}
@@ -369,6 +374,9 @@ void toConnected(int cause) {
 		oldState != Connection.DISCONNECTED &&
 		oldState != Connection.CONNECTED) {
 		this.setState(Connection.CONNECTED);
+		
+		// Unless otherwise set, this is the calling address for the call
+		this.call.setCallingAddress(this.getAddress(), false);
 		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnConnectedEv(cause, this));
@@ -440,6 +448,9 @@ void toInProgress(int cause) {
 	int oldState = this.getState();
 	if (oldState == Connection.IDLE || oldState == Connection.UNKNOWN) {
 		this.setState(Connection.INPROGRESS);
+		
+		// Unless otherwise set, this is the called address for the call
+		this.call.setCalledAddress(this.getAddress(), false);
 		
 		// notify any listeners
 		this.getGenProvider().dispatch(new FreeConnInProgressEv(cause, this));

@@ -38,6 +38,8 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class RemoteProviderSingleImpl extends RemoteProviderImpl {
+	static final long serialVersionUID = 6085374214584723631L;
+	
 /**
  * RemoteProviderSingleImpl constructor comment.
  * @param rp net.sourceforge.gjtapi.TelephonyProvider

@@ -492,9 +492,11 @@ public void setPrivateData(java.lang.Object data) {
  * Instructs the Provider to shut itself down and perform all necessary cleanup.
  */
 public void shutdown() {
-  state = Provider.SHUTDOWN;
-  this.getRaw().removeListener(this.getEventHandler());
-  this.getRaw().shutdown();
+  if (rawProvider!=null && state != Provider.SHUTDOWN) {
+	  state = Provider.SHUTDOWN;
+	  rawProvider.removeListener(this.getEventHandler());
+	  rawProvider.shutdown();
+  }
   rawProvider = null;
 }
 	/**

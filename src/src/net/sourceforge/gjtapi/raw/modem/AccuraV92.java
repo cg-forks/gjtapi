@@ -24,8 +24,6 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public class AccuraV92 extends AbstractModem {
-    private static final String     version_id =
-            "@(#)$Id$ Copyright Westhawk Ltd";
 
     //Temporary values for using the modem.
     //todo - read these from a props file or similar.
@@ -143,6 +141,7 @@ public class AccuraV92 extends AbstractModem {
             }else{
                 state = INVALID;
                 System.err.print("Modem could not call number: ");
+                listener.modemFailed(id, dest);
                 if (matchState == ModemIO.TIMEOUT){
                     System.err.println("Timeout");
                 }else{

@@ -1,5 +1,4 @@
 package net.sourceforge.gjtapi.raw.dialogic;
-import java.io.*;
 import java.util.*;
 import net.sourceforge.gjtapi.*;
 import javax.telephony.*;
@@ -154,7 +153,7 @@ public class GCProvider implements BasicJtapiTpi, Runnable {
             done = false;
             if (polling) {
                 Thread t = new Thread(this,"gc_events");
-                t.setPriority(t.MAX_PRIORITY);
+                t.setPriority(Thread.MAX_PRIORITY);
                 eventThread = t;
                 t.start();
             }

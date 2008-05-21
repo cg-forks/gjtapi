@@ -119,15 +119,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 /**
- * Insert the method's description here.
- * Creation date: (2000-02-09 11:23:25)
- * @author: 
- * @param newCanvas javax.swing.JPanel
- */
-private void setCanvas(javax.swing.JPanel newCanvas) {
-	canvas = newCanvas;
-}
-/**
  * Create a view for the TestManager
  * Creation date: (2000-02-10 13:11:37)
  * @author: Richard Deadman

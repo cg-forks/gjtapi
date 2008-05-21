@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="AVReceiver.java">
+        <attr name="class_dependency_javax.media.ControllerListener" stringvalue="AVReceiver.StateListener;AVReceiver"/>
+        <attr name="class_dependency_javax.media.rtp.ReceiveStreamListener" stringvalue="AVReceiver"/>
+        <attr name="class_dependency_javax.media.rtp.SendStreamListener" stringvalue="AVReceiver"/>
+        <attr name="class_dependency_javax.media.rtp.SessionListener" stringvalue="AVReceiver"/>
+    </fileobject>
+    <fileobject name="AVTransmitter.java">
+        <attr name="class_dependency_javax.media.ControllerListener" stringvalue="AVTransmitter.StateListener"/>
+    </fileobject>
+    <fileobject name="MediaException.java">
+        <attr name="class_dependency_java.lang.Exception" stringvalue="MediaException"/>
+    </fileobject>
+    <fileobject name="MediaManager.java">
+        <attr name="class_dependency_java.io.Serializable" stringvalue="MediaManager"/>
+    </fileobject>
+    <fileobject name="ProcessorUtility.java">
+        <attr name="class_dependency_javax.media.ControllerListener" stringvalue="ProcessorUtility"/>
+    </fileobject>
+</attributes>

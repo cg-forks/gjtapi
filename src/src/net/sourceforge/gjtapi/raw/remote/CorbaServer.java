@@ -46,6 +46,8 @@ import net.sourceforge.gjtapi.raw.remote.corba.LongEntry;
  * @author: Richard Deadman
  */
 public class CorbaServer extends _CorbaProviderImplBase {
+	static final long serialVersionUID = 7075798562180704373L;
+	
 	private CallMapper refMapper = new CallMapper();
 	private RawListenerMux callbackMux = new RawListenerMux();
 	private TelephonyProvider real;
@@ -607,9 +609,9 @@ public void sendSignals(String terminal, int[] syms, net.sourceforge.gjtapi.raw.
  * @author: Richard Deadman
  * @param newCallbackMux net.sourceforge.gjtapi.raw.RawListenerMux
  */
-private void setCallbackMux(net.sourceforge.gjtapi.raw.RawListenerMux newCallbackMux) {
+/*private void setCallbackMux(net.sourceforge.gjtapi.raw.RawListenerMux newCallbackMux) {
 	callbackMux = newCallbackMux;
-}
+}*/
 /**
  * setLoadControl method comment.
  */
@@ -650,9 +652,9 @@ private void setReal(net.sourceforge.gjtapi.TelephonyProvider newReal) {
  * @author: Richard Deadman
  * @param newRefMapper net.sourceforge.gjtapi.raw.remote.CallMapper
  */
-private void setRefMapper(CallMapper newRefMapper) {
+/*private void setRefMapper(CallMapper newRefMapper) {
 	refMapper = newRefMapper;
-}
+}*/
 /**
  * Eat remote shutdown message -- since more than one client may be connected.
  * The provider should handle shutdown from finalize or Unreferenced.
@@ -700,23 +702,23 @@ private net.sourceforge.gjtapi.raw.remote.corba.ConnectionData[] toConnectionDat
 /**
  * Convert a Symbol dictionary to a LongEntry array
  */
-private LongEntry[] toLongEntryArray(Dictionary params) {
-	Set longEntrySet = new HashSet();
-	int size = 0;
-	Enumeration e = params.keys();
-	while (e.hasMoreElements()) {
-		Object key = e.nextElement();
-		if (key instanceof Symbol) {
-			Symbol skey = (Symbol)key;
-			Object value = params.get(key);
-			if (value instanceof Symbol) {
-				longEntrySet.add(new LongEntry(skey.hashCode(), value.hashCode()));
-				size++;
-			}
-		}
-	}
-	return (LongEntry[])longEntrySet.toArray(new LongEntry[size]);
-}
+//private LongEntry[] toLongEntryArray(Dictionary params) {
+//	Set longEntrySet = new HashSet();
+//	int size = 0;
+//	Enumeration e = params.keys();
+//	while (e.hasMoreElements()) {
+//		Object key = e.nextElement();
+//		if (key instanceof Symbol) {
+//			Symbol skey = (Symbol)key;
+//			Object value = params.get(key);
+//			if (value instanceof Symbol) {
+//				longEntrySet.add(new LongEntry(skey.hashCode(), value.hashCode()));
+//				size++;
+//			}
+//		}
+//	}
+//	return (LongEntry[])longEntrySet.toArray(new LongEntry[size]);
+//}
 /**
  * Convert a LongEntry array to an RTC array
  */

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="Console.java">
+        <attr name="class_dependency_org.apache.log4j.Level" stringvalue="Console.TraceLevel"/>
+    </fileobject>
+    <fileobject name="ConsoleUI.java">
+        <attr name="class_dependency_java.awt.event.ActionListener" stringvalue="ConsoleUI_closeButton_actionAdapter;ConsoleUI_messageButton_actionAdapter"/>
+        <attr name="class_dependency_javax.swing.JDialog" stringvalue="ConsoleUI"/>
+    </fileobject>
+    <fileobject name="NetworkDiagnostics.java">
+        <attr name="class_dependency_java.lang.Thread" stringvalue="NetworkDiagnostics"/>
+    </fileobject>
+</attributes>

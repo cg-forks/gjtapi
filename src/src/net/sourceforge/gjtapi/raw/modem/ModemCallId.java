@@ -20,8 +20,6 @@ import net.sourceforge.gjtapi.CallId;
  * @version $Revision$ $Date$
  */
 public class ModemCallId implements CallId {
-    private static final String     version_id =
-        "@(#)$Id$ Copyright Westhawk Ltd";
 
     private static int idCounter = 0;
     private int id;

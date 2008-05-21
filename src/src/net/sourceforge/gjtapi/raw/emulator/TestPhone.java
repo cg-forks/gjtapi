@@ -44,6 +44,7 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class TestPhone extends JPanel implements PhoneListener, RawPhone {
+	static final long serialVersionUID = 2671358653119242976L;	// should never be serialized
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {

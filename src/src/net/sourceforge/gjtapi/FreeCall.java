@@ -54,6 +54,9 @@ public class FreeCall implements CallControlCall, PrivateData {
 	private boolean confEnabled = true;
 	private FreeTerminalConnection transController = null;
 	private boolean transEnabled = true;
+	private Address calledAddress = null;
+	private Address callingAddress = null;
+	private Terminal callingTerminal = null;
 /**
  * Protected constructor for a Call.
  * Initially the call starts in the Idle state.
@@ -345,11 +348,18 @@ public Connection[] connect(Terminal origterm, Address origaddr, String dialedDi
 	
 	// ensure the origination Connection is in the right initial state
 	origConn.toConnected(Event.CAUSE_NEW_CALL);
-	new FreeTerminalConnection(origConn, origterm).toTalking(Event.CAUSE_NEW_CALL);
+	// see if the provider has already created the connection
+	// and set it to talking
+	origConn.getLazyTermConn((FreeTerminal)origterm).toTalking(Event.CAUSE_NEW_CALL);
 	
 	// Now ensure the destination Connection is in the INPROGRESS state (no TerminalConnections yet)
 	destConn.toInProgress(Event.CAUSE_NEW_CALL);
 
+	// set the called and calling address
+	this.callingAddress = origaddr;
+	this.callingTerminal = origterm;
+	this.calledAddress = destConn.getAddress();
+	
 	//return getConnections();	// this method does not guarantee that they will be in the right order
 	return connSet;
 }
@@ -440,15 +450,23 @@ private FreeTerminalConnection findCommonTC(Call otherCall) {
 		TerminalConnection[] tcs = cs[i].getTerminalConnections();
 		if (tcs != null) {
 			for (int j = 0; j < tcs.length; j++) {
-				Terminal t = tcs[j].getTerminal();
+				Terminal t = null;
+				try {
+					t = tcs[j].getTerminal();
+				}
+				catch (PlatformException e){ }
 				// now check the other call for the same Terminal
 				Connection[] cs2 = otherCall.getConnections();
 				for (int k = 0; k < cs2.length; k++) {
 					TerminalConnection[] tcs2 = cs2[k].getTerminalConnections();
+					if(tcs2 != null)
 					for (int l = 0; l < tcs2.length; l++) {
-						if (tcs2[l].getTerminal().equals(t)) {
-							return (FreeTerminalConnection) tcs[j];
+						try {
+							if (t.equals(tcs2[l].getTerminal())) {
+								return (FreeTerminalConnection) tcs[j];
+							}
 						}
+						catch (PlatformException e){ }
 					}
 				}
 			}
@@ -472,8 +490,29 @@ public FreeConnection getCachedConnection(String addrName) {
  * getCalledAddress method comment.
  */
 public javax.telephony.Address getCalledAddress() {
-	return null;
+	return this.calledAddress;
 }
+/**
+ * Set the CalledAddress for the Call. If knownAddress is
+ * false, then we are guessing that this is the CalledAddress. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCalledAddress
+ * @param knowAddress
+ */
+protected void setCalledAddress(Address theCalledAddress, boolean knownAddress)
+{
+	if ((this.calledAddress == null) || knownAddress)
+	{
+		this.calledAddress = theCalledAddress;
+	}
+}
+
+/**
+ * Returns the GJTAPI call handle provided by the Provider
+ * that uniquely identifies the call. This is used in calls
+ * into the provider.
+ * @return
+ */
 	public CallId getCallID() {
 		return callID;
 	}
@@ -481,13 +520,42 @@ public javax.telephony.Address getCalledAddress() {
  * getCallingAddress method comment.
  */
 public javax.telephony.Address getCallingAddress() {
-	return null;
+	return this.callingAddress;
+}
+
+/**
+ * Set the CallingAddress for the Call. If knownAddress is
+ * false, then we are guessing that this is the CallingAddress. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCallingAddress
+ * @param knowAddress
+ */
+protected void setCallingAddress(Address theCallingAddress, boolean knownAddress)
+{
+	if ((this.callingAddress == null) || knownAddress)
+	{
+		this.callingAddress = theCallingAddress;
+	}
 }
 /**
  * getCallingTerminal method comment.
  */
 public javax.telephony.Terminal getCallingTerminal() {
-	return null;
+	return this.callingTerminal;
+}
+/**
+ * Set the CallingTerminal for the Call. If knownTerminal is
+ * false, then we are guessing that this is the CallingTerminal. This differentiates
+ * assumptions from call events from directions from the provider.
+ * @param theCallingTerminal
+ * @param knowAddress
+ */
+protected void setCallingTerminal(Terminal theCallingTerminal, boolean knownTerminal)
+{
+	if ((this.callingTerminal == null) || knownTerminal)
+	{
+		this.callingTerminal = theCallingTerminal;
+	}
 }
 /**
  * Return a copy of the set of currently registered CallListeners.
@@ -875,11 +943,13 @@ public void setConferenceController(TerminalConnection tc) throws InvalidStateEx
 		int connSize = conns.length;
 		for (int i = 0; (i < connSize) && (!member); i++) {
 			TerminalConnection tcs[] = conns[i].getTerminalConnections();
-			int tcSize = tcs.length;
-			for (int j = 0; j < tcSize; j++) {
-				if (tcs[j].equals(tc)) {
-					member = true;
-					break;
+			if (tcs != null) {
+				int tcSize = tcs.length;
+				for (int j = 0; j < tcSize; j++) {
+					if (tcs[j].equals(tc)) {
+						member = true;
+						break;
+					}
 				}
 			}
 		}
@@ -1125,7 +1195,8 @@ private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSup
 			default:
 				sb.append("Invalid");
 		}
-		sb.append(" call with ").append(this.getConnections().length)
+		Connection[] conns = this.getConnections();
+		sb.append(" call with ").append(conns == null ? 0 : conns.length)
 			.append(" connections.");
 		return sb.toString();
 	}

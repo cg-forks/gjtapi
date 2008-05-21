@@ -272,14 +272,6 @@ private int getJccState() {
 	}
 }
 /**
- * Internal accessor for the address that I will be routed to.
- * Creation date: (2000-11-09 15:23:18)
- * @return java.lang.String
- */
-private JccAddress getJccAddress() {
-	return address;
-}
-/**
  * getLastAddr method comment.
  */
 public String getLastAddress() {
@@ -326,14 +318,6 @@ public JccAddress getOriginatingAddress() {
     	return null;
     }
 
-/**
- * Internal accessor for the Call I am a part of
- * Creation date: (2000-11-09 15:32:29)
- * @return jain.application.services.jcc.JccCall
- */
-private JccCall getPrivateCall() {
-	return call;
-}
 /**
  * Insert the method's description here.
  * Creation date: (2000-10-30 12:55:56)
@@ -726,6 +710,7 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
+		// TODO how do we do this?
 		throw new MethodNotSupportedException("Park not currently supported by GJTAPI");
 	}
 
@@ -740,6 +725,7 @@ public String toString() {
 			MethodNotSupportedException,
 			PrivilegeViolationException,
 			ResourceUnavailableException {
+			// TODO how do we do this?
 				throw new MethodNotSupportedException("Connection Suspend/Reconnect not supported by GJTAPI");
 
 	}
@@ -753,6 +739,7 @@ public String toString() {
 			InvalidStateException,
 			MethodNotSupportedException,
 			ResourceUnavailableException {
+		// TODO Need to add raw support for this
 		throw new MethodNotSupportedException("Connection Suspend not supported by GJTAPI");
 
 	}

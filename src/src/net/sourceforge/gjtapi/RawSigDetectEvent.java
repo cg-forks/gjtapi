@@ -44,6 +44,8 @@ import net.sourceforge.gjtapi.media.*;
  * @author: Richard Deadman
  */
 public class RawSigDetectEvent implements java.io.Serializable {
+	final static long serialVersionUID = 5595693053225567189L;
+	
 		// SignalDetectorEvent info
 	private int patternIndex = -1;
 	private SymbolHolder[] sigs = null;

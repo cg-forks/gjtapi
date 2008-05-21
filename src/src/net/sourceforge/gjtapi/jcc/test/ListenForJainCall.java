@@ -140,9 +140,9 @@ public static void test(String providerName) {
 			public void connectionMidCall(JccConnectionEvent ce) {
 				System.out.println("Connection Mid Call: " + ce);
 			}
-			public void connectionCallDeliveryl(JccConnectionEvent ce) {
-				System.out.println("Connection Call Delivery: " + ce);
-			}
+//			public void connectionCallDeliveryl(JccConnectionEvent ce) {
+//				System.out.println("Connection Call Delivery: " + ce);
+//			}
 			public void connectionFailed(JccConnectionEvent ce) {
 				System.out.println("Connection Failed: " + ce);
 			}

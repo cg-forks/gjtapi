@@ -31,6 +31,8 @@ package net.sourceforge.gjtapi.test;
 	of the copyright holder.
 */
 import java.io.*;
+
+import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.*;
 /**
@@ -102,7 +104,7 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 
 		// Make the Call
 		out.print("2.3: Attempting to create call...");
-		Call c = prov.createCall();
+		CallControlCall c = (CallControlCall)prov.createCall();
 		out.println(" success.");
 		
 		out.print("4.3: Attempting to get terminals for an address...");
@@ -116,6 +118,17 @@ public static void test(String providerName, String fromAddr, String toAddr) {
 		// Notify progress
 		System.out.println("Call initiated...");
 
+		// check that the CallingAddress, CallingTerminal and CalledAddress are all properly set
+		if (!c.getCallingAddress().equals(addr)) {
+			out.println("Calling Address not properly set!");
+		}
+		if (!c.getCallingTerminal().equals(ts[0])) {
+			out.println("Calling Terminal not properly set!");
+		}
+		if (!c.getCalledAddress().getName().equals(toAddr)) {
+			out.println("Called Address not properly set!");
+		}
+		
 		// answer args[1]
 		out.print("3.2: Attempting to get call connections...");
 		Connection cons[] = c.getConnections();

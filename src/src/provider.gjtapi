@@ -1,0 +1,21 @@
+# Automatically detected provider resource sample.
+#
+# This will be automatically picked up as the provider "provider"
+# if found on the resource or user.dir path. It does not need to
+# be listed in the "GenericResouorces.props"
+#
+# If included in a jar file, the name of the provider will
+# be the name of the jar file.
+#
+ProviderClass = net.sourceforge.gjtapi.raw.emulator.EmProvider
+Address1 = 21
+Address2 = 22
+Address3 = 23
+Address4 = 120
+Address5 = 121
+Address6 = 122
+Address7 = 123
+Address8 = 124
+display = true
+# Should we throttle RawListener events?  'f' means that the RawProvider will report everything
+throttle = f

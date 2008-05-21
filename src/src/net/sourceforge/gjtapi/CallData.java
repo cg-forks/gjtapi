@@ -38,6 +38,8 @@ package net.sourceforge.gjtapi;
  * @author: Richard Deadman
  */
 public class CallData implements java.io.Serializable {
+	static final long serialVersionUID = -5155933247539613243L;
+	
 	public CallId id;
 	public int callState;
 	public ConnectionData[] connections;

@@ -558,24 +558,24 @@ private synchronized void startEvents() throws ResourceUnavailableException {
  * Creation date: (2000-05-04 15:23:56)
  * @author: Richard Deadman
  */
-private synchronized void stopEvents() {
-	GenericProvider prov = null;
-	if (this.reporting &&
-			this.callListeners.size() == 0 &&
-			this.callObservers.size() == 0) {
-			if ((prov = (GenericProvider)this.getProvider()).getRawCapabilities().throttle) {
-				try {
-					prov.getRaw().reportCallsOnTerminal(this.getName(), false);
-				} catch (InvalidArgumentException iae) {
-					// logic error!
-					throw new RuntimeException("Error clearing terminal reporting");
-				} catch (ResourceUnavailableException rue) {
-					// eat it
-				}
-			}
-			this.reporting = false;
-	}
-}
+//private synchronized void stopEvents() {
+//	GenericProvider prov = null;
+//	if (this.reporting &&
+//			this.callListeners.size() == 0 &&
+//			this.callObservers.size() == 0) {
+//			if ((prov = (GenericProvider)this.getProvider()).getRawCapabilities().throttle) {
+//				try {
+//					prov.getRaw().reportCallsOnTerminal(this.getName(), false);
+//				} catch (InvalidArgumentException iae) {
+//					// logic error!
+//					throw new RuntimeException("Error clearing terminal reporting");
+//				} catch (ResourceUnavailableException rue) {
+//					// eat it
+//				}
+//			}
+//			this.reporting = false;
+//	}
+//}
   /**
    * Unprotect this address from garbage collection if dynamic Address memory is supported
    **/
