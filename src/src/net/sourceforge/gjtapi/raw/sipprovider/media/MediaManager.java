@@ -299,21 +299,15 @@ public class MediaManager implements Serializable {
     }
 
     public void start() throws MediaException {
-        try {
-            console.logEntry();
-            sdpFactory = SdpFactory.getInstance();
+        console.logEntry();
+        sdpFactory = SdpFactory.getInstance();
 
-            mediaSource = sipProp.getProperty(
-                    "net.java.sip.communicator.media.MEDIA_SOURCE");
-            //Init Capture devices
-            //DataSource audioDataSource = null;
+        mediaSource = sipProp.getProperty(
+                "net.java.sip.communicator.media.MEDIA_SOURCE");
+        //Init Capture devices
+        //DataSource audioDataSource = null;
 
-            isStarted = true;
-        } catch (SdpException sdpEx) {
-        	throw new MediaException(sdpEx);
-        } finally {
-            console.logExit();
-        }
+        isStarted = true;
     }
 
     /**
