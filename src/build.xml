@@ -47,6 +47,9 @@
  <!-- XTAPI support -->
     	<include name="xtapi.jar"/>
     	<include name="mstapisp.jar"/>
+<!-- MjSip support Get it from: http://www.mjsip.org -->
+    	<include name="sip.jar"/>
+    	<include name="ua.jar"/>
     </fileset>
   </path>
 
@@ -62,7 +65,7 @@
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}" source="1.4" debug="true">
+    <javac srcdir="${src}" destdir="${build}" source="1.5" debug="true">
 	<classpath refid="classpath"/>
     </javac>
 
@@ -72,13 +75,15 @@
         description="compile the xtapi source" >
     <!-- Compile the java code from ${xtapi-src} into ${xtapi-build} -->
     <javac srcdir="${xtapi-src}" destdir="${xtapi-build}">
-	<classpath refid="classpath"/>
-	<classpath>
-		<pathelement path="../../xtapi/bin"/>
-	</classpath>
-	<classpath>
-		<pathelement path="${build}"/>
-	</classpath>
+    	<compilerarg value="-Xlint:deprecation"/>
+    	<compilerarg value="-Xlint:unchecked"/>    	
+			<classpath refid="classpath"/>
+			<classpath>
+				<pathelement path="../../xtapi/bin"/>
+			</classpath>
+			<classpath>
+				<pathelement path="${build}"/>
+			</classpath>
     </javac>
 
   </target>
