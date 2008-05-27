@@ -1,0 +1,36 @@
+ProviderClass = net.sourceforge.gjtapi.raw.javasound.JavaSoundProvider
+
+#Agents Properties
+gjtapi.javasound.desktopAgent.default.playbackDevice=Primary Sound Driver
+gjtapi.javasound.desktopAgent.default.captureDevice=Primary Sound Capture Driver
+gjtapi.javasound.desktopAgent.default.encoding=PCM_SIGNED
+gjtapi.javasound.desktopAgent.default.sampleRate=8000.0F
+gjtapi.javasound.desktopAgent.default.sampleSizeInBits=16
+gjtapi.javasound.desktopAgent.default.channels=1
+gjtapi.javasound.desktopAgent.default.frameSize=2
+gjtapi.javasound.desktopAgent.default.frameRate=8000.0F
+gjtapi.javasound.desktopAgent.default.bigEndian=false
+
+gjtapi.javasound.desktopAgent.agent1.playbackDevice=Plantronics Headset
+gjtapi.javasound.desktopAgent.agent1.captureDevice=Plantronics Headset
+gjtapi.javasound.desktopAgent.agent1.encoding=ULAW
+gjtapi.javasound.desktopAgent.agent1.sampleRate=8000.0F
+gjtapi.javasound.desktopAgent.agent1.sampleSizeInBits=8
+gjtapi.javasound.desktopAgent.agent1.channels=1
+gjtapi.javasound.desktopAgent.agent1.frameSize=1
+gjtapi.javasound.desktopAgent.agent1.frameRate=8000.0F
+gjtapi.javasound.desktopAgent.agent1.bigEndian=false
+gjtapi.javasound.desktopAgent.agent1.enabled=true
+
+gjtapi.javasound.desktopAgent.agent2.playbackDevice=Primary Sound Driver
+gjtapi.javasound.desktopAgent.agent2.captureDevice=Primary Sound Capture Driver
+gjtapi.javasound.desktopAgent.agent2.encoding=PCM_SIGNED
+gjtapi.javasound.desktopAgent.agent2.sampleRate=8000.0F
+gjtapi.javasound.desktopAgent.agent2.sampleSizeInBits=16
+gjtapi.javasound.desktopAgent.agent2.channels=1
+gjtapi.javasound.desktopAgent.agent2.frameSize=2
+gjtapi.javasound.desktopAgent.agent2.frameRate=8000.0F
+gjtapi.javasound.desktopAgent.agent2.bigEndian=false
+gjtapi.javasound.desktopAgent.agent2.enabled=false
+
+gjtapi.javasound.desktopAgent.agent3.enabled=false

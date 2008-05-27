@@ -1,0 +1,4 @@
+ProviderClass = net.sourceforge.gjtapi.raw.mjsip.MjSipProvider
+
+#MjSip Phone Properties
+gjtapi.mjsip.ua=ua1,ua2
