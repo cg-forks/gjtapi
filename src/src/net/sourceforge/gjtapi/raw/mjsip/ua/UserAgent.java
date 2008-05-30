@@ -1,5 +1,3 @@
-
-
 package net.sourceforge.gjtapi.raw.mjsip.ua;
 
 

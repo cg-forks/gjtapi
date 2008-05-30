@@ -34,7 +34,7 @@ import java.io.PipedOutputStream;
  *
  * <p>Company: L2F | INESC-ID</p>
  *
- * @Dário Marcelino
+ * @author Dário Marcelino
  * @version 1.0
  */
 public class DesktopAgent {

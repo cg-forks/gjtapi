@@ -1,6 +1,5 @@
 package net.sourceforge.gjtapi.raw.mjsip.ua;
 
-
 import java.io.InputStream;
 import java.io.OutputStream;
 
