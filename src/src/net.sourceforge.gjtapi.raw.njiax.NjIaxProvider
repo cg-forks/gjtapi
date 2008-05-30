@@ -1,0 +1,22 @@
+ProviderClass = net.sourceforge.gjtapi.raw.njiax.NjIaxProvider
+
+#Peers Properties
+gjtapi.njiax.njIaxPeer.njiax.password=q1w2e3r4
+gjtapi.njiax.njIaxPeer.njiax.host=172.16.66.1
+gjtapi.njiax.njIaxPeer.njiax.register=true
+gjtapi.njiax.njIaxPeer.njiax.maxCalls=2
+gjtapi.njiax.njIaxPeer.njiax.enabled=true
+
+gjtapi.njiax.njIaxPeer.njiax2.password=q1w2e3r4
+gjtapi.njiax.njIaxPeer.njiax2.host=172.16.66.1
+gjtapi.njiax.njIaxPeer.njiax2.register=true
+gjtapi.njiax.njIaxPeer.njiax2.maxCalls=2
+gjtapi.njiax.njIaxPeer.njiax2.enabled=false
+
+gjtapi.njiax.njIaxPeer.njiax3.enabled=true
+
+#Default properties
+gjtapi.njiax.njIaxPeer.default.password=q1w2e3r4
+gjtapi.njiax.njIaxPeer.default.host=172.16.66.1
+gjtapi.njiax.njIaxPeer.default.register=true
+gjtapi.njiax.njIaxPeer.default.maxCalls=2

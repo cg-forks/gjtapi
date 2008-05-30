@@ -9,6 +9,7 @@
   <property name="xtapi-build" location="xtapi-build"/>
   <property name="dist"  location="dist"/>
   <property name="staging" location="${dist}/staging"/>
+  <property name="njiax-src" location="njiax"/>
 	
 	<!-- packages to put in their own distribution -->
 	<property name="ModemPackage" value="**/raw/modem/**"/>
@@ -50,6 +51,8 @@
 <!-- MjSip support Get it from: http://www.mjsip.org -->
     	<include name="sip.jar"/>
     	<include name="ua.jar"/>
+<!-- njIAX support Get it from: http://code.google.com/p/njiax/ -->
+    	<include name="njiax.jar"/>
     </fileset>
   </path>
 
@@ -62,11 +65,11 @@
     <mkdir dir="${xtapi-build}"/>
   </target>
 
-  <target name="compile" depends="init"
+  <target name="compile" depends="init, njiaxCompile"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <javac srcdir="${src}" destdir="${build}" source="1.5" debug="true">
-	<classpath refid="classpath"/>
+			<classpath refid="classpath"/>
     </javac>
 
   </target>
@@ -85,9 +88,16 @@
 				<pathelement path="${build}"/>
 			</classpath>
     </javac>
-
   </target>
-
+  
+	<target name="njiaxCompile" depends="init"
+        description="compile the njiax extensions source" >
+    <!-- Compile the java code from ${njiax-src} into ${build} -->
+    <javac srcdir="${njiax-src}" destdir="${build}">
+    	<classpath refid="classpath"/>
+    </javac>
+  </target>
+  
   <target name="Staging" depends="compile"
         description="generate the distribution" >
     <!-- Create the distribution directory -->
