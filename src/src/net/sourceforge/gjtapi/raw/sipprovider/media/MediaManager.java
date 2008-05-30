@@ -299,15 +299,23 @@ public class MediaManager implements Serializable {
     }
 
     public void start() throws MediaException {
-        console.logEntry();
-        sdpFactory = SdpFactory.getInstance();
+        try {
+        	console.logEntry();
+	        sdpFactory = SdpFactory.getInstance();
+	        mediaSource = sipProp.getProperty(
+	                "net.java.sip.communicator.media.MEDIA_SOURCE");
+	        //Init Capture devices
+	        //DataSource audioDataSource = null;
+	
+	        isStarted = true;
+	    } catch (Throwable ex) {
+	    	// also handles SdpException, which is thrown by some SIP implementations
+	    	// (such as older nist-sdp-1.0) and not by others (such as later versions of nist-sdp-1.0 -- not sure why the version number didn't change)
+	    	throw new MediaException(ex);
+	    } finally {
+	        console.logExit();
+	    }
 
-        mediaSource = sipProp.getProperty(
-                "net.java.sip.communicator.media.MEDIA_SOURCE");
-        //Init Capture devices
-        //DataSource audioDataSource = null;
-
-        isStarted = true;
     }
 
     /**
