@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.sourceforge.gjtapi.raw.javasound.JavaSoundCallId;
 import net.sourceforge.gjtapi.raw.javasound.JavaSoundProvider;
+import net.sourceforge.gjtapi.util.SizedPipedInputStream;
 
 import javax.telephony.ConnectionEvent;
 import javax.telephony.Event;
@@ -309,7 +310,10 @@ public class DesktopAgent {
             if (conversion) {
                 PipedOutputStream pos = null;
 
-                PipedInputStream pis = new PipedInputStream((int) (format.
+                // Use the SizedPipedInputStream, which is a backported version
+                // of the Java 6 PipedInputStream.
+                // This can be moved back once Java 6 is the norm for GJTAPI
+                PipedInputStream pis = new SizedPipedInputStream((int) (format.
                         getChannels() * format.getSampleSizeInBits() / 8 *
                         format.getSampleRate()));
 
