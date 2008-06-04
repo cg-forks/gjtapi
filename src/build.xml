@@ -20,6 +20,10 @@
 	<property name="AsteriskPackage" value="**/raw/asterisk/**"/>
 	<property name="DialogicPackage" value="**/raw/dialogic/**"/>
 	<property name="RemotePackage" value="**/raw/remote/**"/>
+	<property name="JavasoundPackage" value="**/raw/javasound/**"/>
+	<property name="MjSipPackage" value="**/raw/mjsip/**"/>
+	<property name="NjIaxPackage" value="**/raw/njiax/**"/>
+	
 	
 	<!-- version -->
 	<property name="baseVersion" value="1.9"/>
@@ -52,7 +56,7 @@
     	<include name="sip.jar"/>
     	<include name="ua.jar"/>
 <!-- njIAX support Get it from: http://code.google.com/p/njiax/ -->
-    	<include name="njiax.jar"/>
+    	<include name="njiax-gjtapi-1.0.0.jar"/>
     </fileset>
   </path>
 
@@ -139,6 +143,12 @@
   			<exclude name="${Tapi3TestPackage}"/>
   			<exclude name="${XtapiPackage}"/>
   			<exclude name="${DialogicPackage}"/>
+  			<exclude name="**/raw/sip/**"/>
+  			<exclude name="${JavasoundPackage}"/>
+  			<exclude name="${MjSipPackage}"/>
+  			<exclude name="${NjIaxPackage}"/>
+  			<exclude name="iax/**"/>
+  			<exclude name="classes/**"/>
   			<exclude name="Asterisk.gjtapi"/>
   			<exclude name="Corba.gjtapi"/>
   			<exclude name="CorbaProvider.idl"/>
@@ -150,6 +160,11 @@
   			<exclude name="Sip.gjtapi"/>
   			<exclude name="Tapi3.gjtapi"/>
   			<exclude name="Xtapi.gjtapi"/>
+  			<exclude name="JavaSound.gjtapi"/>
+  			<exclude name="MjSip.gjtapi"/>
+  			<exclude name="NjIax.gjtapi"/>
+  			<exclude name="ua1"/>
+  			<exclude name="ua2"/>
 		</fileset>
     </jar>
   	
@@ -209,7 +224,31 @@
 	  		includes="${DialogicPackage} ${licenceFile} ${releaseNotes}"/>
 	</target>
 	
-  <target name="xtapi-Staging" depends="xtapiCompile, Staging"
+	<target name="JavasoundStaging" depends="Staging"
+	        description="generate the javasound distribution" >
+
+	    <!-- Put everything in ${build} into the gjtapi-${version}.jar file -->
+	    <jar jarfile="${staging}/gjtapi-javasound-${version}.jar" basedir="${build}"
+	  		includes="${JavasoundPackage} net/sourceforge/gjtapi/util/SizedPipedInputStream.class ${licenceFile} ${releaseNotes}"/>
+	</target>
+
+	<target name="MjSipStaging" depends="Staging"
+	        description="generate the MjSip distribution" >
+
+	    <!-- Put everything in ${build} into the gjtapi-${version}.jar file -->
+	    <jar jarfile="${staging}/gjtapi-mjsip-${version}.jar" basedir="${build}"
+	  		includes="${MjSipPackage} ${licenceFile} ${releaseNotes}"/>
+	</target>
+
+	<target name="NjIaxStaging" depends="Staging"
+	        description="generate the NjIax distribution" >
+
+	    <!-- Put everything in ${build} into the gjtapi-${version}.jar file -->
+	    <jar jarfile="${staging}/gjtapi-njiax-${version}.jar" basedir="${build}"
+	  		includes="${NjIaxPackage} ${licenceFile} ${releaseNotes}"/>
+	</target>
+
+	<target name="xtapi-Staging" depends="xtapiCompile, Staging"
         description="generate the distribution" >
 
   	<!-- copy the property files over -->
@@ -344,6 +383,51 @@
 			<fileset dir="." >
 		      <include name="lib/gcprovider.dll"/>
 			  <include name="lib/libgcprovider.so"/>
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="JavasoundDist" depends="JavasoundStaging">
+		<!-- Package up the remote jar file, property files, readme and licence into the gjtapi-javasound-${version}.zip file -->
+		<zip zipfile="${dist}/gjtapi-javasound-${version}.zip">
+			<fileset dir="${staging}">
+			    <include name="gjtapi-javasound-${version}.jar"/>
+			    <include name="${licenceFile}"/>
+				<include name="${releaseNotes}"/>
+				<include name="JavaSound.gjtapi"/>
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="MjSipDist" depends="MjSipStaging">
+		<!-- Package up the remote jar file, property files, readme and licence into the gjtapi-mjsip-${version}.zip file -->
+		<zip zipfile="${dist}/gjtapi-mjsip-${version}.zip">
+			<fileset dir="${staging}">
+			    <include name="gjtapi-mjsip-${version}.jar"/>
+			    <include name="${licenceFile}"/>
+				<include name="${releaseNotes}"/>
+				<include name="MjSip.gjtapi"/>
+				<include name="ua1"/>
+				<include name="ua2"/>
+			</fileset>
+			<fileset dir="." >
+		      <include name="redistrib/sip.jar"/>
+			  <include name="redistrib/ua.jar"/>
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="NjIaxDist" depends="NjIaxStaging">
+		<!-- Package up the remote jar file, property files, readme and licence into the gjtapi-njiax-${version}.zip file -->
+		<zip zipfile="${dist}/gjtapi-njiax-${version}.zip">
+			<fileset dir="${staging}">
+			    <include name="gjtapi-njiax-${version}.jar"/>
+			    <include name="${licenceFile}"/>
+				<include name="${releaseNotes}"/>
+				<include name="NjIax.gjtapi"/>
+			</fileset>
+			<fileset dir="." >
+		      <include name="redistrib/njiax-gjtapi-1.0.0.jar"/>
 			</fileset>
 		</zip>
 	</target>
