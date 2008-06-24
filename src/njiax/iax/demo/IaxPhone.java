@@ -226,4 +226,11 @@ public class IaxPhone implements PeerListener {
             e.printStackTrace();
         }
     }
+
+    /**
+     * @todo Implement it
+     * @param calledNumber String
+     */
+    public void stopWaitTones(String calledNumber) {
+    }
 }
