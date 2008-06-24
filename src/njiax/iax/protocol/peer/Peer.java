@@ -17,7 +17,6 @@ import iax.protocol.util.FrameUtil;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
@@ -170,7 +169,7 @@ public class Peer {
      * @return the timestamp from the first full frame sent
      */
     public long getTimestamp() {
-        long now = Calendar.getInstance().getTimeInMillis();
+        long now = System.currentTimeMillis();
         return now - srcTimestamp;
     }
 
@@ -213,7 +212,7 @@ public class Peer {
      * Registers the peer
      */
     public void register() {
-        srcTimestamp = Calendar.getInstance().getTimeInMillis();
+        srcTimestamp = System.currentTimeMillis();
         PeerCommandSendFacade.regreq(this);
     }
 
@@ -361,7 +360,7 @@ public class Peer {
      * @param fullFrame the full frame to send
      */
     public synchronized void sendFullFrameAndWaitForAck(FullFrame fullFrame) {
-        framesWaitingAck.put(fullFrame.getTimestamp(), fullFrame);
+        framesWaitingAck.put(fullFrame.getOseqno(), fullFrame);
         sendFrame(fullFrame);
     }
 
@@ -389,6 +388,15 @@ public class Peer {
      */
     public void ringingCall(Call call) {
         peerListener.playWaitTones(call.getCalledNumber());
+    }
+
+    /**
+     * Notifies to the peer listener for stopping wait tones
+     * (STOP SOUNDS DOESN'T EXIST IN THE DRAFT)
+     * @param call the call
+     */
+    public void stopRingingCall(Call call) {
+        peerListener.stopWaitTones(call.getCalledNumber());
     }
 
 
