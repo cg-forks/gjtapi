@@ -57,12 +57,12 @@ import java.io.OutputStream;
 public class JavaSoundProvider implements MediaTpi {
 
     private TelephonyListener listener;
-    private HashMap<String,
+    protected HashMap<String,
                     DesktopAgent> desktopAgents = new HashMap<String,
             DesktopAgent>();
 
-    private Semaphore playSemaphore;
-    private Semaphore recSemaphore;
+    protected Semaphore playSemaphore;
+    protected Semaphore recSemaphore;
 
     public JavaSoundProvider() {
         playSemaphore = new Semaphore(1, true);

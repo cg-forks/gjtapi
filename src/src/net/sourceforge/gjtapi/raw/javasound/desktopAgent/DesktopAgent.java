@@ -239,7 +239,7 @@ public class DesktopAgent {
                 }
             }
 
-            System.out.println("DesktoAgent: ais.read(b) = -1");
+            System.out.println("DesktopAgent: ais.read(b) = -1");
 
            /*if (play == true){ // if there was no stopPlay()
                 ais.close();
