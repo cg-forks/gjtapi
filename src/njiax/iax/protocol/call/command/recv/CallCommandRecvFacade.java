@@ -14,59 +14,59 @@ import iax.protocol.util.FrameUtil;
  */
 public class CallCommandRecvFacade {
 
-    private CallCommandRecvFacade() {}
-
     /**
      * Handling an accept by sending an ack
      * @param call the call from wich the accept was received
      * @param acceptFrame the accept frame
      */
-	public static void accept(Call call, ProtocolControlFrame acceptFrame) {
-        int [] repliedSubclasses = FrameUtil.getReplySubclasses((acceptFrame.getSubclass()));
-        for (int i=0; i<repliedSubclasses.length; i++)
+    public static void accept(Call call, ProtocolControlFrame acceptFrame) {
+        int[] repliedSubclasses = FrameUtil.getReplySubclasses((acceptFrame.
+                getSubclass()));
+        for (int i = 0; i < repliedSubclasses.length; i++)
             call.repliedFrame(repliedSubclasses[i]);
         CallCommandSendFacade.ack(call, acceptFrame);
-	}
+    }
 
     /**
      * Handling an ack by calling the method ackedFrame of the call
      * @param call the call from wich the accept was received
      * @param ackFrame the ack frame
      */
-	public static void ack(Call call, ProtocolControlFrame ackFrame) {
+    public static void ack(Call call, ProtocolControlFrame ackFrame) {
         call.ackedFrame(ackFrame.getOseqno());
-	}
+    }
 
     /**
      * Handling an answer by calling the method startRecorder of the call and sending an ack
      * @param call the call from wich the accept was received
      * @param answerFrame the answer frame
      */
-	public static void answer(Call call, ControlFrame answerFrame) {
-		call.answeredCall();
+    public static void answer(Call call, ControlFrame answerFrame) {
+        call.answeredCall();
         CallCommandSendFacade.ack(call, answerFrame);
     }
 
-     /**
+    /**
      * Handling an authorization request by sending an authorization reply
      * @param call the call from which the authorization request was received
      * @param authReqFrame the authorization request frame
      */
-	public static void authReq(Call call, ProtocolControlFrame authReqFrame) {
-        int [] repliedSubclasses = FrameUtil.getReplySubclasses((authReqFrame.getSubclass()));
-        for (int i=0; i<repliedSubclasses.length; i++)
+    public static void authReq(Call call, ProtocolControlFrame authReqFrame) {
+        int[] repliedSubclasses = FrameUtil.getReplySubclasses((authReqFrame.
+                getSubclass()));
+        for (int i = 0; i < repliedSubclasses.length; i++)
             call.repliedFrame(repliedSubclasses[i]);
         CallCommandSendFacade.authRep(call, authReqFrame);
-	}
+    }
 
     /**
      * Handling an hangup by sending an ack
      * @param call the call from which the hangup was received
      * @param hangupFrame the hangup frame
      */
-	public static void hangup(Call call, ProtocolControlFrame hangupFrame) {
+    public static void hangup(Call call, ProtocolControlFrame hangupFrame) {
         CallCommandSendFacade.ack(call, hangupFrame);
-	}
+    }
 
 
     /**
@@ -102,43 +102,55 @@ public class CallCommandRecvFacade {
      * @param call the call from wich the pong was received
      * @param pongFrame the pong frame
      */
-	public static void pong(Call call, ProtocolControlFrame pongFrame) {
-        int [] repliedSubclasses = FrameUtil.getReplySubclasses((pongFrame.getSubclass()));
-        for (int i=0; i<repliedSubclasses.length; i++)
+    public static void pong(Call call, ProtocolControlFrame pongFrame) {
+        int[] repliedSubclasses = FrameUtil.getReplySubclasses((pongFrame.
+                getSubclass()));
+        for (int i = 0; i < repliedSubclasses.length; i++)
             call.repliedFrame(repliedSubclasses[i]);
         CallCommandSendFacade.ack(call, pongFrame);
-	}
+    }
 
     /**
      * Handling a proceeding by sending an ack
      * @param call the call from wich the proceeding was received
      * @param proceedingFrame the proceeding frame
      */
-	public static void proceeding(Call call, ControlFrame proceedingFrame) {
+    public static void proceeding(Call call, ControlFrame proceedingFrame) {
         CallCommandSendFacade.ack(call, proceedingFrame);
-	}
+    }
 
     /**
      * Handling a reject by sending an ack
      * @param call the call from wich the reject was received
      * @param rejectFrame the reject frame
      */
-	public static void reject(Call call, ProtocolControlFrame rejectFrame) {
-        int [] repliedSubclasses = FrameUtil.getReplySubclasses((rejectFrame.getSubclass()));
-        for (int i=0; i<repliedSubclasses.length; i++)
+    public static void reject(Call call, ProtocolControlFrame rejectFrame) {
+        int[] repliedSubclasses = FrameUtil.getReplySubclasses((rejectFrame.
+                getSubclass()));
+        for (int i = 0; i < repliedSubclasses.length; i++)
             call.repliedFrame(repliedSubclasses[i]);
         CallCommandSendFacade.ack(call, rejectFrame);
-	}
+    }
 
-     /**
+    /**
      * Handling a ringing by sending an ack
      * @param call the call from wich the ringing was received
      * @param ringingFrame the ringing frame
      */
-	public static void ringing(Call call, ControlFrame ringingFrame) {
+    public static void ringing(Call call, ControlFrame ringingFrame) {
         call.ringingCall();
         CallCommandSendFacade.ack(call, ringingFrame);
-	}
+    }
+
+    /**
+     * Handling a stop ringing (STOP SOUNDS DOESN'T EXIST IN THE DRAFT)
+     * @param call the call from wich the stop ringing was received
+     * @param stopRingingFrame the stop ringing frame
+     */
+    public static void stopRinging(Call call, ControlFrame stopRingingFrame) {
+        call.stopRingingCall();
+        CallCommandSendFacade.ack(call, stopRingingFrame);
+    }
 
     /**
      * Handling an unsupported frame
@@ -154,17 +166,17 @@ public class CallCommandRecvFacade {
      * @param call the call from wich the voice full frame was received
      * @param voiceFrame the voice full frame
      */
-	public static void voiceFullFrame(Call call, VoiceFrame voiceFrame) {
-		call.writeAudioIn(voiceFrame.getTimestamp(), voiceFrame.getData(), true);
+    public static void voiceFullFrame(Call call, VoiceFrame voiceFrame) {
+        call.writeAudioIn(voiceFrame.getTimestamp(), voiceFrame.getData(), true);
         CallCommandSendFacade.ack(call, voiceFrame);
-	}
+    }
 
     /**
      * Handling a voice mini frame by write the audio data
      * @param call the call from wich the voice mini frame was received
      * @param miniFrame voice the mini frame
      */
-	public static void voiceMiniFrame(Call call, MiniFrame miniFrame) {
-		call.writeAudioIn(miniFrame.getTimestamp(), miniFrame.getData(), false);
-	}
+    public static void voiceMiniFrame(Call call, MiniFrame miniFrame) {
+        call.writeAudioIn(miniFrame.getTimestamp(), miniFrame.getData(), false);
+    }
 }
