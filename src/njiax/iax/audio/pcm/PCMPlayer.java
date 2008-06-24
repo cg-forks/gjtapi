@@ -19,10 +19,6 @@ import javax.sound.sampled.LineUnavailableException;
  *
  */
 public class PCMPlayer extends Player {
-    /**
-     * Implements Simple BUFFER
-     */
-    public final static int SIMPLE_BUFFER = 1;
 
     /**
      * Implements Jitter BUFFER
@@ -147,9 +143,6 @@ public class PCMPlayer extends Player {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void run() {
     }
 
 }

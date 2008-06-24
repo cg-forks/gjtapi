@@ -22,7 +22,6 @@ import javax.sound.sampled.TargetDataLine;
  */
 
 public class PCMRecorder extends Recorder {
-    private static final int BUFFER_SIZE = 128000;
 
     AudioListener call;
     boolean recording = true;
