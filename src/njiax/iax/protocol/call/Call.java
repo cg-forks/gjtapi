@@ -19,11 +19,11 @@ import iax.protocol.peer.PeerException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
 /**
  * Class that encapsulates the funcionality of a iax call and implements the interface AudioListener
@@ -73,7 +73,7 @@ public class Call implements AudioListener {
     // Called number (number or extension's indentifier)
     private String calledNumber;
     // Flag to known if the firstVoiceFrame was sent or not
-    private boolean firstVoiceFrameSended;
+    private boolean firstVoiceFrameSent;
     // Peer that handles this call
     private Peer peer;
     // Ping timer task to send ping frames
@@ -165,22 +165,49 @@ public class Call implements AudioListener {
         return calledNumber;
     }
 
+    private Semaphore timeStampSemaphore = new Semaphore(1);
+
     /**
      * Gets the timestamp from the first full frame sent
      * @return the timestamp from the first full frame sent
      */
     public long getTimestamp() {
-        long now = Calendar.getInstance().getTimeInMillis();
-        return now - srcTimestamp;
+        try {
+            timeStampSemaphore.acquire();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+        long now = System.currentTimeMillis();
+        long fullFrameTimestamp = now - srcTimestamp;
+        //fullFrameTimestamp = now;
+        miniFrameTimestamp = fullFrameTimestamp;
+        //System.out.println("TimeStamp: "+timeStamp+ " CallId:" + getSrcCallNo());
+        timeStampSemaphore.release();
+        return fullFrameTimestamp;
     }
+
+    //private long fullFrameTimestamp = System.currentTimeMillis();
+    private long miniFrameTimestamp = srcTimestampMiniFrame;
 
     /**
      * Gets the timestamp from the first mini frame sent or the last reset
      * @return the timestamp from the first mini frame sent or the last reset
      */
     public long getTimestampMiniFrame() {
-        long now = Calendar.getInstance().getTimeInMillis();
-        return now - srcTimestampMiniFrame;
+        try {
+            timeStampSemaphore.acquire();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        miniFrameTimestamp += 20;
+
+        //long now = System.currentTimeMillis();
+        //long timeStamp = now - srcTimestampMiniFrame;
+        //System.out.println("TimeStamp miniFrame: "+timeStamp+ " CallId:" + getSrcCallNo());
+        timeStampSemaphore.release();
+        return miniFrameTimestamp;
+        //return timeStamp;
     }
 
     /**
@@ -207,15 +234,15 @@ public class Call implements AudioListener {
      * Gets if the first voice frame was sent or not
      * @return true if the first voice frame was sent, or false if not
      */
-    public boolean isFirstVoiceFrameSended() {
-        return firstVoiceFrameSended;
+    public boolean isFirstVoiceFrameSent() {
+        return firstVoiceFrameSent;
     }
 
     /**
      * Sets that the first voice frame was sent
      */
-    public void firstVoiceFrameWasSended() {
-        this.firstVoiceFrameSended = false;
+    public void firstVoiceFrameSent() {
+        this.firstVoiceFrameSent = false;
     }
 
     /**
@@ -244,11 +271,11 @@ public class Call implements AudioListener {
         this.iseqno = 0;
         this.oseqno = 0;
         this.destCallNo = 0;
-        this.firstVoiceFrameSended = true;
+        this.firstVoiceFrameSent = true;
         this.framesWaitingAck.clear();
         this.calledNumber = calledNumber;
         this.state = Initial.getInstance();
-        this.srcTimestamp = Calendar.getInstance().getTimeInMillis();
+        this.srcTimestamp = System.currentTimeMillis();
         this.srcTimestampMiniFrame = srcTimestamp;
 //      ***** PING DESACTIVATED *****
 //      this.pingTimer = new Timer();
@@ -259,13 +286,14 @@ public class Call implements AudioListener {
 //      };
 //      pingTimer.schedule(pingTimerTask, PING_REFRESH*1000, PING_REFRESH*1000);
         this.retryTimer = new Timer();
+      /******RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         TimerTask retryTimerTask = new TimerTask() {
             public void run() {
                 retryFramesWaiting();
             }
         };
         retryTimer.schedule(retryTimerTask, RETRY_REFRESH * 1000,
-                            RETRY_REFRESH * 1000);
+                            RETRY_REFRESH * 1000);*/
 
     }
 
@@ -282,6 +310,14 @@ public class Call implements AudioListener {
      */
     public void ringingCall() {
         peer.ringingCall(this);
+    }
+
+    /**
+     * Notifies a received stop ringing for stopping wait tones
+     * (STOP SOUNDS DOESN'T EXIST IN THE DRAFT)
+     */
+    public void stopRingingCall() {
+        peer.stopRingingCall(this);
     }
 
     /**
@@ -375,7 +411,7 @@ public class Call implements AudioListener {
      * timestamp.
      */
     public synchronized void resetTimestampMiniFrame() {
-        srcTimestampMiniFrame = Calendar.getInstance().getTimeInMillis();
+        srcTimestampMiniFrame = System.currentTimeMillis();
     }
 
     /**
