@@ -6,10 +6,16 @@ package iax.protocol.frame;
 public class VoiceFrame extends FullFrame {
 
     /**
-     * Voice frame with codec GSM
+     * Voice frame with codecs
      */
-    //public static final int GSM_SC = 2;
-    public static final int GSM_SC = 4;
+    public static final int G723_1_SC = 0x0001; //G.723.1
+    public static final int GSM_SC  = 0x0002; 	//GSM
+    public static final int G711u_SC = 0x0004;  //G.711 u (u-law)
+    public static final int G711a_SC = 0x0008; 	//G.711 a (a-law)
+    public static final int LPC10_SC = 0x0080; 	//LPC10
+    public static final int G729_SC = 0x0100; 	//G.729
+    public static final int SPEEX_SC = 0x0200; 	//Speex
+    public static final int ILBC_SC = 0x0400; 	//iLBC
 
     /**
      * Data attached to the frame.
