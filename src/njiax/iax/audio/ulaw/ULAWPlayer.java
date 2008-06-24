@@ -17,15 +17,10 @@ import javax.sound.sampled.AudioSystem;
  */
 public class ULAWPlayer extends Player {
     /**
-     * Implements Simple BUFFER
-     */
-    public final static int SIMPLE_BUFFER = 1;
-
-    /**
      * Implements Jitter BUFFER
      */
 
-    public final static int JITTER_BUFFER = 0;
+  //  public final static int JITTER_BUFFER = 0;
 
     AudioFormat ulawFormat;
 
@@ -130,9 +125,6 @@ public class ULAWPlayer extends Player {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void run() {
     }
 
 }
