@@ -1,8 +1,6 @@
 package iax.audio.ulaw;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-
 import iax.audio.AudioListener;
 import iax.audio.Recorder;
 import iax.audio.RecorderException;
@@ -100,15 +98,17 @@ public class ULAWRecorder extends Recorder {
                     startTime = (long)(System.nanoTime() * 1E-6);
                     //System.out.println("SSns: "+startTime + "\nSSss: " + System.currentTimeMillis() );
 
-                    if (inStream.available() > 0) {
+                  //  if (inStream.available() > 0) {
                         //Read buffer from app to send to Asterisk
                         count = inStream.read(buffer, 0, buffer.length);
+                    /*    System.err.println("ULawRecorder DATA AVAILABLE: "+count);
                     }
                     else {
                         count = 0;
-                    }
-                  /*  if (count == 0) {
-                        System.err.println("ULAWRECORDER.... WILL SEND SILENCE........");
+                        System.err.println("ULawRecorder NO DATA AVAILABLE");
+                    }*/
+                    /*if (count == 0) {
+                        //System.err.println("ULAWRECORDER.... WILL SEND SILENCE........");
                         System.arraycopy(silenceBuffer, 0, buffer, 0, buffer_size);
                         count = buffer_size;
                         try {
@@ -165,7 +165,8 @@ public class ULAWRecorder extends Recorder {
                     } else if (count == 0) {
                         //System.out.println("nothing to write");
                         //try {
-                            PreciseTimer.sleep((long)(buffer_time));
+                            //PreciseTimer.sleep((long)(buffer_time));
+                             Thread.sleep(buffer_time - 1);
                             //Thread.sleep(buffer_time);
                         /*} catch (InterruptedException ex1) {
                             ex1.printStackTrace();
