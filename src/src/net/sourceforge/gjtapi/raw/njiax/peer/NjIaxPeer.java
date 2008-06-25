@@ -43,7 +43,7 @@ public class NjIaxPeer implements PeerListener {
                      String host, boolean register, int maxCalls) {
         this.provider = provider;
         this.userName = userName;
-        peer = new Peer((PeerListener)this, userName, password, host, register, maxCalls,
+        peer = new Peer(this, userName, password, host, register, maxCalls,
                         outStream, inStream);
     }
 
@@ -134,6 +134,51 @@ public class NjIaxPeer implements PeerListener {
     public void stopPlay() {
         try {
             if (inStream != null) {
+                int prevAvail = -1;
+                int stalledCounter = 0;
+                do {
+                    int avail = inStream.available();
+                    if (avail < 1)
+                        break;
+                    else {
+                        if (prevAvail < 0) {
+                            prevAvail = avail;
+                            stalledCounter = 0;
+                        }
+                        else {
+                            if (avail < prevAvail) {
+                                stalledCounter = 0;
+                                //Consuming....
+                                try {
+                                    Thread.sleep(20);
+                                } catch (InterruptedException ex) {
+                                }
+                            }
+                            else if (avail > prevAvail) {
+                                stalledCounter = 0;
+                                //Still receiving audio
+                                try {
+                                    Thread.sleep(50);
+                                } catch (InterruptedException ex1) {
+                                }
+                            }
+                            else if (avail == prevAvail) {
+                                stalledCounter += 1;
+                                if (stalledCounter == 5) {
+                                    System.err.println("NjIAX stopPlay: stopping because data is stalled @ " + avail);
+                                    break;
+                                }
+                                try {
+                                    Thread.sleep(50);
+                                } catch (InterruptedException ex2) {
+                                }
+                            }
+                            prevAvail = avail;
+                        }
+                    }
+
+
+                } while (true);
                 inStream.close();
                 inStream.waitForEnd();
             }
@@ -229,6 +274,10 @@ public class NjIaxPeer implements PeerListener {
                                       Event.CAUSE_NORMAL);
         provider.connectionAlerting(currentCall, calledNumber,
                                     ConnectionEvent.CAUSE_NORMAL);
+    }
+
+    public void stopWaitTones(String calledNumber) {
+        throw new RuntimeException("stopWaitTones: NOT IMPLEMENTED");
     }
 
 
