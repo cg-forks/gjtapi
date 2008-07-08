@@ -51,8 +51,8 @@ public class DesktopAgent {
     private JavaSoundProvider provider;
 
     //Selected mixers
-    Mixer selPlaybackMixer;
-    Mixer selCaptureMixer;
+    private Mixer selPlaybackMixer;
+    private Mixer selCaptureMixer;
 
     //GUI
     private DesktopAgentGUI gui;
@@ -85,7 +85,6 @@ public class DesktopAgent {
 
         gui = new DesktopAgentGUI(this);
         gui.run();
-        //System.out.println("GUI Launched");
     }
 
     /**
@@ -120,7 +119,6 @@ public class DesktopAgent {
 
         gui = new DesktopAgentGUI(this);
         gui.run();
-        //System.out.println("GUI Launched");
     }
 
     public void setJavaSoundCallId(JavaSoundCallId id) {
@@ -348,8 +346,8 @@ public class DesktopAgent {
 
                     //write to stream
                     if (a != 0) {
-                    os.write(convBuffer, 0, a);
-                    //System.out.println(a + " bytes wrote @ record");
+                        os.write(convBuffer, 0, a);
+                        //System.out.println(a + " bytes wrote @ record");
                     } else {
                         Thread.currentThread().sleep(5);
                     }
@@ -402,7 +400,7 @@ public class DesktopAgent {
         try {
             long time = System.currentTimeMillis();
             //rtpStream.close();
-            ais.close();
+            if (ais != null) ais.close();
             System.out.println(">>>>>>>>>>>>> StopPlay, close >>>>>>>>>>>>> " + (System.currentTimeMillis() - time)/1000 + "s.");
         } catch (IOException ex1) {
         }
