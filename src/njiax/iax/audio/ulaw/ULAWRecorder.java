@@ -98,15 +98,15 @@ public class ULAWRecorder extends Recorder {
                     startTime = (long)(System.nanoTime() * 1E-6);
                     //System.out.println("SSns: "+startTime + "\nSSss: " + System.currentTimeMillis() );
 
-                  //  if (inStream.available() > 0) {
+                     if (inStream.available() > 0) {
                         //Read buffer from app to send to Asterisk
                         count = inStream.read(buffer, 0, buffer.length);
-                    /*    System.err.println("ULawRecorder DATA AVAILABLE: "+count);
+                        //System.err.println("ULawRecorder DATA AVAILABLE: "+count);
                     }
                     else {
                         count = 0;
-                        System.err.println("ULawRecorder NO DATA AVAILABLE");
-                    }*/
+                        //System.err.println("ULawRecorder NO DATA AVAILABLE");
+                    }
                     /*if (count == 0) {
                         //System.err.println("ULAWRECORDER.... WILL SEND SILENCE........");
                         System.arraycopy(silenceBuffer, 0, buffer, 0, buffer_size);
