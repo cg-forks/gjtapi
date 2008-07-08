@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
+
 
 /**
  * Class that encapsulates the funcionality of a iax call and implements the interface AudioListener
@@ -165,25 +165,17 @@ public class Call implements AudioListener {
         return calledNumber;
     }
 
-    private Semaphore timeStampSemaphore = new Semaphore(1);
-
     /**
      * Gets the timestamp from the first full frame sent
      * @return the timestamp from the first full frame sent
      */
     public long getTimestamp() {
-        try {
-            timeStampSemaphore.acquire();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-
         long now = System.currentTimeMillis();
+
         long fullFrameTimestamp = now - srcTimestamp;
         //fullFrameTimestamp = now;
         miniFrameTimestamp = fullFrameTimestamp;
-        //System.out.println("TimeStamp: "+timeStamp+ " CallId:" + getSrcCallNo());
-        timeStampSemaphore.release();
+
         return fullFrameTimestamp;
     }
 
@@ -195,19 +187,8 @@ public class Call implements AudioListener {
      * @return the timestamp from the first mini frame sent or the last reset
      */
     public long getTimestampMiniFrame() {
-        try {
-            timeStampSemaphore.acquire();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
         miniFrameTimestamp += 20;
-
-        //long now = System.currentTimeMillis();
-        //long timeStamp = now - srcTimestampMiniFrame;
-        //System.out.println("TimeStamp miniFrame: "+timeStamp+ " CallId:" + getSrcCallNo());
-        timeStampSemaphore.release();
         return miniFrameTimestamp;
-        //return timeStamp;
     }
 
     /**
