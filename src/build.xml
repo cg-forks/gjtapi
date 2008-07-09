@@ -55,8 +55,6 @@
 <!-- MjSip support Get it from: http://www.mjsip.org -->
     	<include name="sip.jar"/>
     	<include name="ua.jar"/>
-<!-- njIAX support Get it from: http://code.google.com/p/njiax/ -->
-    	<include name="njiax-gjtapi-1.0.0.jar"/>
     </fileset>
   </path>
 
@@ -262,7 +260,7 @@
     <jar jarfile="${staging}/gjtapi-xtapiSp-${version}.jar" basedir="${xtapi-build}"/>
   </target>
 
-  	<target name="allStagings" depends="Staging,RemoteStaging,ModemStaging,SipStaging,Tapi3Staging,AsteriskStaging,DialogicStaging,xtapi-Staging">
+  	<target name="allStagings" depends="Staging,RemoteStaging,ModemStaging,SipStaging,Tapi3Staging,AsteriskStaging,DialogicStaging,xtapi-Staging,NjIaxStaging,MjSipStaging,JavasoundStaging">
 	</target>
 
 	<target name="coreDist" depends="Staging">
