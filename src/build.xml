@@ -425,13 +425,13 @@
 				<include name="NjIax.gjtapi"/>
 			</fileset>
 			<fileset dir="." >
-		      <include name="redistrib/njiax-gjtapi-1.1.0.jar"/>
+		      <include name="redistrib/njiax-gjtapi-${version}.jar"/>
 			</fileset>
 		</zip>
 	</target>
 	
 	<target name="NjiaxBranchJar" depends="njiaxCompile">
-		<jar jarfile="redistrib/njiax-gjtapi-1.1.0.jar" basedir="${build}"
+		<jar jarfile="redistrib/njiax-gjtapi-${version}.jar" basedir="${build}"
 	  		includes="iax/**"/>
 	</target>
 
