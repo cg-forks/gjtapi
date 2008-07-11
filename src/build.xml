@@ -27,7 +27,7 @@
 	
 	<!-- version -->
 	<property name="baseVersion" value="1.9"/>
-	<property name="releaseCandidate" value="-rc1"/>
+	<property name="releaseCandidate" value="-rc2"/>
 	<property name="version" value="${baseVersion}${releaseCandidate}"/>
 	<!-- licence file -->
 	<property name="licenceFile" value="license.txt"/>
@@ -415,7 +415,7 @@
 		</zip>
 	</target>
 
-	<target name="NjIaxDist" depends="NjIaxStaging">
+	<target name="NjIaxDist" depends="NjIaxStaging, NjiaxBranchJar">
 		<!-- Package up the remote jar file, property files, readme and licence into the gjtapi-njiax-${version}.zip file -->
 		<zip zipfile="${dist}/gjtapi-njiax-${version}.zip">
 			<fileset dir="${staging}">
@@ -425,9 +425,14 @@
 				<include name="NjIax.gjtapi"/>
 			</fileset>
 			<fileset dir="." >
-		      <include name="redistrib/njiax-gjtapi-1.0.0.jar"/>
+		      <include name="redistrib/njiax-gjtapi-1.1.0.jar"/>
 			</fileset>
 		</zip>
+	</target>
+	
+	<target name="NjiaxBranchJar" depends="njiaxCompile">
+		<jar jarfile="redistrib/njiax-gjtapi-1.1.0.jar" basedir="${build}"
+	  		includes="iax/**"/>
 	</target>
 
 	<target name="xtapiDist" depends="Staging, xtapi-Staging">
