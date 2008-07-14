@@ -15,7 +15,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.DataLine.Info;
+import javax.sound.sampled.DataLine;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,7 +58,7 @@ public class DesktopAgent {
     private DesktopAgentGUI gui;
 
     /** Id from current call (It's assumed an agent can only handle one call at a time) */
-    JavaSoundCallId callID = null;
+    private JavaSoundCallId callID = null;
 
     //destinatary addr - Saves the address of an outgoing call
     private String destAddress;
@@ -73,8 +73,8 @@ public class DesktopAgent {
     //Audio format
     //int buffer = 4096;
     private AudioFormat format;
-    private Info playbackLineInfo;
-    private Info captureLineInfo;
+    private DataLine.Info playbackLineInfo;
+    private DataLine.Info captureLineInfo;
 
     public DesktopAgent(String address, HashMap<String, Mixer> playbackMixers,
             HashMap<String, Mixer> captureMixers, JavaSoundProvider provider) {
@@ -90,9 +90,10 @@ public class DesktopAgent {
     /**
      * DesktopAgent
      *
-     * @param string String
-     * @param desktopAgentProps DesktopAgentProps
-     * @param javaSoundProvider JavaSoundProvider
+     * @param daProps DesktopAgentProps
+     * @param playbackMixers HashMap
+     * @param captureMixers HashMap
+     * @param provider JavaSoundProvider
      */
     public DesktopAgent(DesktopAgentProps daProps, HashMap<String, Mixer>
             playbackMixers,
@@ -103,14 +104,14 @@ public class DesktopAgent {
         this.provider = provider;
 
         if ((format = daProps.getFormat()) != null) {
-            playbackLineInfo = new Info(SourceDataLine.class, format,
+            playbackLineInfo = new DataLine.Info(SourceDataLine.class, format,
                                         AudioSystem.NOT_SPECIFIED);
-            captureLineInfo = new Info(TargetDataLine.class, format,
+            captureLineInfo = new DataLine.Info(TargetDataLine.class, format,
                                        AudioSystem.NOT_SPECIFIED);
         } else {
-            playbackLineInfo = new Info(SourceDataLine.class, DEFAULT_FORMAT,
+            playbackLineInfo = new DataLine.Info(SourceDataLine.class, DEFAULT_FORMAT,
                                         AudioSystem.NOT_SPECIFIED);
-            captureLineInfo = new Info(TargetDataLine.class, DEFAULT_FORMAT,
+            captureLineInfo = new DataLine.Info(TargetDataLine.class, DEFAULT_FORMAT,
                                        AudioSystem.NOT_SPECIFIED);
         }
 
@@ -174,7 +175,7 @@ public class DesktopAgent {
     public void play(InputStream inStream, long duration) {
         play = true;
         playing = true;
-        Info pbLineInfo = playbackLineInfo;
+        DataLine.Info pbLineInfo = playbackLineInfo;
         rtpStream = inStream;
 
         Timer timer;
@@ -191,7 +192,7 @@ public class DesktopAgent {
         boolean conversion = false; //flag indicating audio conversion will occur
 
         if (!selPlaybackMixer.isLineSupported(pbLineInfo)) {
-            pbLineInfo = new Info(SourceDataLine.class, DEFAULT_FORMAT,
+            pbLineInfo = new DataLine.Info(SourceDataLine.class, DEFAULT_FORMAT,
                                         AudioSystem.NOT_SPECIFIED);
             if (selPlaybackMixer.isLineSupported(pbLineInfo)) {
                 //System.out.println("AudioLine not supported by this Mixer, using conversion.");
@@ -270,7 +271,7 @@ public class DesktopAgent {
     public void record(OutputStream outStream, long duration) {
         record = true;
         recording = true;
-        Info cLineInfo = captureLineInfo;
+        DataLine.Info cLineInfo = captureLineInfo;
 
         Timer timer;
         if (duration != javax.telephony.media.ResourceConstants.v_Forever) {
@@ -285,7 +286,7 @@ public class DesktopAgent {
         boolean conversion = false; //flag indicating audio conversion will occur
 
         if (!selCaptureMixer.isLineSupported(captureLineInfo)) {
-            cLineInfo = new Info(TargetDataLine.class, DEFAULT_FORMAT,
+            cLineInfo = new DataLine.Info(TargetDataLine.class, DEFAULT_FORMAT,
                                        AudioSystem.NOT_SPECIFIED);
             if (selCaptureMixer.isLineSupported(cLineInfo)) {
                 System.out.println(
