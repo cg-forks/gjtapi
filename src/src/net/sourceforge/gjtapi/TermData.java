@@ -56,7 +56,8 @@ public TermData(String termName, boolean isMedia) {
 }
 
 /**
- * No-arg constructor required for JAX-RPC serialization. */
+ * No-arg constructor required for JAX-RPC serialization.
+ */
 public TermData() {
 	super();
 }

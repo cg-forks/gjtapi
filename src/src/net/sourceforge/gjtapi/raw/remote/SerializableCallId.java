@@ -54,7 +54,8 @@ public SerializableCallId(long id) {
 	this.setId(id);
 }
 /**
- * Null constructor used by subclass for XML-RPC "serialization" */
+ * Null constructor used by subclass for XML-RPC "serialization"
+ */
 protected SerializableCallId() {
 	super();
 }

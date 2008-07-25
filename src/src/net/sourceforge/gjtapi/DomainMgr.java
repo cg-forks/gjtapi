@@ -1,10 +1,10 @@
 package net.sourceforge.gjtapi;
-
+
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
-
+
 	All rights reserved. 
-
+
 	Permission is hereby granted, free of charge, to any person obtaining a 
 	copy of this software and associated documentation files (the 
 	"Software"), to deal in the Software without restriction, including 
@@ -14,7 +14,7 @@ package net.sourceforge.gjtapi;
 	copyright notice(s) and this permission notice appear in all copies of 
 	the Software and that both the above copyright notice(s) and this 
 	permission notice appear in supporting documentation. 
-
+
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
 	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
 	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT 
@@ -24,7 +24,7 @@ package net.sourceforge.gjtapi;
 	FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
 	NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
 	WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
-
+
 	Except as contained in this notice, the name of a copyright holder 
 	shall not be used in advertising or otherwise to promote the sale, use 
 	or other dealings in this Software without prior written authorization 
@@ -51,7 +51,7 @@ import net.sourceforge.gjtapi.util.*;
 class DomainMgr {
 	private boolean dynamicAddr = false;
 	private boolean dynamicTerm = false;
-
+
 	private GenericProvider provider = null;
 	private TelephonyProvider raw = null;	// shortcut tp provider->getRaw()
 			// map address names to Address for quick lookup
@@ -69,7 +69,7 @@ class DomainMgr {
 		// The set of Terminals or Addresses with listeners attached -- these are strongly held to avoid
 		// garbage collection if we are using SoftMaps
 	private HashSet observed = null;
-
+
 /**
  * Constructor that determines which kind of maps to keep and how to resolve Address and Terminal requests.
  * Creation date: (2000-06-15 14:33:03)
@@ -79,7 +79,7 @@ class DomainMgr {
  */
 DomainMgr(GenericProvider gp, boolean isDynamic) {
 	super();
-
+
 	this.setRaw(gp.getRaw());
 	this.setProvider(gp);
 	this.setDynamic(isDynamic);
@@ -138,7 +138,7 @@ private FreeTerminal createTerminal(String name) {
 	}
 		// Now store an explicit or implicit handle
 	this.putLocalTerminal(term);
-
+
 	return term;
 }
 /**
@@ -161,7 +161,7 @@ private FreeTerminal createTerminal(String name, boolean isMedia) {
 	}
 		// Now store an explicit or implicit handle
 	this.putLocalTerminal(term);
-
+
 	return term;
 }
 /**
@@ -183,12 +183,12 @@ Address[] getAddresses() throws ResourceUnavailableException {
   if (this.isDynamicAddr()) {
 	throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
   }
-
+
   Map addr = this.getLocalAddresses();
   // test if it's null
   if (addr == null)
   	return null;
-
+
   return (Address[])addr.values().toArray(new Address[0]);
 }
 /**
@@ -201,10 +201,10 @@ Address[] getAddresses() throws ResourceUnavailableException {
  */
 FreeAddress getCachedAddress(String number) {
 	FreeAddress addr = this.getCachedLocalAddress(number);
-
+
 	if (addr == null)
 		addr = this.getCachedRemoteAddress(number);
-
+
 	return addr;
 }
 /**
@@ -236,10 +236,10 @@ private FreeAddress getCachedRemoteAddress(String number) {
  */
 FreeTerminal getCachedTerminal(String termName) {
 	FreeTerminal term = this.getCachedLocalTerminal(termName);
-
+
 	if (term == null)
 		term = this.getCachedRemoteTerminal(termName);
-
+
 	return term;
 }
 /**
@@ -270,7 +270,7 @@ private FreeTerminal getCachedRemoteTerminal(String name) {
  */
 FreeAddress getFaultedAddress(String number) throws InvalidArgumentException {
 	FreeAddress addr = this.getCachedLocalAddress(number);
-
+
 	// test is we still haven't found the Address
 	if (addr == null) {
 			// do we need to check dynamically?
@@ -283,7 +283,7 @@ FreeAddress getFaultedAddress(String number) throws InvalidArgumentException {
 			addr.setTerminalData(terms);
 		} else
 			throw new InvalidArgumentException("Address " + number + " not known to Provider.");
-
+
 	}
 		
 	return addr;
@@ -299,7 +299,7 @@ FreeAddress getFaultedAddress(String number) throws InvalidArgumentException {
  */
 FreeTerminal getFaultedTerminal(String name) throws InvalidArgumentException {
 	FreeTerminal term = this.getCachedTerminal(name);
-
+
 	// test is we still haven't found the Terminal
 	if (term == null) {
 			// do we need to check dynamically?
@@ -313,7 +313,7 @@ FreeTerminal getFaultedTerminal(String name) throws InvalidArgumentException {
 			term.setAddressNames(addrNames);
 		} else
 			throw new InvalidArgumentException("Terminal " + name + " not known to Provider.");
-
+
 	}
 		
 	return term;
@@ -365,9 +365,9 @@ FreeTerminal getFaultedTerminal(String name, boolean media) throws InvalidArgume
  */
 FreeAddress getLazyAddress(String name) {
 	FreeAddress addr = this.getCachedAddress(name);	// local and remote caches
-
+
 	if (addr == null) {		// see if we need to fault it in or we can just create a remote one
-
+
 		if (this.isDynamicAddr()) {
 			try {
 				addr = this.getFaultedAddress(name);
@@ -375,12 +375,12 @@ FreeAddress getLazyAddress(String name) {
 				// must be a remote address
 			}
 		}
-
+
 		if (addr == null) {		// we either are not dynamic or the local faulting failed
 			addr = this.createRemoteAddress(name);
 		}
 	}
-
+
 	return addr;
 }
 /**
@@ -396,7 +396,7 @@ FreeAddress getLazyAddress(String name) {
  */
 FreeTerminal getLazyTerminal(String name, boolean isMedia) {
 	FreeTerminal term = this.getCachedTerminal(name);
-
+
 	// test is we still haven't found the Terminal
 	if (term == null) {
 			// do we need to check dynamically?
@@ -539,12 +539,12 @@ Terminal[] getTerminals() throws ResourceUnavailableException {
   if (this.isDynamicTerm()) {
 	throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
   }
-
+
   Map terms = this.getLocalTerminals();
   // test if it's null
   if (terms == null)
   	return null;
-
+
   return (Terminal[])terms.values().toArray(new Terminal[0]);
 }
 /**
@@ -577,7 +577,7 @@ private boolean isDynamicTerm() {
 void loadAddresses() {
 	TelephonyProvider raw = this.getRaw();
 	GenericProvider prov = this.getProvider();
-
+
 	// Get the Address names and map them to our localAddress set.
 	try {
 		String[] addresses = raw.getAddresses();
@@ -586,11 +586,11 @@ void loadAddresses() {
 
 		for (int i = 0; i < addresses.length; i++) {
 			FreeAddress a = new FreeAddress(addresses[i], prov, true);
-
+
 				// add to set of addresses;
 			this.putLocalAddress(a);
 		}
-
+
 	} catch (ResourceUnavailableException rue) {
 		// our address set is too large
 		if (!this.isDynamicAddr()) {
@@ -609,7 +609,7 @@ void loadAddresses() {
  */
 void loadTerminals() {
 	TelephonyProvider raw = this.getRaw();
-
+
 	// Get the Terminal names and map them to our localAddress set.
 	try {
 		TermData[] terminals = raw.getTerminals();
@@ -619,7 +619,7 @@ void loadTerminals() {
 		for (int i = 0; i < terminals.length; i++) {
 			this.createTerminal(terminals[i].terminal, terminals[i].isMedia);
 		}
-
+
 	} catch (ResourceUnavailableException rue) {
 		// our Terminal set is too large
 		if (!this.isDynamicTerm()) {

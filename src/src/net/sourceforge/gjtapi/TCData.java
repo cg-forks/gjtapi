@@ -58,7 +58,8 @@ public TCData(int state, TermData term) {
 }
 
 /**
- * No-arg constructor required for JAX-RPC serialization. */
+ * No-arg constructor required for JAX-RPC serialization.
+ */
 public TCData() {
 	super();
 }

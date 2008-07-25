@@ -60,7 +60,8 @@ public CallData(CallId cid, int state, ConnectionData[] cd) {
 }
 
 /**
- * No-arg constructor required for JAX-RPC serialization. */
+ * No-arg constructor required for JAX-RPC serialization.
+ */
 public CallData() {
 	super();
 }

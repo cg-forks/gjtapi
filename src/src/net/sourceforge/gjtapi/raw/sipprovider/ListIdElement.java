@@ -61,61 +61,60 @@
  */
 
 package net.sourceforge.gjtapi.raw.sipprovider;
+
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.FreeCall;
 
 /**
- *
- * @author  root
+ * An element in the list of received call ids.
  */
-public class ListIdElement
-{
+public class ListIdElement {
     private CallId jtapiId;
     private int sipId;
     private FreeCall call;
     private String terminal;
     private String address;
-    /** Creates a new instance of ListIdElement */
-    public ListIdElement(CallId jtapiId, int sipId,  String terminal, String address )
-    {
+
+    /** 
+     * Creates a new instance of ListIdElement.
+     */
+    public ListIdElement(CallId jtapiId, int sipId, String terminal,
+            String address) {
         this.jtapiId = jtapiId;
         this.sipId = sipId;
         this.terminal = terminal;
         this.address = address;
-        //this.call = call;
     }
-    
-    public int getSipId()
-    {
+
+    public int getSipId() {
         return sipId;
     }
-    public void setSipId(int sipId)
-    {
+
+    public void setSipId(int sipId) {
         this.sipId = sipId;
     }
-    
-    public CallId getJtapiId()
-    {
+
+    public CallId getJtapiId() {
         return jtapiId;
     }
-    public void setJtapiId(CallId jtapiId)
-    {
+
+    public void setJtapiId(CallId jtapiId) {
         this.jtapiId = jtapiId;
     }
-     public FreeCall getCall()
-    {
+
+    public FreeCall getCall() {
         return call;
     }
-    public void setCall(FreeCall call)
-    {
+
+    public void setCall(FreeCall call) {
         this.call = call;
     }
-     public String getTerminal()
-    {
+
+    public String getTerminal() {
         return terminal;
     }
-      public String getAddress()
-    {
+
+    public String getAddress() {
         return address;
     }
 }

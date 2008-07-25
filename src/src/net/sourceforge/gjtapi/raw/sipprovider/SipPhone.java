@@ -64,7 +64,8 @@ package net.sourceforge.gjtapi.raw.sipprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -99,284 +100,268 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.event.UnknownMessageEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SecurityAuthority;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 
-//import com.sun.jndi.cosnaming.IiopUrl.Address;
+// import com.sun.jndi.cosnaming.IiopUrl.Address;
 /**
- *
- * @author  root
+ * 
+ * @author root
  */
-public class SipPhone implements  MediaListener, CommunicationsListener,  SecurityAuthority,net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener
-{
-//    private TelephonyListener listener;
-//    private List addresses;
+public class SipPhone
+        implements MediaListener, CommunicationsListener, SecurityAuthority,
+        net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener {
+    // private TelephonyListener listener;
+    // private List addresses;
     private TermData terminal;
-//    private final static String RESOURCE_NAME = "sip.props";
-//    private Properties properties = new Properties();
+    // private final static String RESOURCE_NAME = "sip.props";
+    // private Properties properties = new Properties();
     protected MediaManager mediaManager;
     protected SipManager sipManager;
     protected static Console console = Console.getConsole(SipPhone.class);
-//    private CallId idd;
-    private Vector idVector = new Vector();
-    private String address ;
+    // private CallId idd;
+    private Collection ids = new Vector();
+    private String address;
     private SipProvider sipProvider;
     public Properties sipProp;
 
     /**
      * Constructs a new object.
-     * @param propResource Name of the resource containing properties for this 
-     * 		phone
-     * @param sipProvider the provider
-     * @throws IOException Error loading the properties.
+     * 
+     * @param propResource
+     *                Name of the resource containing properties for this phone
+     * @param sipProvider
+     *                the provider
+     * @throws IOException
+     *                 Error loading the properties.
      */
-    public SipPhone(String propResource , SipProvider sipProvider)
-    	throws IOException
-    {
-    	sipProp = new Properties();
-    	InputStream in = null;
-    	try {
-        	in = SipPhone.class.getResourceAsStream(propResource);
-    		sipProp.load(in);
+    public SipPhone(String propResource, SipProvider sipProvider)
+            throws IOException {
+        sipProp = new Properties();
+        InputStream in = null;
+        try {
+            in = SipPhone.class.getResourceAsStream(propResource);
+            sipProp.load(in);
             System.getProperties().putAll(sipProp);
-    	} finally {
-    		if (in != null) {
-    			in.close();
-    		}
-    	}
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
 
         mediaManager = new MediaManager(sipProp);
 
         this.sipProvider = sipProvider;
         sipManager = new SipManager(sipProp);
         this.launch();
-        address = "sip:" + sipManager.getLocalUser() 
-        	+ "@" + sipManager.getLocalHostAddress() ;
+        address = "sip:" + sipManager.getLocalUser() + "@"
+                + sipManager.getLocalHostAddress();
     }
-    
+
     /**
      * Constructs a new object.
-     * @param sipProperties properties for this phone
-     * @param sipProvider the provider
+     * 
+     * @param sipProperties
+     *                properties for this phone
+     * @param sipProvider
+     *                the provider
      */
-    public SipPhone(Properties sipProperties, SipProvider sipProvider)
-    {
-        sipProp = new Properties() ;
+    public SipPhone(Properties sipProperties, SipProvider sipProvider) {
+        sipProp = new Properties();
         sipProp.putAll(sipProperties);
         mediaManager = new MediaManager(sipProp);
 
         this.sipProvider = sipProvider;
         sipManager = new SipManager(sipProp);
         this.launch();
-        address = "sip:" + sipManager.getLocalUser() 
-        	+ "@" + sipManager.getLocalHostAddress() ;
+        address = "sip:" + sipManager.getLocalUser() + "@"
+                + sipManager.getLocalHostAddress();
     }
-    
-    public String getAddress()
-    {
+
+    public String getAddress() {
         return address;
     }
 
-    //sip call control section-------------------------------------------------------------------------
-    public void createCall(CallId id, String address, String term, String dest) throws
-    ResourceUnavailableException, PrivilegeViolationException, InvalidPartyException, InvalidArgumentException, RawStateException, MethodNotSupportedException
-    {
+    // sip call control
+    // section-------------------------------------------------------------------------
+    public void createCall(CallId id, String address, String term, String dest)
+            throws ResourceUnavailableException, PrivilegeViolationException,
+            InvalidPartyException, InvalidArgumentException, RawStateException,
+            MethodNotSupportedException {
         console.logEntry();
         console.debug("id = " + id);
-//        idd = id;
+        // idd = id;
 
-        try
-        {
+        try {
 
-            console.debug("trentative de connection  a " +address);
-            //CREATION D'UN CALL (SIP)
-            net.sourceforge.gjtapi.raw.sipprovider.sip.Call call =  sipManager.establishCall(dest, mediaManager.generateSdpDescription());
+            console.debug("trentative de connection  a " + address);
+            // CREATION D'UN CALL (SIP)
+            net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = sipManager
+                    .establishCall(dest, mediaManager.generateSdpDescription());
 
-            SipCallId sipCallId = (SipCallId)(id);
+            SipCallId sipCallId = (SipCallId) (id);
             sipCallId.setSipId(call.getID());
-            call.setCallId(sipCallId);	// hook the call up to it's id
-            idVector.add(new ListIdElement(id, call.getID(), term, dest));
-
+            call.setCallId(sipCallId); // hook the call up to it's id
+            ids.add(new ListIdElement(id, call.getID(), term, dest));
 
             call.addStateChangeListener(this);
 
-
-        }
-        catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex)
-        {
+        } catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex) {
             console.debug(ex.toString());
-        }
-        catch ( net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException ex)
-        {
+        } catch (net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException ex) {
             console.debug(ex.toString());
         }
 
     }
 
-    public void answerCall(CallId callId, String address, String term) throws
-    ResourceUnavailableException, PrivilegeViolationException, RawStateException, MethodNotSupportedException
-    {
+    public void answerCall(CallId callId, String address, String term)
+            throws ResourceUnavailableException, PrivilegeViolationException,
+            RawStateException, MethodNotSupportedException {
         console.logEntry();
-        try
-        {
+        try {
             ListIdElement listId = this.getElementIdListByJtapiId(callId);
-            sipManager.answerCall(listId.getSipId(), mediaManager.generateSdpDescription());
-        }
-        catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex)
-        {
+            sipManager.answerCall(listId.getSipId(), mediaManager
+                    .generateSdpDescription());
+        } catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex) {
             console.debug(ex.toString());
-        }
-        catch ( net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException ex)
-        {
+        } catch (net.sourceforge.gjtapi.raw.sipprovider.sip.CommunicationsException ex) {
             console.debug(ex.toString());
         }
 
     }
 
-    public void SipHangup(CallId callId)
-    {
-        try
-        {
+    public void sipHangup(CallId callId) {
+        try {
             console.logEntry();
             ListIdElement lI = this.getElementIdListByJtapiId(callId);
-            sipManager.endCall( lI.getSipId());
+            sipManager.endCall(lI.getSipId());
 
-        }
-        catch (CommunicationsException exc)
-        {
+        } catch (CommunicationsException exc) {
             console.warn("Could not properly terminate call!\n"
-            + "(This is not a fatal error)",
-            exc
-            );
-        }
-        finally
-        {
+                    + "(This is not a fatal error)", exc);
+        } finally {
             console.logExit();
         }
     }
-    // end of sip call control section--------------------------------------------------
 
-    ///---------------------------------------------------------------------
+    // end of sip call control
+    // section--------------------------------------------------
+
+    // /---------------------------------------------------------------------
     // *************************************************************************
     // *************************************************************************
     // ************************************************************************
-    ///sip------------------------------------------------------------------
-    //======================= CALL LISTENER ==============================
-    //callback du sipManager
-    public void callStateChanged(CallStateEvent evt)
-    {
+    // /sip------------------------------------------------------------------
+    // ======================= CALL LISTENER ==============================
+    // callback du sipManager
+    public void callStateChanged(CallStateEvent evt) {
         console.logEntry();
-        console.debug("++++++++++++++++++++++++++++++++++++++++  ++++++++++++++++"+evt.getNewState()+"    old   " +evt.getOldState());
+        console
+                .debug("++++++++++++++++++++++++++++++++++++++++  ++++++++++++++++"
+                        + evt.getNewState() + "    old   " + evt.getOldState());
 
-        try
-        {
+        try {
 
-            net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt.getSourceCall();
+            net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt
+                    .getSourceCall();
             int sipId = evt.getSourceCall().getID();
-            ListIdElement el =  getElementIdListBySipId(sipId);
+            ListIdElement el = getElementIdListBySipId(sipId);
 
-
-            if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.ALERTING)
-            {
+            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.ALERTING) {
                 System.out.println("remote address = " + el.getAddress());
 
-                sipProvider.sipTerminalConnectionRinging(el.getJtapiId(), el.getAddress() , el.getTerminal(), ConnectionEvent.CAUSE_NORMAL );
-                sipProvider.sipConnectionInProgress(el.getJtapiId(), el.getAddress(), Event.CAUSE_NORMAL);
-                sipProvider.sipConnectionAlerting(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                sipProvider.sipTerminalConnectionRinging(el.getJtapiId(), el
+                        .getAddress(), el.getTerminal(),
+                        ConnectionEvent.CAUSE_NORMAL);
+                sipProvider.sipConnectionInProgress(el.getJtapiId(), el
+                        .getAddress(), Event.CAUSE_NORMAL);
+                sipProvider.sipConnectionAlerting(el.getJtapiId(), el
+                        .getAddress(), ConnectionEvent.CAUSE_NORMAL);
 
             }
-            if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.RINGING)
-            {
-                if (evt.getOldState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DIALING)
-                {
+            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.RINGING) {
+                if (evt.getOldState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DIALING) {
                     System.out.println("remote address = " + el.getAddress());
 
-                    sipProvider.sipTerminalConnectionCreated(el.getJtapiId(), el.getAddress() , "remote", ConnectionEvent.CAUSE_NORMAL );
-                    sipProvider.sipConnectionInProgress(el.getJtapiId(), el.getAddress(), Event.CAUSE_NORMAL);
-                    sipProvider.sipConnectionAlerting(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
-
+                    sipProvider.sipTerminalConnectionCreated(el.getJtapiId(),
+                            el.getAddress(), "remote",
+                            ConnectionEvent.CAUSE_NORMAL);
+                    sipProvider.sipConnectionInProgress(el.getJtapiId(), el
+                            .getAddress(), Event.CAUSE_NORMAL);
+                    sipProvider.sipConnectionAlerting(el.getJtapiId(), el
+                            .getAddress(), ConnectionEvent.CAUSE_NORMAL);
 
                 }
-
 
             }
-            if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.CONNECTED)
-            {
-                console.debug("+++++++++++++          ++++++      +++++ conecTTTTEDDD");
+            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.CONNECTED) {
+                console
+                        .debug("+++++++++++++          ++++++      +++++ conecTTTTEDDD");
 
-                // sipProvider.sipConnectionConnected(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
-                sipProvider.sipConnectionConnected(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                // sipProvider.sipConnectionConnected(el.getJtapiId(),
+                // el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                sipProvider.sipConnectionConnected(el.getJtapiId(), el
+                        .getAddress(), ConnectionEvent.CAUSE_NORMAL);
                 sipProvider.sipCallActive(el.getJtapiId(), Event.CAUSE_NORMAL);
-                try
-                {
-                    this.mediaManager.openMediaStreams(call.getRemoteSdpDescription());
+                try {
+                    this.mediaManager.openMediaStreams(call
+                            .getRemoteSdpDescription());
 
-
-                }
-                catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex)
-                {
+                } catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex) {
                     console.debug(ex.toString());
                 }
 
-
-            }
-            else if (evt.getNewState() ==  net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DISCONNECTED)
-            {
-                console.debug("++++++++++++ +          ++++++      +++++ DIIIS conecTTTTEDDD");
-                //listener.connectionSuspended(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
-                try
-                {
+            } else if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DISCONNECTED) {
+                console
+                        .debug("++++++++++++ +          ++++++      +++++ DIIIS conecTTTTEDDD");
+                // listener.connectionSuspended(el.getJtapiId(),
+                // el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                try {
                     if (call.getRemoteSdpDescription() != null) {
-                    	mediaManager.closeStreams(call.getRemoteSdpDescription());
+                        mediaManager.closeStreams(call
+                                .getRemoteSdpDescription());
                     }
+                } catch (MediaException ex) {
+                    console.error(
+                            "The following exception occurred while trying to open media connection:\n"
+                                    + ex.getMessage(), ex);
                 }
-                catch (MediaException ex)
-                {
-                    console.error("The following exception occurred while trying to open media connection:\n"
-                    + ex.getMessage(),           ex);
-                }
-                console.debug("+++++++++++++          ++++++      +++++ DIIIS conecTTTTEDDD"+ call.getRemoteName());
-                sipProvider.sipConnectionDisconnected(el.getJtapiId(), el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
+                console
+                        .debug("+++++++++++++          ++++++      +++++ DIIIS conecTTTTEDDD"
+                                + call.getRemoteName());
+                sipProvider.sipConnectionDisconnected(el.getJtapiId(), el
+                        .getAddress(), ConnectionEvent.CAUSE_NORMAL);
             }
-        }
-        finally
-        {
+        } finally {
             console.logExit();
         }
     }
 
-    public void messageReceived(MessageEvent evt)
-    {
-      /*  try
-        {
-            console.logEntry();
-            String fromAddress = evt.getFromAddress();
-            String fromName = evt.getFromName();
-            String messageBody = evt.getBody();
-            console.showDetailedMsg(
-            "Incoming MESSAGE",
-            "You received a MESSAGE\n"
-            + "From:    " + fromName + "\n"
-            + "Address: " + fromAddress + "\n"
-            + "Message: " + messageBody + "\n");
-        }
-        finally
-        {
-            console.logExit();
-        }*/
+    public void messageReceived(MessageEvent evt) {
+        /*
+         * try { console.logEntry(); String fromAddress = evt.getFromAddress();
+         * String fromName = evt.getFromName(); String messageBody =
+         * evt.getBody(); console.showDetailedMsg( "Incoming MESSAGE", "You
+         * received a MESSAGE\n" + "From: " + fromName + "\n" + "Address: " +
+         * fromAddress + "\n" + "Message: " + messageBody + "\n"); } finally {
+         * console.logExit(); }
+         */
     }
 
-    public void nonFatalMediaErrorOccurred(MediaErrorEvent evt)
-    {
+    public void nonFatalMediaErrorOccurred(MediaErrorEvent evt) {
         console.logEntry();
     }
 
-    /** Returns a Credentials object associated with the specified realm.
-     * @param realm The realm that the credentials are needed for.
-     * @param defaultValues the values to propose the user by default
+    /**
+     * Returns a Credentials object associated with the specified realm.
+     * 
+     * @param realm
+     *                The realm that the credentials are needed for.
+     * @param defaultValues
+     *                the values to propose the user by default
      * @return The credentials associated with the specified realm or null if
-     * none could be provided.
-     *
+     *         none could be provided.
+     * 
      */
-    public UserCredentials obtainCredentials(String realm, UserCredentials defaultValues)
-    {
+    public UserCredentials obtainCredentials(String realm,
+            UserCredentials defaultValues) {
         console.logEntry();
         console.debug("Retrieving credentials");
 
@@ -384,14 +369,14 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
         credentials.setUserName(defaultValues.getUserName());
 
         char[] pass;
-        String password = Utils.getProperty(
-            "net.java.sip.communicator.sip.PASSWORD");
-        if(password == null){
-            console.debug("Phone without password",new Throwable("verify file properties of the phone"));
+        String password = Utils
+                .getProperty("net.java.sip.communicator.sip.PASSWORD");
+        if (password == null) {
+            console.debug("Phone without password", new Throwable(
+                    "verify file properties of the phone"));
             pass = new char[0];
-        }
-        else{
-           pass = password.toCharArray();
+        } else {
+            pass = password.toCharArray();
         }
 
         credentials.setPassword(pass);
@@ -401,84 +386,68 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
 
     }
 
-    public void playerStarting(MediaEvent evt)
-    {console.logEntry();
+    public void playerStarting(MediaEvent evt) {
+        console.logEntry();
     }
 
-    public void playerStopped()
-    {console.logEntry();
+    public void playerStopped() {
+        console.logEntry();
     }
 
-    public void receivedUnknownMessage(UnknownMessageEvent evt)
-    {console.logEntry();
+    public void receivedUnknownMessage(UnknownMessageEvent evt) {
+        console.logEntry();
     }
 
-    public void registered(RegistrationEvent evt)
-    {console.logEntry();
+    public void registered(RegistrationEvent evt) {
+        console.logEntry();
     }
 
-    public void registering(RegistrationEvent evt)
-    {
+    public void registering(RegistrationEvent evt) {
     }
 
-
-    public void callReceived(net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallEvent evt)
-    {
+    public void callReceived(
+            net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallEvent evt) {
         console.logEntry();
 
         // register as a listener on the call
-        net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt.getSourceCall();
+        net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt
+                .getSourceCall();
         CallId callId = call.getCallId();
-        SipCallId sipCallId = (SipCallId)(callId);
+        SipCallId sipCallId = (SipCallId) (callId);
         sipCallId.setSipId(call.getID());
-        call.setCallId(sipCallId);	// hook the call up to it's id
-        idVector.add(new ListIdElement(callId, call.getID(), this.terminal.terminal, this.address));
+        call.setCallId(sipCallId); // hook the call up to it's id
+        ids.add(new ListIdElement(callId, call.getID(),
+                this.terminal.terminal, this.address));
         evt.getSourceCall().addStateChangeListener(this);
     }
 
-    public void callRejectedLocally(CallRejectedEvent evt)
-    {
+    public void callRejectedLocally(CallRejectedEvent evt) {
         console.logEntry();
     }
 
-    public void callRejectedRemotely(CallRejectedEvent evt)
-    {
+    public void callRejectedRemotely(CallRejectedEvent evt) {
         console.logEntry();
     }
 
-
-
-    public void communicationsErrorOccurred(CommunicationsErrorEvent evt)
-    {
+    public void communicationsErrorOccurred(CommunicationsErrorEvent evt) {
         console.logEntry();
     }
 
-
-
-
-
-    public void unregistered(RegistrationEvent evt)
-    {console.logEntry();
+    public void unregistered(RegistrationEvent evt) {
+        console.logEntry();
     }
 
-
-
-    //init methode section---------------------------------------------------------------
-    public void launch()
-    {
-        try
-        {
+    // init methode
+    // section---------------------------------------------------------------
+    public void launch() {
+        try {
             console.logEntry();
-            //mode = PHONE_MODE;
+            // mode = PHONE_MODE;
             NetworkAddressManager.start();
-            try
-            {
+            try {
                 mediaManager.start();
 
-
-            }
-            catch (MediaException exc)
-            {
+            } catch (MediaException exc) {
                 console.error("Failed to start mediaManager", exc);
             }
             mediaManager.addMediaListener(this);
@@ -486,113 +455,89 @@ public class SipPhone implements  MediaListener, CommunicationsListener,  Securi
             sipManager.addCommunicationsListener(this);
             sipManager.setSecurityAuthority(this);
 
-
-            try
-            {
+            try {
                 sipManager.start();
-                if (sipManager.isStarted())
-                {
-                    terminal = new TermData("sip:" + sipManager.getLocalUser() + "@" + sipManager.getLocalHostAddress(),true );// + "@" + sipManager.getLocalHostAddress(), true);
+                if (sipManager.isStarted()) {
+                    terminal = new TermData("sip:" + sipManager.getLocalUser()
+                            + "@" + sipManager.getLocalHostAddress(), true);
 
-                    console.trace(
-                    "sipManager appears to be successfully started");
-                    //  guiManager.setCommunicationActionsEnabled(true);
+                    console
+                            .trace("sipManager appears to be successfully started");
+                    // guiManager.setCommunicationActionsEnabled(true);
                 }
-            }
-            catch (CommunicationsException exc)
-            {
+            } catch (CommunicationsException exc) {
                 console.warn(
-                "An exception occurred while initializing communication stack!\n"
-                + "You won't be able to send or receive calls",
-                exc);
+                        "An exception occurred while initializing communication stack!\n"
+                                + "You won't be able to send or receive calls",
+                        exc);
                 return;
             }
-            try
-            {
-                //sipManager.register();
+            try {
+                // sipManager.register();
                 sipManager.startRegisterProcess();
+            } catch (CommunicationsException exc) {
+                console
+                        .error("An exception occurred while trying to register, exc");
             }
-            catch (CommunicationsException exc)
-            {
-                console.error(
-                "An exception occurred while trying to register, exc");
-            }
-        }
-        finally
-        {
+        } finally {
             console.logExit();
         }
     }
-    //end of init method section-------------------------------------------------------
 
-    private ListIdElement getElementIdListBySipId(int sipId)
-    {
+    // end of init method
+    // section-------------------------------------------------------
+
+    private ListIdElement getElementIdListBySipId(int sipId) {
         ListIdElement ret = null;
-        Enumeration elementEnum = idVector.elements();
-        while (elementEnum.hasMoreElements())
-        {
-            ListIdElement lst = (ListIdElement)elementEnum.nextElement();
-            if ( lst.getSipId() == sipId)
-            {
+        Iterator iterator = ids.iterator();
+        while (iterator.hasNext()) {
+            ListIdElement lst = (ListIdElement) iterator.next();
+            if (lst.getSipId() == sipId) {
                 ret = lst;
             }
         }
         return ret;
     }
 
-    private ListIdElement getElementIdListByJtapiId(CallId callid)
-    {
+    private ListIdElement getElementIdListByJtapiId(CallId callid) {
         ListIdElement ret = null;
-        Enumeration elementEnum = idVector.elements();
-        while (elementEnum.hasMoreElements())
-        {
-            ListIdElement lst = (ListIdElement)elementEnum.nextElement();
-            if ( lst.getJtapiId().equals(callid))
-            {
+        Iterator iterator = ids.iterator();
+        while (iterator.hasNext()) {
+            ListIdElement lst = (ListIdElement) iterator.next();
+            if (lst.getJtapiId().equals(callid)) {
                 ret = lst;
             }
         }
         return ret;
     }
 
-    public SipManager getSipManager()
-    {
+    public SipManager getSipManager() {
         return sipManager;
     }
 
-    public void unregistering(RegistrationEvent evt)
-    {
+    public void unregistering(RegistrationEvent evt) {
     }
 
-    public void play(String url)
-    {
-        try
-        {
+    public void play(String url) {
+        try {
             this.mediaManager.play(url);
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             console.debug(ex.toString());
         }
     }
-    public void record(String url)
-    {
-        try
-        {
+
+    public void record(String url) {
+        try {
             this.mediaManager.record(url);
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             console.debug(ex.toString());
         }
     }
-    public void stop()
-    {
+
+    public void stop() {
 
         this.mediaManager.stopPlaying();
         this.mediaManager.stopRecording();
     }
-
-
-
 }
+

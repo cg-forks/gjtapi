@@ -225,7 +225,10 @@ public CallData[] getCallsOnTerminal(String name) throws RemoteException  {
 }
 
 /**
- * Helper method to turn an array of CallData objects into a Serialized version. * @param cds The CallData objects to make serializable * @return CallData[] A clone with the internal CallIds replaced with their SerializableCallIds. */
+ * Helper method to turn an array of CallData objects into a Serialized version.
+ * @param cds The CallData objects to make serializable
+ * @return CallData[] A clone with the internal CallIds replaced with their SerializableCallIds.
+ */
 private CallData[] toSerialCallData(CallData[] cds) {
 	if (cds == null)
 		return null;

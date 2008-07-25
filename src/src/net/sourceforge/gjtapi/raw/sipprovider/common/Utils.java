@@ -60,33 +60,42 @@ package net.sourceforge.gjtapi.raw.sipprovider.common;
 import java.net.*;
 
 /**
- * <p>Title: SIP COMMUNICATOR-1.1</p>
- * <p>Description: JAIN-SIP-1.1 Audio/Video Phone Application</p>
- * <p>Copyright: Copyright (c) 2003</p>
- * <p>Company: Organisation: LSIIT Laboratory (http://lsiit.u-strasbg.fr)<p>
- * </p>Network Research Team (http://www-r2.u-strasbg.fr))<p>
- * </p>Louis Pasteur University - Strasbourg - France</p>
- *
+ * <p>
+ * Title: SIP COMMUNICATOR-1.1
+ * </p>
+ * <p>
+ * Description: JAIN-SIP-1.1 Audio/Video Phone Application
+ * </p>
+ * <p>
+ * Copyright: Copyright (c) 2003
+ * </p>
+ * <p>
+ * Company: Organisation: LSIIT Laboratory (http://lsiit.u-strasbg.fr)
+ * <p>
+ * </p>
+ * Network Research Team (http://www-r2.u-strasbg.fr))
+ * <p>
+ * </p>
+ * Louis Pasteur University - Strasbourg - France
+ * </p>
+ * 
  * @author Emil Ivov
  * @version 1.1
  */
-public class Utils
-{
+public class Utils {
     private static Console console = Console.getConsole(Utils.class);
 
     /**
      * Returns a property from the sip-communicator properties set.
+     * 
      * @param property
      * @return
      */
-    public static String getProperty(String property)
-    {
+    public static String getProperty(String property) {
         return getSystemProperty(property);
-        //return PropertiesDepot.getProperty(property);
     }
 
-    public static String getSystemProperty(String property)
-    {
+    public static String getSystemProperty(String property) {
         try {
             console.logEntry();
             String retval = System.getProperty(property);
@@ -97,8 +106,7 @@ public class Utils
                 return null;
             }
             return retval;
-        }
-        finally {
+        } finally {
             console.logExit();
         }
     }
@@ -107,22 +115,8 @@ public class Utils
      * @param propertyName
      * @param propertyValue
      */
-   
 
-    
-
-    public static URL getResource(String name)
-    {
-//        try {
-        //return new File("util/resource/" + name).toURL();
+    public static URL getResource(String name) {
         return Utils.class.getResource("resource/" + name);
-//        }
-//        catch (MalformedURLException ex) {
-//            Console.println("Could not extract resource [util/resource/"+name+"]");
-//            return null;
-//        }
     }
-
- 
-
 }
