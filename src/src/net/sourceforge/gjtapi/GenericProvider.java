@@ -166,8 +166,10 @@ public AddressCapabilities getAddressCapabilities(Terminal terminal) throws Plat
  * Return an array of addresses, unless it is too big to have been preloaded.
  */
 public Address[] getAddresses() throws ResourceUnavailableException {
-	return this.getDomainMgr().getAddresses();
+    DomainMgr mgr = getDomainMgr();
+    return mgr.getAddresses();
 }
+
 /**
  * Return the first known MediaTerminal with no connections currently on it.
  * Only known MediaTerminals are checked.

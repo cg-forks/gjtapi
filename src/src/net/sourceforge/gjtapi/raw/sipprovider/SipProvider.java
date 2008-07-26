@@ -452,9 +452,10 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
         console.logEntry();
     }
 
-    // initialisation du
-    // provider-----------------------------------------------------------
-    // lecture des propriet?s et creation des adresees et des terminaux
+    /**
+     * Initialization of the provider. Loads the properties and creates
+     * addresses and terminals.
+     */
     public void loadProperties() {
         InputStream in = null;
         try {

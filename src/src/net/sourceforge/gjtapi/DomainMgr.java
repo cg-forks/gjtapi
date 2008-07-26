@@ -49,26 +49,31 @@ import net.sourceforge.gjtapi.util.*;
  * @author: Richard Deadman
  */
 class DomainMgr {
-	private boolean dynamicAddr = false;
-	private boolean dynamicTerm = false;
+    private boolean dynamicAddr = false;
+    private boolean dynamicTerm = false;
 
-	private GenericProvider provider = null;
-	private TelephonyProvider raw = null;	// shortcut tp provider->getRaw()
-			// map address names to Address for quick lookup
-	private Map localAddresses = null;
-		// String -> WeakReference(Address) map
-	private Map remoteAddresses = null;
-		// note if our static Address and Terminal arrays are null because they are too large
-		// If these are non-null, we are collecting dynamic Addresses and Terminals
-		// and mapping them here to their names as WeakReferences
-	private Map terminals = null;
-		// String -> WeakReference(Terminal) map
-	private Map remoteTerminals = null;
-		// The set of known terminals that can handle media
-	private HashSet mediaTerminals = new HashSet();
-		// The set of Terminals or Addresses with listeners attached -- these are strongly held to avoid
-		// garbage collection if we are using SoftMaps
-	private HashSet observed = null;
+    private GenericProvider provider = null;
+    private TelephonyProvider raw = null;	// shortcut tp provider->getRaw()
+    /** map address names to Address for quick lookup */
+    private Map localAddresses = null;
+    /** String -> WeakReference(Address) map */
+    private Map remoteAddresses = null;
+    /**
+     * note if our static Address and Terminal arrays are null because they are too large
+     * If these are non-null, we are collecting dynamic Addresses and Terminals
+     * and mapping them here to their names as WeakReferences
+     */
+    private Map terminals = null;
+    /** String -> WeakReference(Terminal) map */
+    private Map remoteTerminals = null;
+    /** The set of known terminals that can handle media */
+    private HashSet mediaTerminals = new HashSet();
+    /**
+     * The set of Terminals or Addresses with listeners attached -- 
+     * these are strongly held to avoid garbage collection if we are using 
+     * SoftMaps.
+     */
+    private HashSet observed = null;
 
 /**
  * Constructor that determines which kind of maps to keep and how to resolve Address and Terminal requests.
@@ -180,16 +185,16 @@ private FreeTerminal createRemoteTerminal(String name) {
  * Return an array of addresses, unless it is too big to have been preloaded.
  */
 Address[] getAddresses() throws ResourceUnavailableException {
-  if (this.isDynamicAddr()) {
-	throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
-  }
+    if (this.isDynamicAddr()) {
+        throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
+    }
 
-  Map addr = this.getLocalAddresses();
-  // test if it's null
-  if (addr == null)
-  	return null;
-
-  return (Address[])addr.values().toArray(new Address[0]);
+    Map addr = this.getLocalAddresses();
+    // test if it's null
+    if (addr == null) {
+        return null;
+    }
+    return (Address[])addr.values().toArray(new Address[0]);
 }
 /**
  * Find a FreeAddress that is associated with a number, or null if none exists in the current cache.
