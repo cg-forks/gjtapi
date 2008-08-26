@@ -57,12 +57,16 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.sip;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+
+import javax.sip.Dialog;
+import javax.sip.message.Request;
+
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallStateEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import java.util.*;
-import javax.sip.*;
-import javax.sip.message.*;
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -123,8 +127,9 @@ class CallDispatcher
 
     /**
      * Find the call that contains the specified dialog.
-     * @param dialog the dialog whose containg call is to be found
-     * @return the call that contains the specified dialog.
+     * @param dialog the dialog whose containing call is to be found
+     * @return the call that contains the specified dialog,
+     * <code>null</code> if the call could not be found.
      */
     Call findCall(Dialog dialog)
     {
@@ -134,9 +139,9 @@ class CallDispatcher
                 return null;
             }
             synchronized (calls) {
-                Enumeration callEnumerator = calls.elements();
-                while (callEnumerator.hasMoreElements()) {
-                    Call item = (Call) callEnumerator.nextElement();
+                Iterator iterator = calls.values().iterator();
+                while (iterator.hasNext()) {
+                    Call item = (Call) iterator.next();
                     if (item.getDialog().getCallId().equals(dialog.getCallId())) {
                         return item;
                     }

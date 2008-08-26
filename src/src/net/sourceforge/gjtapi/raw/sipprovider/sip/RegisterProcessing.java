@@ -154,7 +154,7 @@ public class RegisterProcessing
     }
 
     /**
-     * Attempts to re-ogenerate the corresponding request with the proper
+     * Attempts to re-generate the corresponding request with the proper
      * credentials and terminates the call if it fails.
      *
      * @param clientTransaction the corresponding transaction

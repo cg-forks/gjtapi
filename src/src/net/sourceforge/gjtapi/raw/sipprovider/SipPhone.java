@@ -67,7 +67,6 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.telephony.ConnectionEvent;
 import javax.telephony.Event;
@@ -108,16 +107,11 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 public class SipPhone
         implements MediaListener, CommunicationsListener, SecurityAuthority,
         net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener {
-    // private TelephonyListener listener;
-    // private List addresses;
     private TermData terminal;
-    // private final static String RESOURCE_NAME = "sip.props";
-    // private Properties properties = new Properties();
     protected MediaManager mediaManager;
     protected SipManager sipManager;
     protected static Console console = Console.getConsole(SipPhone.class);
-    // private CallId idd;
-    private Collection ids = new Vector();
+    private Collection ids = new java.util.ArrayList();
     private String address;
     private SipProvider sipProvider;
     public Properties sipProp;
@@ -253,9 +247,8 @@ public class SipPhone
     // callback du sipManager
     public void callStateChanged(CallStateEvent evt) {
         console.logEntry();
-        console
-                .debug("++++++++++++++++++++++++++++++++++++++++  ++++++++++++++++"
-                        + evt.getNewState() + "    old   " + evt.getOldState());
+        console.debug("new state: " + evt.getNewState() + ",old state: "
+                + evt.getOldState());
 
         try {
 
@@ -292,8 +285,7 @@ public class SipPhone
 
             }
             if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.CONNECTED) {
-                console
-                        .debug("+++++++++++++          ++++++      +++++ conecTTTTEDDD");
+                console.debug("connected");
 
                 // sipProvider.sipConnectionConnected(el.getJtapiId(),
                 // el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
@@ -309,8 +301,7 @@ public class SipPhone
                 }
 
             } else if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DISCONNECTED) {
-                console
-                        .debug("++++++++++++ +          ++++++      +++++ DIIIS conecTTTTEDDD");
+                console.debug("disconnected");
                 // listener.connectionSuspended(el.getJtapiId(),
                 // el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
                 try {
@@ -323,9 +314,7 @@ public class SipPhone
                             "The following exception occurred while trying to open media connection:\n"
                                     + ex.getMessage(), ex);
                 }
-                console
-                        .debug("+++++++++++++          ++++++      +++++ DIIIS conecTTTTEDDD"
-                                + call.getRemoteName());
+                console.debug("disconnected " + call.getRemoteName());
                 sipProvider.sipConnectionDisconnected(el.getJtapiId(), el
                         .getAddress(), ConnectionEvent.CAUSE_NORMAL);
             }

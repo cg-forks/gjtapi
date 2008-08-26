@@ -1,5 +1,3 @@
-package net.sourceforge.gjtapi;
-
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
 
@@ -30,20 +28,25 @@ package net.sourceforge.gjtapi;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+
+package net.sourceforge.gjtapi;
+
 import net.sourceforge.gjtapi.raw.*;
+
 /**
  * This is the pluggable interface that low-level protocol
- * or vendor providers can implement, often known as a Service Provider Interface or SPI.
- * Alternatively this may be referred to as the RawProvider interface or RPI, although technically
- * the Generic SPI or RPI also involves the definition of the helper classes, such as FreeCallEvent
- * and RawObserver.
- * <P>Each provider is associated in the ProviderManager with a unique name.  This
- * allows the JTapi Provider to select the correct Peer based on
+ * or vendor providers can implement, often known as a Service Provider 
+ * Interface or SPI.
+ * Alternatively this may be referred to as the RawProvider interface or RPI, 
+ * although technically the Generic SPI or RPI also involves the definition of 
+ * the helper classes, such as FreeCallEvent and RawObserver.
+ * 
+ * <P>Each provider is associated in the ProviderManager with a unique name. 
+ * This allows the JTapi Provider to select the correct Peer based on
  * input parameters.  Thus when the GenericJtapiPeer is sent the message
  * JTapiPeer.getProvider(String name), the GenericJTapiPeer can look
  * for a provider by a name in that string, load it and plug it into the generic
  * JTapi classes.
  **/
-
 public interface TelephonyProvider extends FullJtapiTpi, JccTpi {
 }

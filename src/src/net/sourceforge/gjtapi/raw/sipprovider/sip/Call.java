@@ -57,16 +57,22 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.sip;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.sip.Dialog;
+import javax.sip.address.Address;
+import javax.sip.address.SipURI;
+import javax.sip.address.URI;
+import javax.sip.header.FromHeader;
+import javax.sip.header.ToHeader;
+import javax.sip.message.Request;
+
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.raw.sipprovider.SipCallId;
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallStateEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import java.util.*;
-import javax.sip.*;
-import javax.sip.address.*;
-import javax.sip.header.*;
-import javax.sip.message.*;
 
 /**
  * <p>Title: SIP COMMUNICATOR</p>
@@ -109,7 +115,7 @@ public class Call
     private SipCallId callId = new SipCallId();
     
     //Event Management
-    ArrayList listeners = new ArrayList();
+    Collection listeners = new java.util.ArrayList();
     public String getState()
     {
         return callState;
@@ -150,12 +156,13 @@ public class Call
         {
             console.logEntry();
 
-            if(newStatus.equals(getState()))
+            if(newStatus.equals(getState())) {
                 return;
+            }
 
-            if( console.isDebugEnabled() )
+            if( console.isDebugEnabled() ) {
                 console.debug("setting call status to "+newStatus);
-
+            }
             String oldStatus = callState;
             this.callState = newStatus;
             fireCallStatusChangedEvent(oldStatus);
@@ -270,8 +277,10 @@ public class Call
     {
         CallStateEvent evt = new CallStateEvent(this);
         evt.setOldState(oldStatus);
-        for (int i = listeners.size() - 1; i >= 0; i--) {
-            ( (CallListener) listeners.get(i)).callStateChanged(evt);
+        Iterator iterator = listeners.iterator();
+        while (iterator.hasNext()) {
+            CallListener current = (CallListener) iterator.next();
+            current.callStateChanged(evt);
         }
     }
 }

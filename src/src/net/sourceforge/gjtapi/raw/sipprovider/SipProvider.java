@@ -13,7 +13,7 @@
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
+// *    the documentation and/or other materials provided with the
  *    distribution.
  *
  * 3. The end-user documentation included with the redistribution,
@@ -69,7 +69,6 @@ import java.util.Dictionary;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.media.IncompatibleSourceException;
 import javax.telephony.InvalidArgumentException;
@@ -103,9 +102,11 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
     // private TermData terminal;
     // private final static String RESOURCE_NAME = "sip.props";
     private Properties properties = System.getProperties();
+    /** Logger instance. */
     protected static Console console = Console.getConsole(SipProvider.class);
     // private CallId idd;
-    private Collection sipPhones = new Vector();
+    /** Known sip phones. */
+    private Collection sipPhones = new java.util.ArrayList();
 
     /**
      * Constructs a new object.
@@ -173,8 +174,8 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
     }
 
     /**
-     * Make a call. Not that this follows the JTAPI sematics of an idle call
-     * being created synchronusly (two connections). Events from the raw
+     * Make a call. Not that this follows the JTAPI semantics of an idle call
+     * being created synchronously (two connections). Events from the raw
      * provider will indicate state transitions.
      * 
      * @param id
@@ -227,7 +228,6 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
         int i = 0;
         while (iter.hasNext()) {
             SipPhone sp = (SipPhone) iter.next();
-            // SipManager sm = sp.getSipManager();
             ret[i] = sp.getAddress();
             i++;
         }
@@ -342,7 +342,6 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
      */
     public TermData[] getTerminals(String address)
             throws InvalidArgumentException {
-        console.logEntry();
         Iterator iter = sipPhones.iterator();
         int size = 0;
         while (iter.hasNext()) {
@@ -457,23 +456,21 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
      * addresses and terminals.
      */
     public void loadProperties() {
+        String resource = System.getProperty("gjtapi.sip.properties",
+                "/sip-provider.properties");
         InputStream in = null;
         try {
-            in = SipProvider.class
-                    .getResourceAsStream("/sip-provider.properties");
+            in = SipProvider.class.getResourceAsStream(resource);
             properties.load(in);
             System.getProperties().putAll(properties);
             String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
             StringTokenizer st = new StringTokenizer(strPhone, ",");
             while (st.hasMoreTokens()) {
-                SipPhone sipPhone = new SipPhone("/" + st.nextToken(), this);
-                sipPhones.add(sipPhone);
-                console.debug("------------------------"
-                        + sipPhone.getAddress());
+                String phoneProperties = st.nextToken();
+                addPhone("/" + phoneProperties);
             }
-        }
-        // Catch IO & FileNotFound & NullPointer exceptions
-        catch (Exception exc) {
+        } catch (Exception exc) {
+            // Catch IO & FileNotFound & NullPointer exceptions
             console
                     .warn(
                             "Warning:Failed to load properties!"
@@ -488,6 +485,19 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
                 }
             }
         }
+    }
+
+    /**
+     * Adds the phone with the given configuration to the list of known
+     * phones.
+     * @param properties name of the properties resource.
+     * @throws IOException
+     *         Error reading the resource.
+     */
+    public void addPhone(String properties) throws IOException {
+        SipPhone phone = new SipPhone(properties, this);
+        sipPhones.add(phone);
+        console.debug("added phone " + phone.getAddress());
     }
 
     // methode utilitaires--------------------------------------
@@ -533,9 +543,7 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
 
     public void sipConnectionConnected(CallId id, String address, int cause) {
         console.logEntry();
-        // listener.callActive(id, cause);
         listener.connectionConnected(id, address, cause);
-        // listener.connectionDisconnected(id, address, cause);
     }
 
     public void sipConnectionDisconnected(CallId id, String address, int cause) {

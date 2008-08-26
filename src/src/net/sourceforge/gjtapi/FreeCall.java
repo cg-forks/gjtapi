@@ -708,7 +708,7 @@ public java.lang.Object sendPrivateData(java.lang.Object data) {
 	return ((GenericProvider)this.getProvider()).getRaw().sendPrivateData(this.getCallID(), null, null, data);
 }
   /**
-   * Send a sanpshot describing the current state of the call.
+   * Send a snapshot describing the current state of the call.
    * If we had a true state machine, we could ask each state to generate the appropriate event.
    */
   protected void sendSnapShot(CallListener l){

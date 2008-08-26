@@ -36,11 +36,11 @@ import java.util.Properties;
 import javax.telephony.*;
 /**
  * This is a factory for creating a TelephonyProvider wrapper around a coreTpi implementation.
- * <P>The big problem is that the TPI architecture relies on capabilities being dyanically
- * assigned and plugged in.  Unfortunatly, both media and PrivateData rely on interface
+ * <P>The big problem is that the TPI architecture relies on capabilities being dynamically
+ * assigned and plugged in.  Unfortunately, both media and PrivateData rely on interface
  * implementation to determine if a capability is supported.  Since it is too hard to create
  * generic objects at runtime that selectively implement all these interfaces as more
- * capabilites are added, we choose to provide default No-op behaviour when MethodNotSupported
+ * capabilities are added, we choose to provide default No-op behaviour when MethodNotSupported
  * cannot be thrown.
  * Creation date: (2000-10-04 14:19:45)
  * @author: Richard Deadman

@@ -57,9 +57,52 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.sip;
 
-import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SecurityAuthority;
-import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SipSecurityManager;
-import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.TooManyListenersException;
+
+import javax.sip.ClientTransaction;
+import javax.sip.Dialog;
+import javax.sip.InvalidArgumentException;
+import javax.sip.ListeningPoint;
+import javax.sip.ObjectInUseException;
+import javax.sip.PeerUnavailableException;
+import javax.sip.RequestEvent;
+import javax.sip.ResponseEvent;
+import javax.sip.ServerTransaction;
+import javax.sip.SipException;
+import javax.sip.SipFactory;
+import javax.sip.SipListener;
+import javax.sip.SipProvider;
+import javax.sip.SipStack;
+import javax.sip.TimeoutEvent;
+import javax.sip.Transaction;
+import javax.sip.TransactionAlreadyExistsException;
+import javax.sip.TransactionUnavailableException;
+import javax.sip.TransportNotSupportedException;
+import javax.sip.address.Address;
+import javax.sip.address.AddressFactory;
+import javax.sip.address.SipURI;
+import javax.sip.header.CSeqHeader;
+import javax.sip.header.ContactHeader;
+import javax.sip.header.FromHeader;
+import javax.sip.header.HeaderFactory;
+import javax.sip.header.MaxForwardsHeader;
+import javax.sip.header.ToHeader;
+import javax.sip.header.ViaHeader;
+import javax.sip.message.Message;
+import javax.sip.message.MessageFactory;
+import javax.sip.message.Request;
+import javax.sip.message.Response;
+
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
+import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
+import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallRejectedEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CommunicationsErrorEvent;
@@ -67,19 +110,9 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CommunicationsListener;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.MessageEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.RegistrationEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.UnknownMessageEvent;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
-import java.net.*;
-import java.text.*;
-import java.util.*;
-import javax.sip.*;
-import javax.sip.address.*;
-import javax.sip.header.*;
-import javax.sip.message.*;
-
-import java.net.InetSocketAddress;
-import java.util.Properties;
+import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SecurityAuthority;
+import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SipSecurityManager;
+import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 
 
 /**
@@ -177,7 +210,7 @@ public class SipManager implements SipListener
     protected static final int  MAX_FORWARDS = 70;
     protected MaxForwardsHeader maxForwardsHeader = null;
     protected long registrationTransaction = -1;
-    protected ArrayList listeners = new ArrayList();
+    protected Collection listeners = new java.util.ArrayList();
 
     //XxxProcessing managers
     /**
@@ -1341,9 +1374,11 @@ public class SipManager implements SipListener
                 console.debug("received call" + call);
             }
             CallEvent evt = new CallEvent(call);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).callReceived(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.callReceived(evt);
             }
         }
         finally
@@ -1363,10 +1398,11 @@ public class SipManager implements SipListener
                 console.debug("received instant message=" + message);
             }
             MessageEvent evt = new MessageEvent(message);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).messageReceived(
-                evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.messageReceived(evt);
             }
         }
         finally
@@ -1386,9 +1422,11 @@ public class SipManager implements SipListener
                 console.debug("registered with address = " + address);
             }
             RegistrationEvent evt = new RegistrationEvent(address);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).registered(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.registered(evt);
             }
         }
         finally
@@ -1408,9 +1446,11 @@ public class SipManager implements SipListener
                 console.debug("registering with address=" + address);
             }
             RegistrationEvent evt = new RegistrationEvent(address);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).registering(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.registering(evt);
             }
         }
         finally
@@ -1430,9 +1470,11 @@ public class SipManager implements SipListener
                 console.debug("unregistered, address is " + address);
             }
             RegistrationEvent evt = new RegistrationEvent(address);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).unregistered(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.unregistered(evt);
             }
         }
         finally
@@ -1451,9 +1493,11 @@ public class SipManager implements SipListener
                 console.debug("unregistering, address is " + address);
             }
             RegistrationEvent evt = new RegistrationEvent(address);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).unregistering(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.unregistering(evt);
             }
         }
         finally
@@ -1474,11 +1518,11 @@ public class SipManager implements SipListener
                 console.debug("unknown message=" + message);
             }
             UnknownMessageEvent evt = new UnknownMessageEvent(message);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).
-                receivedUnknownMessage(
-                evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.receivedUnknownMessage(evt);
             }
         }
         finally
@@ -1500,10 +1544,11 @@ public class SipManager implements SipListener
                 + "\ninvite message=" + invite);
             }
             CallRejectedEvent evt = new CallRejectedEvent(reason, invite);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).
-                callRejectedLocally(
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.callRejectedLocally(
                 evt);
             }
         }
@@ -1525,10 +1570,11 @@ public class SipManager implements SipListener
                 + "\ninvite message=" + invite);
             }
             CallRejectedEvent evt = new CallRejectedEvent(reason, invite);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).
-                callRejectedRemotely(
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.callRejectedRemotely(
                 evt);
             }
         }
@@ -1548,10 +1594,11 @@ public class SipManager implements SipListener
             console.error(throwable);
             CommunicationsErrorEvent evt = new CommunicationsErrorEvent(
             throwable);
-            for (int i = listeners.size() - 1; i >= 0; i--)
-            {
-                ( (CommunicationsListener) listeners.get(i)).
-                communicationsErrorOccurred(evt);
+            Iterator iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                CommunicationsListener current =
+                    (CommunicationsListener) iterator.next();
+                current.communicationsErrorOccurred(evt);
             }
         }
         finally

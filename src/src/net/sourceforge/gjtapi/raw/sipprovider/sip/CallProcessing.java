@@ -668,7 +668,9 @@ public class CallProcessing
             //find the call
             Call call = callDispatcher.findCall(clientTransaction.
                                                 getDialog());
-            call.setState(Call.DISCONNECTED);
+            if (call != null) {
+                call.setState(Call.DISCONNECTED);
+            }
             sipManCallback.fireCallRejectedRemotely(
                 "Server returned a NOT FOUND Response",
                 response
@@ -678,7 +680,6 @@ public class CallProcessing
         {
             console.logExit();
         }
-
     }
 
     public void processNotImplemented(ClientTransaction clientTransaction,

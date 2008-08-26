@@ -64,7 +64,7 @@ import java.net.*;
  * Title: SIP COMMUNICATOR-1.1
  * </p>
  * <p>
- * Description: JAIN-SIP-1.1 Audio/Video Phone Application
+ * Description: Utilitis for the SIP provider.
  * </p>
  * <p>
  * Copyright: Copyright (c) 2003
@@ -88,35 +88,29 @@ public class Utils {
     /**
      * Returns a property from the sip-communicator properties set.
      * 
-     * @param property
-     * @return
+     * @param property the name of the property
+     * @return value of the property, <code>null</code> if there is no 
+     * value.
      */
     public static String getProperty(String property) {
         return getSystemProperty(property);
     }
 
-    public static String getSystemProperty(String property) {
-        try {
-            console.logEntry();
-            String retval = System.getProperty(property);
-            if (retval == null) {
-                return retval;
-            }
-            if (retval.trim().length() == 0) {
-                return null;
-            }
-            return retval;
-        } finally {
-            console.logExit();
-        }
-    }
-
     /**
-     * @param propertyName
-     * @param propertyValue
+     * Retrieves a system property.
+     * @param property the name of the property
+     * @return value of the property, <code>null</code> if there is no 
+     * value.
      */
-
-    public static URL getResource(String name) {
-        return Utils.class.getResource("resource/" + name);
+    public static String getSystemProperty(String property) {
+        String retval = System.getProperty(property);
+        if (retval == null) {
+            return null;
+        }
+        retval = retval.trim();
+        if (retval.length() == 0) {
+            return null;
+        }
+        return retval;
     }
 }
