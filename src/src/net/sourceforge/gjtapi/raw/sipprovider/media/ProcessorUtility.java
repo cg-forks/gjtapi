@@ -163,8 +163,9 @@ class ProcessorUtility implements ControllerListener {
                     return false;
                 }
             }
-            
-            System.out.println(state2String(processor.getState()));
+            if (console.isDebugEnabled()) {
+                console.debug(state2String(processor.getState()));
+            }
         }
 
         processor.removeControllerListener(this);

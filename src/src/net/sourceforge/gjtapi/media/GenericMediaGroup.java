@@ -314,23 +314,34 @@ public RecorderEvent record(String streamID, RTC[] rtc, Dictionary optargs) thro
 				this.getMediaService(),
 				null, null, null, 0);
 }
-/**
- * retrieveSignals method comment.
- */
-public SignalDetectorEvent retrieveSignals(int numSignals, Symbol[] patterns, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
-	try {
-		return this.getProv().getRaw().retrieveSignals(this.getTerminalName(), numSignals, patterns, rtc, optargs).buildEvent(this.getProv());
-	} catch (MediaResourceException mre) {
-			// morph and rethrow the event
-		ResourceEvent re = mre.getResourceEvent();
-		if (re != null && re instanceof GenericResourceEvent) {
-			((GenericResourceEvent)re).morph(this.getProv());
-		}
-		throw mre;
-	}
 
-}
-/**
+    /**
+     * {@inheritDoc}
+     */
+    public SignalDetectorEvent retrieveSignals(int numSignals,
+            Symbol[] patterns, RTC[] rtc, Dictionary optargs)
+            throws MediaResourceException {
+        GenericProvider provider = getProv();
+        try {
+            TelephonyProvider rawProvider = provider.getRaw();
+            RawSigDetectEvent event = rawProvider.retrieveSignals(
+                    this.getTerminalName(), numSignals, patterns, rtc, optargs);
+            if (event == null) {
+                return null;
+            }
+            return event.buildEvent(provider);
+        } catch (MediaResourceException mre) {
+            // morph and rethrow the event
+            ResourceEvent re = mre.getResourceEvent();
+            if (re != null && re instanceof GenericResourceEvent) {
+                ((GenericResourceEvent) re).morph(provider);
+            }
+            throw mre;
+        }
+
+    }
+
+    /**
  * sendSignals method comment.
  */
 public SignalGeneratorEvent sendSignals(Symbol[] signals, RTC[] rtc, Dictionary optargs) throws MediaResourceException {

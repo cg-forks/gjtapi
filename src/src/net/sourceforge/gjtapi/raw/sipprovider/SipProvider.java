@@ -615,11 +615,12 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
             }
         } catch (javax.telephony.InvalidArgumentException ex) {
             console.debug(ex.toString());
-
         }
-
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     public RawSigDetectEvent retrieveSignals(String terminal, int num,
             javax.telephony.media.Symbol[] patterns,
             javax.telephony.media.RTC[] rtcs, Dictionary optArgs)

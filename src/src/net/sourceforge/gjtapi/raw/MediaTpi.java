@@ -48,7 +48,7 @@ public interface MediaTpi extends BasicJtapiTpi {
 	public final static int MEDIA_RES_ALL = 15;
 /**
   * Allocate a media resource for a terminal.
-  * <P>This may be called subsequant times for the same resource on the same terminal in order
+  * <P>This may be called subsequent times for the same resource on the same terminal in order
   * to replace the resourceArgs dictionary associated with the resource.
   * <P>One resourceArgs entry that must be handled is the mapping of p_EnableEvents to ev_SignalDetected.
   * This indicates that detected signals should be reported through an event.
@@ -106,7 +106,7 @@ void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs) th
   * @param terminal The terminal the signal receiver is attached to.
   * @param num The number of signals to retrieve
   * @param syms A set of symbols patterns to return
-  * @param rtcs A set of runtime control sets that tune the signalling.
+  * @param rtcs A set of runtime control sets that tune the signaling.
   * @param optArgs A dictionary of optional arguments and commands for controlling the play.
   * @return A GenericSignalDectectorEvent that can be sent getSignalBuffer() to retrieve the signals.
   *

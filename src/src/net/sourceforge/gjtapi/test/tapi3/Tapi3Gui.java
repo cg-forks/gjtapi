@@ -165,7 +165,7 @@ public class Tapi3Gui {
     }
     
     public void initGui() {
-        tapi3Frame = new JFrame("Tapi3 Demo");
+        tapi3Frame = new JFrame("Tapi3 Demo - " + address.getName());
         
         JPanel tapiPanel = new JPanel(new BorderLayout());
         tapi3Frame.getContentPane().add(tapiPanel, BorderLayout.NORTH);
@@ -517,8 +517,10 @@ public class Tapi3Gui {
                 ms.bindToTerminal(null, terminal);
                 while(!isInterrupted()) {
                     SignalDetectorEvent ev = ms.retrieveSignals(1, null, null, null);
-                    logger.debug("Retrieved digit: " + ev.getSignalString());
-                    txtDTMFIn.setText(txtDTMFIn.getText() + ev.getSignalString());
+                    if (ev != null) {
+                        logger.debug("Retrieved digit: " + ev.getSignalString());
+                        txtDTMFIn.setText(txtDTMFIn.getText() + ev.getSignalString());
+                    }
                 }
             } catch(Exception e) {
                 if(e.getCause() == null || !(e.getCause() instanceof InterruptedException)) {

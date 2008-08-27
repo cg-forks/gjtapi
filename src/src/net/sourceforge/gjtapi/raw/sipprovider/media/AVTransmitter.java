@@ -57,39 +57,40 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+
+import javax.media.Controller;
+import javax.media.Format;
+import javax.media.MediaLocator;
+import javax.media.Processor;
+import javax.media.control.TrackControl;
+import javax.media.protocol.ContentDescriptor;
+import javax.media.protocol.DataSource;
+import javax.media.protocol.PushBufferDataSource;
+import javax.media.protocol.PushBufferStream;
+import javax.media.rtp.InvalidSessionAddressException;
+import javax.media.rtp.RTPManager;
+import javax.media.rtp.SendStream;
+import javax.media.rtp.SessionAddress;
+
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-/**
- * <p>Title: SIP COMMUNICATOR</p>
- * <p>Description:JAIN-SIP Audio/Video phone application</p>
- * <p>Copyright: Copyright (c) 2003</p>
- * <p>Organisation: LSIIT laboratory (http://lsiit.u-strasbg.fr) </p>
- * <p>Network Research Team (http://www-r2.u-strasbg.fr))</p>
- * <p>Louis Pasteur University - Strasbourg - France</p>
- * @author Emil Ivov (http://www.emcho.com)
- * @version 1.1
- *
- */
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import javax.media.*;
-import javax.media.control.*;
-import javax.media.protocol.*;
-import javax.media.rtp.*;
 
 class AVTransmitter {
     protected static Console console = Console.getConsole(AVTransmitter.class);
-    /** Input MediaLocator. Can be a file or http or capture source */
+    /** Input MediaLocator. Can be a file or HTTP or capture source */
     protected MediaLocator locator;
     protected String ipAddress;
-    protected Processor processor = null;
+    protected Processor processor;
     protected RTPManager rtpMgrs[];
     /** Used by mobility - keeps rtpMgrs[] corresponding addresses. */
     protected SessionAddress sessionAddresses[] = null;
 
     protected DataSource dataOutput = null;
-    protected ArrayList ports = null;
-    protected ArrayList formatSets = null;
+    protected List ports;
+    protected List formatSets;
     protected MediaManager mediaManCallback = null;
     private SendStream sendStream;
     /** Utility to delay until a processor state has been reached. */
@@ -97,8 +98,8 @@ class AVTransmitter {
 
     public AVTransmitter(Processor processor,
                          String ipAddress,
-                         ArrayList ports,
-                         ArrayList formatSets) {
+                         java.util.ArrayList ports,
+                         java.util.ArrayList formatSets) {
         try {
             console.logEntry();
             this.processor = processor;
@@ -327,7 +328,7 @@ class AVTransmitter {
 
             try {
                 rtpMgrs[i].initialize(localAddr);
-                console.debug("Just bond to port" + localAddr.getDataPort());
+                console.debug("Just bond to port " + localAddr.getDataPort());
                 rtpMgrs[i].addTarget(destAddr);
                 sessionAddresses[i] = destAddr;
             } catch (InvalidSessionAddressException ex) {
@@ -380,7 +381,7 @@ class AVTransmitter {
         try {
             console.logEntry();
             for (int i = 0; i < formatSets.size(); i++) {
-                ArrayList currentSet = (ArrayList) formatSets.get(i);
+                List currentSet = (List) formatSets.get(i);
                 for (int j = 0; j < currentSet.size(); j++) {
                     if (((String) currentSet.get(j)).equals(format)) {
                         return ((Integer) ports.get(i)).intValue();
@@ -394,14 +395,14 @@ class AVTransmitter {
     }
 
 
-    protected int findFirstMatchingFormat(Format[] hayStack, ArrayList needles) {
+    protected int findFirstMatchingFormat(Format[] hayStack, List needles) {
         try {
             console.logEntry();
             if (hayStack == null || needles == null) {
                 return -1;
             }
             for (int j = 0; j < needles.size(); j++) {
-                ArrayList currentSet = (ArrayList) needles.get(j);
+                List currentSet = (List) needles.get(j);
                 for (int k = 0; k < currentSet.size(); k++) {
                     for (int i = 0; i < hayStack.length; i++) {
                         if (hayStack[i].getEncoding().equals(
