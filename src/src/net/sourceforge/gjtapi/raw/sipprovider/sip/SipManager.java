@@ -1350,17 +1350,8 @@ public class SipManager implements SipListener
      * Adds a CommunicationsListener to SipManager.
      * @param listener The CommunicationsListener to be added.
      */
-    public void addCommunicationsListener(CommunicationsListener listener)
-    {
-        try
-        {
-            console.logEntry();
-            listeners.add(listener);
-        }
-        finally
-        {
-            console.logExit();
-        }
+    public void addCommunicationsListener(CommunicationsListener listener) {
+        listeners.add(listener);
     }
 
     //------------ call received dispatch
@@ -1613,14 +1604,13 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
+            Request request = requestReceivedEvent.getRequest();
             if (console.isDebugEnabled())
             {
-                console.debug("received request=" + requestReceivedEvent);
+                console.debug("received request=" + request.getMethod());
             }
             ServerTransaction serverTransaction = requestReceivedEvent.
             getServerTransaction();
-            Request request = requestReceivedEvent.getRequest();
-//            String method = ( (CSeqHeader) request.getHeader(CSeqHeader.NAME)).getMethod();
             if (serverTransaction == null)
             {
                 try
@@ -1666,9 +1656,9 @@ public class SipManager implements SipListener
                 }
             }
             Dialog dialog = serverTransaction.getDialog();
-//            Request requestClone = (Request) request.clone();
+            String method = request.getMethod();
             //INVITE
-            if (request.getMethod().equals(Request.INVITE))
+            if (method.equals(Request.INVITE))
             {
                 console.debug("received INVITE");
                 if(serverTransaction.getDialog().getState() == null)
@@ -1686,7 +1676,7 @@ public class SipManager implements SipListener
                 }
             }
             //ACK
-            else if (request.getMethod().equals(Request.ACK))
+            else if (method.equals(Request.ACK))
             {
                 if (serverTransaction != null
                 && serverTransaction.getDialog().getFirstTransaction().
@@ -1701,7 +1691,7 @@ public class SipManager implements SipListener
                 }
             }
             //BYE
-            else if (request.getMethod().equals(Request.BYE))
+            else if (method.equals(Request.BYE))
             {
                 if (dialog.getFirstTransaction().getRequest().getMethod().
                 equals(
@@ -1711,7 +1701,7 @@ public class SipManager implements SipListener
                 }
             }
             //CANCEL
-            else if (request.getMethod().equals(Request.CANCEL))
+            else if (method.equals(Request.CANCEL))
             {
                 if (dialog.getFirstTransaction().getRequest().getMethod().
                 equals(
@@ -1726,7 +1716,7 @@ public class SipManager implements SipListener
                 }
             }
             //REFER
-            else if (request.getMethod().equals(Request.REFER))
+            else if (method.equals(Request.REFER))
             {
                 console.debug("Received REFER request");
                 transferProcessing.processRefer(serverTransaction, request);
@@ -1737,11 +1727,11 @@ public class SipManager implements SipListener
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.MESSAGE))
+            else if (method.equals(Request.MESSAGE))
             {
                 fireMessageReceived(request);
             }
-            else if (request.getMethod().equals(Request.NOTIFY))
+            else if (method.equals(Request.NOTIFY))
             {
                 /** @todo add proper request handling */
                 //                try {
@@ -1753,31 +1743,31 @@ public class SipManager implements SipListener
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.OPTIONS))
+            else if (method.equals(Request.OPTIONS))
             {
                 /** @todo add proper request handling */
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.PRACK))
+            else if (method.equals(Request.PRACK))
             {
                 /** @todo add proper request handling */
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.REGISTER))
+            else if (method.equals(Request.REGISTER))
             {
                 /** @todo add proper request handling */
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.SUBSCRIBE))
+            else if (method.equals(Request.SUBSCRIBE))
             {
                 /** @todo add proper request handling */
 
                 //fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
-            else if (request.getMethod().equals(Request.UPDATE))
+            else if (method.equals(Request.UPDATE))
             {
                 /** @todo add proper request handling */
                 sendNotImplemented(serverTransaction, request);
@@ -1785,7 +1775,7 @@ public class SipManager implements SipListener
             }
             else
             {
-                //We couldn't recognise the message
+                //We couldn't recognize the message
                 sendNotImplemented(serverTransaction, request);
                 fireUnknownMessageReceived(requestReceivedEvent.getRequest());
             }
@@ -1801,11 +1791,6 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            if (console.isDebugEnabled())
-            {
-                console.debug("received time out event: "
-                + transactionTimeOutEvent);
-            }
             Transaction transaction;
             if (transactionTimeOutEvent.isServerTransaction())
             {
@@ -1815,13 +1800,17 @@ public class SipManager implements SipListener
             {
                 transaction = transactionTimeOutEvent.getClientTransaction();
             }
-            Request request =
-            transaction.getRequest();
-            if (request.getMethod().equals(Request.REGISTER))
+            Request request = transaction.getRequest();
+            String method = request.getMethod();
+            if (console.isDebugEnabled())
+            {
+                console.debug("received time out event: " + method);
+            }
+            if (method.equals(Request.REGISTER))
             {
                 registerProcessing.processTimeout(transaction, request);
             }
-            else if (request.getMethod().equals(Request.INVITE))
+            else if (method.equals(Request.INVITE))
             {
                 callProcessing.processTimeout(transaction, request);
             }
@@ -1846,9 +1835,12 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
+            Response response = responseReceivedEvent.getResponse();
+            String method = ( (CSeqHeader) response.getHeader(CSeqHeader.NAME)).
+                getMethod();
             if (console.isDebugEnabled())
             {
-                console.debug("received response=" + responseReceivedEvent);
+                console.debug("received response=" + method);
             }
             ClientTransaction clientTransaction = responseReceivedEvent.
             getClientTransaction();
@@ -1857,12 +1849,6 @@ public class SipManager implements SipListener
                 console.debug("ignoring a transactionless response");
                 return;
             }
-            Response response = responseReceivedEvent.getResponse();
-//            Dialog dialog = clientTransaction.getDialog();
-            String method = ( (CSeqHeader) response.getHeader(CSeqHeader.NAME)).
-            getMethod();
-//            Response responseClone = (Response) response.clone();
-            //OK
             if (response.getStatusCode() == Response.OK)
             {
                 //REGISTER

@@ -321,7 +321,7 @@ public class Tapi3Gui {
                             }
                         } catch (Exception e) {
                             logger.error("Cannot answer.", e);
-                            new MessageBox("Answer error", "Cannot answer.", e).show();
+                            new MessageBox("Answer error", "Cannot answer.", e).setVisible(true);
                         }
                     }
                 }.start();

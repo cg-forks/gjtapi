@@ -1,41 +1,37 @@
 package net.sourceforge.gjtapi.raw.mjsip;
 
-import net.sourceforge.gjtapi.raw.MediaTpi;
-import net.sourceforge.gjtapi.raw.mjsip.ua.UA;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.concurrent.Semaphore;
+
+import javax.telephony.InvalidArgumentException;
+import javax.telephony.InvalidPartyException;
+import javax.telephony.MethodNotSupportedException;
+import javax.telephony.PrivilegeViolationException;
+import javax.telephony.ProviderUnavailableException;
+import javax.telephony.ResourceUnavailableException;
+import javax.telephony.media.MediaResourceException;
+import javax.telephony.media.PlayerConstants;
+import javax.telephony.media.RTC;
+import javax.telephony.media.RecorderConstants;
+import javax.telephony.media.Symbol;
 
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
 import net.sourceforge.gjtapi.RawStateException;
 import net.sourceforge.gjtapi.TelephonyListener;
 import net.sourceforge.gjtapi.TermData;
-
-import javax.telephony.media.MediaResourceException;
-import javax.telephony.media.RTC;
-import javax.telephony.media.Symbol;
-import javax.telephony.media.PlayerConstants;
-import javax.telephony.media.RecorderConstants;
-import javax.telephony.ProviderUnavailableException;
-import javax.telephony.ResourceUnavailableException;
-import javax.telephony.InvalidArgumentException;
-import javax.telephony.PrivilegeViolationException;
-import javax.telephony.MethodNotSupportedException;
-import javax.telephony.InvalidPartyException;
-
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-
-import java.util.Properties;
-import java.util.Dictionary;
-import java.util.StringTokenizer;
-import java.util.HashMap;
-import java.util.concurrent.Semaphore;
+import net.sourceforge.gjtapi.raw.MediaTpi;
+import net.sourceforge.gjtapi.raw.mjsip.ua.UA;
 
 
 /**
@@ -70,30 +66,40 @@ public class MjSipProvider implements MediaTpi {
 
         String strPhone = (String) props.get("gjtapi.mjsip.ua");
         if (strPhone == null) {
+            String resource = System.getProperty("gjtapi.sip.properties",
+                "/MjSip.props");
+            InputStream in = null;
             try {
-                InputStream pIS = MjSipProvider.class.getResourceAsStream(
-                        "/MjSip.props");
-                Properties properties = System.getProperties();
-                properties.load(pIS);
-                pIS.close();
-                strPhone = properties.getProperty("gjtapi.mjsip.ua");
+                in = MjSipProvider.class.getResourceAsStream(
+                        resource);
+                if (in != null) {
+                    Properties properties = System.getProperties();
+                    properties.load(in);
+                    strPhone = properties.getProperty("gjtapi.mjsip.ua");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException ignore) {
+                    }
+                }
             }
         }
-
-        //System.out.println("strPhone: " + strPhone);
-        StringTokenizer st = new StringTokenizer(strPhone, ",");
-
-        while (st.hasMoreTokens()) {
-            try {
-                String phone = st.nextToken();
-                UA ua = new UA(phone, this);
-                loadedUAs.put(ua.getAddress(), ua);
-                //System.out.println("MjSipProvider, initialize(): UA: " + ua.getAddress());
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(0);
+        if (strPhone != null) {
+            String[] phones = strPhone.split(",");
+            for (int i=0; i<phones.length; i++) {
+                try {
+                    String phone = phones[i];
+                    UA ua = new UA(phone, this);
+                    loadedUAs.put(ua.getAddress(), ua);
+                    //System.out.println("MjSipProvider, initialize(): UA: " + ua.getAddress());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
             }
         }
     }

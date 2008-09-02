@@ -396,7 +396,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         return null;
     }
 
-    /** Print to stantard output. */
+    /** Print to standard output. */
     protected void printOut(String str) {
         if (stdout != null) {
             System.out.println(str);
