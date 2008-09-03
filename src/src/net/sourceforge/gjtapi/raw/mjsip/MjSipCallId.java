@@ -20,7 +20,8 @@ public class MjSipCallId implements CallId  {
     }
     
     public boolean equals(Object obj){
-        return (obj instanceof MjSipCallId && ((MjSipCallId)obj).getId() == this.getId());
+        return (obj instanceof MjSipCallId 
+                && ((MjSipCallId)obj).getId() == this.getId());
     }
     
     public int hashCode(){

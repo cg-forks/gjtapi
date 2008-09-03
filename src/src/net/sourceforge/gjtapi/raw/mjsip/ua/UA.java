@@ -70,7 +70,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     UserAgentProfile user_profile;
 
     /** Standard input */
-    BufferedReader stdin = null;
+    BufferedReader stdin;
 
     /** Streams **/
     //InputStream playStream;
@@ -79,7 +79,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     OutputStreamConverter convertedOutStream;
 
     /** Standard output */
-    PrintStream stdout = null;
+    PrintStream stdout;
 
     /** SIP Provder */
     SipProvider sip_provider;
@@ -140,9 +140,13 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
         if (!user_profile.no_prompt) {
             stdin = new BufferedReader(new InputStreamReader(System.in));
+        } else {
+            stdin = null;
         }
         if (!user_profile.no_prompt) {
             stdout = System.out;
+        } else {
+            stdout = null;
         }
 
         run();
@@ -338,11 +342,11 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         provider.callActive(callID, Event.CAUSE_NORMAL);
     }
 
-    /** When a call has been trasferred */
+    /** When a call has been transferred */
     public void onUaCallTrasferred(UserAgent ua) {
     }
 
-    /** When an incoming call has been cancelled */
+    /** When an incoming call has been canceled */
     public void onUaCallCancelled(UserAgent ua) {
         listen();
     }

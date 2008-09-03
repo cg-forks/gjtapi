@@ -12,6 +12,7 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
@@ -44,7 +45,10 @@ import net.sourceforge.gjtapi.raw.mjsip.ua.UA;
  *
  */
 public class MjSipProvider implements MediaTpi {
-
+    /** Logger instance. */
+    private static final Logger LOGGER =
+        Logger.getLogger(MjSipProvider.class.getName());
+    
     private HashMap<String, UA> loadedUAs = new HashMap<String, UA>();
     private TelephonyListener listener;
 
@@ -72,13 +76,15 @@ public class MjSipProvider implements MediaTpi {
             try {
                 in = MjSipProvider.class.getResourceAsStream(
                         resource);
-                if (in != null) {
-                    Properties properties = System.getProperties();
-                    properties.load(in);
-                    strPhone = properties.getProperty("gjtapi.mjsip.ua");
+                if (in == null) {
+                    throw new ProviderUnavailableException("resource '" 
+                            + resource + "' not found in CLASSPATH!");
                 }
+                Properties properties = System.getProperties();
+                properties.load(in);
+                strPhone = properties.getProperty("gjtapi.mjsip.ua");
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new ProviderUnavailableException(e.getMessage());
             } finally {
                 if (in != null) {
                     try {
@@ -95,10 +101,10 @@ public class MjSipProvider implements MediaTpi {
                     String phone = phones[i];
                     UA ua = new UA(phone, this);
                     loadedUAs.put(ua.getAddress(), ua);
-                    //System.out.println("MjSipProvider, initialize(): UA: " + ua.getAddress());
+                    LOGGER.info("MjSipProvider initialize UA: "
+                            + ua.getAddress());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(0);
+                    throw new ProviderUnavailableException(e.getMessage());
                 }
             }
         }
@@ -117,8 +123,8 @@ public class MjSipProvider implements MediaTpi {
     public String[] getAddresses() throws ResourceUnavailableException {
         String[] ret = new String[loadedUAs.size()];
         int i = 0;
-        for (String addresses : loadedUAs.keySet()) {
-            ret[i] = addresses;
+        for (String address : loadedUAs.keySet()) {
+            ret[i] = address;
             i++;
         }
         return ret;
