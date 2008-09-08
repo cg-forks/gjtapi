@@ -346,8 +346,9 @@ public class MjSipProvider implements MediaTpi {
      */
     public void terminalConnectionCreated(CallId id, String address,
                                           String terminal, int cause) {
-        if (listener != null)
+        if (listener != null) {
             listener.terminalConnectionCreated(id, address, terminal, cause);
+        }
     }
 
     /**
@@ -355,8 +356,9 @@ public class MjSipProvider implements MediaTpi {
      */
     public void terminalConnectionRinging(CallId id, String address,
                                           String terminal, int cause) {
-        if (listener != null)
+        if (listener != null) {
             listener.terminalConnectionRinging(id, address, terminal, cause);
+        }
     }
 
 

@@ -21,32 +21,29 @@
 
 package net.sourceforge.gjtapi.raw.mjsip.ua;
 
-import net.sourceforge.gjtapi.raw.mjsip.MjSipCallId;
-import net.sourceforge.gjtapi.raw.mjsip.MjSipProvider;
-import net.sourceforge.gjtapi.raw.mjsip.ua.UserAgentProfile;
-import net.sourceforge.gjtapi.raw.mjsip.ua.UserAgent;
-import net.sourceforge.gjtapi.raw.mjsip.ua.UserAgentListener;
-
-import org.zoolu.sip.address.NameAddress;
-import org.zoolu.sip.provider.SipStack;
-import org.zoolu.sip.provider.SipProvider;
-import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
-
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.BufferedReader;
-import java.io.PrintStream;
-import java.io.InputStreamReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.logging.Logger;
 
 import javax.telephony.ConnectionEvent;
 import javax.telephony.Event;
+import javax.telephony.ProviderUnavailableException;
 
-import javax.sound.sampled.AudioFormat;
-
-import local.ua.RegisterAgentListener;
 import local.ua.RegisterAgent;
+import local.ua.RegisterAgentListener;
+import net.sourceforge.gjtapi.raw.mjsip.MjSipCallId;
+import net.sourceforge.gjtapi.raw.mjsip.MjSipProvider;
+
+import org.zoolu.sip.address.NameAddress;
+import org.zoolu.sip.provider.SipProvider;
+import org.zoolu.sip.provider.SipStack;
+import org.zoolu.tools.Log;
+import org.zoolu.tools.LogLevel;
 
 
 
@@ -56,6 +53,9 @@ import local.ua.RegisterAgent;
  * Currently only RAT (Robust Audio Tool) and VIC are supported as external applications.
  */
 public class UA implements UserAgentListener, RegisterAgentListener {
+    /** Logger instance. */
+    private static final Logger LOGGER =
+        Logger.getLogger(MjSipProvider.class.getName());
 
     /** Event logger. */
     Log log;
@@ -105,18 +105,22 @@ public class UA implements UserAgentListener, RegisterAgentListener {
             FrameRate8Khz, 8, 1, 1, FrameRate8Khz, false);*/
 
 
-    /** Costructs a UA with a default media port */
+    /**
+     * Costructs a UA.
+     * @param file name of the configuration file
+     * @param provider related SIP provider.
+     */
     public UA(String file, MjSipProvider provider) {
-
+        File check = new File(file);
+        if (!check.exists()) {
+            throw new ProviderUnavailableException(
+                    "Unable to open configuration file '"
+                    + check.getAbsoluteFile() + "'");
+        }
         this.provider = provider;
 
         SipStack.init(file);
-        if (file != null) {
-            sip_provider = new SipProvider(file);
-        } else {
-            sip_provider = new SipProvider(SipProvider.AUTO_CONFIGURATION,
-                                           SipStack.default_port);
-        }
+        sip_provider = new SipProvider(file);
         user_profile = new UserAgentProfile(file);
 
         log = sip_provider.getLog();
@@ -256,7 +260,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
             if (user_profile.call_to != null) { // UAC
                 call(user_profile.call_to);
-                printOut("press 'enter' to hangup");
+                LOGGER.info("press 'enter' to hangup");
                 readLine();
                 ua.hangup();
                 exit();
@@ -311,7 +315,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     /** When a new call is incoming */
     public void onUaCallIncoming(UserAgent ua, NameAddress callee,
                                  NameAddress caller) {
-        printOut("incoming call from " + caller.toString() + "to " +
+        LOGGER.info("incoming call from " + caller.toString() + " to " +
                  callee.toString());
         //printOut("accept? [yes/no]");
         callID = new MjSipCallId();
@@ -324,7 +328,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                                     ConnectionEvent.CAUSE_NORMAL);
     }
 
-    /** When an outgoing call is remotly ringing */
+    /** When an outgoing call is remotely ringing */
     public void onUaCallRinging(UserAgent ua) {
         provider.terminalConnectionCreated(callID, user_profile.contact_url,
                                            user_profile.contact_url,
@@ -398,13 +402,6 @@ public class UA implements UserAgentListener, RegisterAgentListener {
             }
         } catch (IOException e) {}
         return null;
-    }
-
-    /** Print to standard output. */
-    protected void printOut(String str) {
-        if (stdout != null) {
-            System.out.println(str);
-        }
     }
 
     /** Adds a new string to the default Log */

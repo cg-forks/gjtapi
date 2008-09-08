@@ -428,27 +428,38 @@ public class UserAgent extends CallListenerAdapter
    // ********************** Call callback functions **********************
 
    /** Callback function called when arriving a new INVITE method (incoming call) */
-   public void onCallIncoming(Call call, NameAddress callee, NameAddress caller, String sdp, Message invite)
-   {  printLog("onCallIncoming()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("INCOMING",LogLevel.HIGH);
-      //System.out.println("DEBUG: inside UserAgent.onCallIncoming(): sdp=\n"+sdp);
-      changeStatus(UA_INCOMING_CALL);
-      call.ring();
-      if (sdp!=null)
-      {  // Create the new SDP
-         SessionDescriptor remote_sdp=new SessionDescriptor(sdp);
-         SessionDescriptor local_sdp=new SessionDescriptor(local_session);
-         SessionDescriptor new_sdp=new SessionDescriptor(remote_sdp.getOrigin(),remote_sdp.getSessionName(),local_sdp.getConnection(),local_sdp.getTime());
-         new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpMediaProduct(new_sdp,remote_sdp.getMediaDescriptors());
-         new_sdp=SdpTools.sdpAttirbuteSelection(new_sdp,"rtpmap");
-         local_session=new_sdp.toString();
-      }
-      // play "ring" sound
-      if (clip_ring!=null) clip_ring.loop();
-      if (listener!=null) listener.onUaCallIncoming(this,callee,caller);
-   }
+   public void onCallIncoming(Call call, NameAddress callee,
+            NameAddress caller, String sdp, Message invite) {
+        printLog("onCallIncoming()", LogLevel.LOW);
+        if (call != this.call) {
+            printLog("NOT the current call", LogLevel.LOW);
+            return;
+        }
+        printLog("INCOMING", LogLevel.HIGH);
+        //System.out.println("DEBUG: inside UserAgent.onCallIncoming(): sdp=\n"+
+        // sdp);
+        changeStatus(UA_INCOMING_CALL);
+        call.ring();
+        if (sdp != null) { // Create the new SDP
+            SessionDescriptor remote_sdp = new SessionDescriptor(sdp);
+            SessionDescriptor local_sdp = new SessionDescriptor(local_session);
+            SessionDescriptor new_sdp = new SessionDescriptor(remote_sdp
+                    .getOrigin(), remote_sdp.getSessionName(), local_sdp
+                    .getConnection(), local_sdp.getTime());
+            new_sdp.addMediaDescriptors(local_sdp.getMediaDescriptors());
+            new_sdp = SdpTools.sdpMediaProduct(new_sdp, remote_sdp
+                    .getMediaDescriptors());
+            new_sdp = SdpTools.sdpAttirbuteSelection(new_sdp, "rtpmap");
+            local_session = new_sdp.toString();
+        }
+        // play "ring" sound
+        if (clip_ring != null) {
+            clip_ring.loop();
+        }
+        if (listener != null) {
+            listener.onUaCallIncoming(this, callee, caller);
+        }
+    }
 
 
    /** Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
