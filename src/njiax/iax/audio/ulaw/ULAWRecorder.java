@@ -86,10 +86,10 @@ public class ULAWRecorder extends Recorder {
             long startTime;
             long endTime;
 
-            byte silenceBuffer[] = new byte[buffer_size];
-            for (int i = 0; i < silenceBuffer.length; i++) {
+            //byte silenceBuffer[] = new byte[buffer_size];
+            /*for (int i = 0; i < silenceBuffer.length; i++) {
                 silenceBuffer[i] = 0x7f;
-            }
+            }*/
 
             try {
                 while (recording) {
@@ -142,7 +142,7 @@ public class ULAWRecorder extends Recorder {
                             sleepTime -= procTime;
                         }
                         //sleepTime *= 0.95;
-                        sleepTime -= 1;
+                        sleepTime -= 5;
                         if (sleepTime > 0) {
                             //try {
                                 // long startSleepTime = System.currentTimeMillis();
@@ -173,7 +173,7 @@ public class ULAWRecorder extends Recorder {
                         }*/
                         fos.write(silence);
                     }
-                }
+                }//while
 
             } catch (Exception e) {
                 e.printStackTrace();
