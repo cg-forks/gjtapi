@@ -146,6 +146,7 @@
   			<exclude name="${MjSipPackage}"/>
   			<exclude name="${NjIaxPackage}"/>
   			<exclude name="iax/**"/>
+  			<exclude name="org/**"/>
   			<exclude name="classes/**"/>
   			<exclude name="Asterisk.gjtapi"/>
   			<exclude name="Corba.gjtapi"/>
@@ -243,7 +244,7 @@
 
 	    <!-- Put everything in ${build} into the gjtapi-${version}.jar file -->
 	    <jar jarfile="${staging}/gjtapi-njiax-${version}.jar" basedir="${build}"
-	  		includes="${NjIaxPackage} ${licenceFile} ${releaseNotes}"/>
+	  		includes="${NjIaxPackage} ${licenceFile} ${releaseNotes} org/bouncycastle/** iax/** "/>
 	</target>
 
 	<target name="xtapi-Staging" depends="xtapiCompile, Staging"
