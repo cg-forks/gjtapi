@@ -29,8 +29,13 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Properties;
 
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 
 import net.sourceforge.gjtapi.TermData;
+
+@WebService
 
 /**
  * This is the implementation class for the GJTAPI web service bridge server-side part.
@@ -66,6 +71,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return delegate;
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#registerQueue()
 	 */
@@ -73,6 +79,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().registerQueue();
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#pollEvents(int)
 	 */
@@ -80,6 +87,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().pollEvents(id);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#allocateMedia(java.lang.String, int, java.util.HashMap)
 	 */
@@ -88,6 +96,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().allocateMedia(terminal, type, params);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#answerCall(int, java.lang.String, java.lang.String)
 	 */
@@ -99,6 +108,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 				this.getDelegate().answerCall(call, address, terminal);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#attachMedia(int, java.lang.String, boolean)
 	 */
@@ -107,6 +117,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().attachMedia(call, address, onFlag);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#beep(int)
 	 */
@@ -114,6 +125,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		this.getDelegate().beep(call);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#createCall(int, java.lang.String, java.lang.String, java.lang.String)
 	 */
@@ -125,6 +137,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().createCall(id, address, term, dest);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#freeMedia(java.lang.String, int)
 	 */
@@ -133,6 +146,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().freeMedia(terminal, type);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getAddresses()
 	 */
@@ -141,6 +155,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getAddresses();
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getAddressesForTerminal(String)
 	 */
@@ -149,6 +164,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getAddressesForTerminal(terminal);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getAddressType(java.lang.String)
 	 */
@@ -156,6 +172,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getAddressType(name);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getCall(int)
 	 */
@@ -163,6 +180,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getCall(id);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getCallsOnAddress(java.lang.String)
 	 */
@@ -171,6 +189,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getCallsOnAddress(number);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getCallsOnTerminal(java.lang.String)
 	 */
@@ -179,6 +198,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getCallsOnTerminal(name);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getCapabilities()
 	 */
@@ -186,6 +206,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getCapabilities();
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getDialledDigits(int, java.lang.String)
 	 */
@@ -194,6 +215,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getDialledDigits(id, address);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getTerminals()
 	 */
@@ -202,6 +224,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getTerminals();
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#getTerminals(java.lang.String)
 	 */
@@ -210,6 +233,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().getTerminalsForAddress(address);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#hold(int, java.lang.String, java.lang.String)
 	 */
@@ -221,6 +245,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 				this.getDelegate().hold(call, address, term);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#isMediaTerminal(java.lang.String)
 	 */
@@ -228,6 +253,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().isMediaTerminal(terminal);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#join(int, int, java.lang.String, java.lang.String)
 	 */
@@ -239,6 +265,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().join(call1, call2, address, terminal);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#play(java.lang.String, java.lang.String, int, ca.deadman.gjtapi.raw.remote.webservices.RTCPair, java.util.HashMap)
 	 */
@@ -252,6 +279,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 			this.getDelegate().play(terminal, streamIds, offset, rtcs, optArgs);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#record(java.lang.String, java.lang.String, ca.deadman.gjtapi.raw.remote.webservices.RTCPair, java.util.HashMap)
 	 */
@@ -264,6 +292,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 			this.getDelegate().record(terminal, streamId, rtcs, optArgs);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#release(java.lang.String, int)
 	 */
@@ -275,6 +304,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 				this.getDelegate().release(address, call);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#releaseCallId(int)
 	 */
@@ -282,6 +312,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		this.getDelegate().releaseCallId(id);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#removeQueue(int)
 	 */
@@ -289,6 +320,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		this.getDelegate().removeQueue(id);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#reportCallsOnAddress(java.lang.String, boolean)
 	 */
@@ -299,6 +331,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 				this.getDelegate().reportCallsOnAddress(address, flag);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#reportCallsOnTerminal(java.lang.String, boolean)
 	 */
@@ -309,6 +342,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 				this.getDelegate().reportCallsOnTerminal(terminal, flag);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#reserveCallId(java.lang.String)
 	 */
@@ -317,6 +351,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().reserveCallId(address);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#retrieveSignals(java.lang.String, int, int, ca.deadman.gjtapi.raw.remote.webservices.RTCPair, java.util.HashMap)
 	 */
@@ -330,6 +365,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().retrieveSignals(terminal, num, patterns, rtcs, optArgs);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#sendSignals(java.lang.String, int, ca.deadman.gjtapi.raw.remote.webservices.RTCPair, java.util.HashMap)
 	 */
@@ -342,6 +378,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 			this.getDelegate().sendSignals(terminal, syms, rtcs, optArgs);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#setLoadControl(java.lang.String, java.lang.String, double, double, double, int)
 	 */
@@ -356,6 +393,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 			this.getDelegate().setLoadControl(startAddr, endAddr, duration, admissionRate, interval, treatment);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#shutdown()
 	 */
@@ -363,6 +401,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		this.getDelegate().shutdown();
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#stop(java.lang.String)
 	 */
@@ -370,6 +409,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		this.getDelegate().stop(terminal);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#stopReportingCall(int)
 	 */
@@ -377,6 +417,7 @@ public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 		return this.getDelegate().stopReportingCall(call);
 	}
 
+	@WebMethod
 	/**
 	 * @see ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceIF#triggerRTC(java.lang.String, int)
 	 */

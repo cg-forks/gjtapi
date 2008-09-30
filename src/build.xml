@@ -58,6 +58,10 @@
     </fileset>
   </path>
 
+  <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+		<classpath path="${javac.classpath}"/>
+  </taskdef>
+	
   <target name="init">
     <!-- Create the time stamp -->
     <tstamp/>
@@ -471,6 +475,13 @@
 		</zip>
   	</target>
 
+	<target name="jaxWsGen">
+		<mkdir dir="./wsgen"/>
+		<wsgen
+		sei="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceImpl"
+		sourcedestdir="./wsgen"/>
+	</target>
+	
 	<target name="allDists" depends="SourceDist, coreDist, remoteDist, modemDist, sipDist, tapi3Dist, asteriskDist, dialogicDist, xtapiDist, webServiceDist"/>
   	
 	<target name="SourceDist">
