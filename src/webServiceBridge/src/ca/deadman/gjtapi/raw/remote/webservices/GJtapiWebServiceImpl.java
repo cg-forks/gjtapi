@@ -31,7 +31,7 @@ import java.util.Properties;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-
+import javax.xml.ws.Endpoint;
 
 import net.sourceforge.gjtapi.TermData;
 
@@ -49,6 +49,18 @@ import net.sourceforge.gjtapi.TermData;
 public class GJtapiWebServiceImpl implements GJtapiWebServiceIF {
 
 	private static GJtapiWebServiceIF delegate = null;
+
+        /**
+         * Simple Launch point to create the web service client
+         * TODO: Pick up seb service end-point from the configuration file.
+         */
+        public static void main(String[] args) {
+
+              Endpoint.publish(
+                 "http://localhost:8080/GjtapiWebService/WebServiceProvider",
+                 new GJtapiWebServiceImpl());
+
+        }
 
 	/**
 	 * Constructor for GJtapiWebServicesImpl.
