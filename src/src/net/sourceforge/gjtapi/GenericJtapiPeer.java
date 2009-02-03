@@ -211,9 +211,13 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	// load raw provider
 	TelephonyProvider rp = null;
 	try {
-		rp = ProviderFactory.createProvider((CoreTpi) Class.forName(providerClassName).newInstance());
+	    ClassLoader loader = getClass().getClassLoader();
+	    Class<CoreTpi> providerClass =
+	        (Class<CoreTpi>) loader.loadClass(providerClassName);
+		rp = ProviderFactory.createProvider(providerClass.newInstance());
 	} catch (Exception e) {
-		throw new ProviderUnavailableException("Error loading raw provider: " + providerClassName);
+		throw new ProviderUnavailableException("Error loading raw provider "
+		        + providerClassName + ": " + e.getMessage());
 	}
 	// initialize
 	rp.initialize(provProps);
