@@ -394,7 +394,6 @@ public class MjSipProvider implements MediaTpi {
             MediaResourceException {
 
         try {
-            //System.out.println("GJTAPI Play, starting");
             do {
                 try {
                     playSemaphore.acquire(1);
@@ -403,7 +402,6 @@ public class MjSipProvider implements MediaTpi {
                     ex.printStackTrace();
                 }
             } while (true);
-            //System.out.println("GJTAPI Play, acquired semaphore");
 
             //Get UA
             UA ua = loadedUAs.get(terminal);
@@ -434,7 +432,6 @@ public class MjSipProvider implements MediaTpi {
             e.printStackTrace();
             throw new MediaResourceException(e.getMessage());
         } finally {
-            //System.out.println("GJTAPI Play, finished");
             playSemaphore.release(1);
         }
     }
@@ -442,7 +439,6 @@ public class MjSipProvider implements MediaTpi {
     public void record(String terminal, String streamId, RTC[] rtcs,
                        Dictionary optArgs) throws MediaResourceException {
 
-        //System.out.println("GJTAPI Record, starting");
         do {
             try {
                 recSemaphore.acquire(1);
@@ -451,7 +447,6 @@ public class MjSipProvider implements MediaTpi {
                 ex.printStackTrace();
             }
         } while (true);
-        //System.out.println("GJTAPI Record, acquired semaphore");
 
         //Get UA
         UA ua = loadedUAs.get(terminal);
@@ -473,10 +468,8 @@ public class MjSipProvider implements MediaTpi {
                 os.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new MediaResourceException();
         } finally {
-            //System.out.println("GJTAPI Record, finished");
             recSemaphore.release(1);
         }
     }
@@ -508,11 +501,8 @@ public class MjSipProvider implements MediaTpi {
             return;
         }
         if (action.equals(PlayerConstants.rtca_Stop)) {
-            //System.out.println("JTAPI stop Play, triggerRTC");
             ua.stopPlay();
-        }
-        else if (action.equals(RecorderConstants.rtca_Stop)) {
-            //System.out.println("GJTAPI stop Record, triggerRTC");
+        } else if (action.equals(RecorderConstants.rtca_Stop)) {
             ua.stopRecord();
         }
     }

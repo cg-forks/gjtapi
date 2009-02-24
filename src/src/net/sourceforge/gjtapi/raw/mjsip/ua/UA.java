@@ -263,7 +263,6 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                 LOGGER.info("press 'enter' to hangup");
                 readLine();
                 ua.hangup();
-                exit();
             } else { // UAS
                 if (user_profile.accept_time >= 0) {
                     ua.printLog("UAS: AUTO ACCEPT MODE");
@@ -295,18 +294,8 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                         }*/
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(0);
+            LOGGER.severe(e.getMessage());
         }
-    }
-
-
-    /** Exits */
-    public void exit() {
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {}
-        System.exit(0);
     }
 
 
@@ -357,18 +346,14 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
     /** When an outgoing call has been refused or timeout */
     public void onUaCallFailed(UserAgent ua) {
-        if (ua.user_profile.call_to != null) {
-            exit();
-        } else {
+        if (ua.user_profile.call_to == null) {
             listen();
         }
     }
 
     /** When a call has been locally or remotely closed */
     public void onUaCallClosed(UserAgent ua) {
-        if (ua.user_profile.call_to != null) {
-            exit();
-        } else {
+        if (ua.user_profile.call_to == null) {
             listen();
         }
         provider.connectionDisconnected(callID, user_profile.contact_url,
@@ -465,7 +450,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         convertedOutStream.setOutputStream(dest);
         try {
             while (convertedOutStream.isOpen()) {
-                Thread.currentThread().sleep(10);
+                Thread.sleep(10);
             }
         } catch (InterruptedException ex) {
             ex.printStackTrace();
@@ -479,14 +464,14 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                 convertedOutStream.close();
                 try {
                     while (convertedOutStream.isOpen()) {
-                        Thread.currentThread().sleep(10);
+                        Thread.sleep(10);
                     }
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.warning(e.getMessage());
         }
 
     }
@@ -498,13 +483,13 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                 convertedInStream.waitForEnd();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.warning(e.getMessage());
         }
     }
 
 
     public void stop() {
-        System.out.println("GJTAPI: Media stop");
+        LOGGER.info("GJTAPI: Media stopped");
         stopPlay();
         stopRecord();
     }
