@@ -18,6 +18,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 /**
@@ -73,25 +74,20 @@ public final class PlaybackURLConnection extends URLConnection {
      */
     @Override
     public OutputStream getOutputStream() throws IOException {
-        final DataLine.Info info = new DataLine.Info(Clip.class, format,
-                AudioSystem.NOT_SPECIFIED);
-        final Clip clip;
+        final DataLine.Info info = new DataLine.Info(SourceDataLine.class,
+                format, AudioSystem.NOT_SPECIFIED);
+        final SourceDataLine line;
         try {
-            clip = (Clip) AudioSystem.getLine(info);
-            clip.open();
+            line = (SourceDataLine) AudioSystem.getLine(info);
         } catch (LineUnavailableException e) {
             throw new IOException(e.getMessage());
         }
-        final PipedInputStream in = new PipedInputStream();
-        final PipedOutputStream out = new PipedOutputStream(in);
-        final AudioInputStream stream = new AudioInputStream(in, format,
-                AudioSystem.NOT_SPECIFIED);
         try {
-            clip.open(stream);
+            line.open(format);
         } catch (LineUnavailableException e) {
             throw new IOException(e.getMessage());
         }
-        clip.start();
-        return out;
+        line.start();
+        return new LineOutputStream(line);
     }
 }

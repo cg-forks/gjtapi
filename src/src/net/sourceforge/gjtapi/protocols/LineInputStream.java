@@ -3,26 +3,28 @@
  */
 package net.sourceforge.gjtapi.protocols;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.sound.sampled.Line;
 import javax.sound.sampled.TargetDataLine;
 
 /**
- * @author Piri
+ * An {@link InputStream} that reads from a {@link TargetDataLine}.
+ * @author Dirk Schnelle-Walka
  *
  */
-public final class LineInputStream extends InputStream {
+public final class LineInputStream extends InputStream
+    implements Closeable {
     /** The line to read from. */
     private final TargetDataLine line;
 
     /**
      * Constructs a new object.
-     * @param source the line to read from.
+     * @param target the line to read from.
      */
-    public LineInputStream(final TargetDataLine source) {
-        line = source;
+    public LineInputStream(final TargetDataLine target) {
+        line = target;
     }
 
     /**
@@ -49,6 +51,17 @@ public final class LineInputStream extends InputStream {
     @Override
     public int read(final byte[] b) throws IOException {
         return read(b, 0, b.length);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException {
+        line.drain();
+        line.stop();
+        line.close();
+        super.close();
     }
 
 }
