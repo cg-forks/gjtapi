@@ -41,7 +41,7 @@
       <include name="jcat-0.3.1.jar"/>
       <include name="JainSipApi1.1.jar"/>
       <include name="Stun4J.jar"/>
-      <include name="log4j-1.2.8.jar"/>
+      <include name="log4j-1.2.15.jar"/>
       <include name="nist-sdp-1.0.jar"/>
       <include name="nist-sip-1.2.jar"/>
       <include name="asterisk-java-0.2-rc1.jar"/>
