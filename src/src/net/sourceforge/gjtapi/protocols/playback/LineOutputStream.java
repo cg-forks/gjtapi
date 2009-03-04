@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.sourceforge.gjtapi.protocols;
+package net.sourceforge.gjtapi.protocols.playback;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class LineOutputStream extends OutputStream
      * Constructs a new object.
      * @param source the line to write to.
      */
-    public LineOutputStream(SourceDataLine source) {
+    public LineOutputStream(final SourceDataLine source) {
         line = source;
     }
 
@@ -31,7 +31,7 @@ public class LineOutputStream extends OutputStream
      * {@inheritDoc}
      */
     @Override
-    public void write(int b) throws IOException {
+    public void write(final int b) throws IOException {
         byte[] bytes = new byte[1];
         write(bytes, 0, bytes.length);
     }
@@ -40,7 +40,8 @@ public class LineOutputStream extends OutputStream
      * {@inheritDoc}
      */
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(final byte[] b, final int off, final int len)
+        throws IOException {
         line.write(b, off, len);
     }
 
@@ -48,7 +49,7 @@ public class LineOutputStream extends OutputStream
      * {@inheritDoc}
      */
     @Override
-    public void write(byte[] b) throws IOException {
+    public void write(final byte[] b) throws IOException {
         write(b, 0, b.length);
     }
 
