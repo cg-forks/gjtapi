@@ -8,8 +8,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import net.sourceforge.gjtapi.protocols.PlaybackURLConnection;
-
 /**
  * Protocol handler for the javasound API.
  * @author Dirk Schnelle-Walka
