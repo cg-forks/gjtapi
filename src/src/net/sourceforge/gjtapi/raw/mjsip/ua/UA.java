@@ -137,7 +137,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
         ua.setRecvStream(convertedOutStream);
         ua.setSendStream(convertedInStream);
-        ua.setAudio(true); //por causa da inicialização do audio_line
+        ua.setAudio(true); //to indicate that we want to use the audio_line
 
         ra = new RegisterAgent(sip_provider, user_profile.from_url,
                                user_profile.contact_url, user_profile.username,
