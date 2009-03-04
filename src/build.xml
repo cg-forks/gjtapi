@@ -4,6 +4,7 @@
     </description>
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
+  <property name="media1.3Overridesrc" location="media1.3Override"/>
   <property name="xtapi-src" location="xtapiSpSrc"/>
   <property name="build" location="build"/>
   <property name="xtapi-build" location="xtapi-build"/>
@@ -79,8 +80,10 @@
   <target name="compile" depends="init, njiaxCompile"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}" source="1.5" debug="true">
-			<classpath refid="classpath"/>
+    <javac destdir="${build}" source="1.5" debug="true">
+        <src path="${src}"/>
+        <src path="${media1.3Overridesrc}"/>
+        <classpath refid="classpath"/>
     </javac>
 
   </target>
