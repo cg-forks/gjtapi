@@ -444,7 +444,7 @@ public class MjSipProvider implements MediaTpi {
                 recSemaphore.acquire(1);
                 break;
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                return;
             }
         } while (true);
 
@@ -468,7 +468,7 @@ public class MjSipProvider implements MediaTpi {
                 os.close();
             }
         } catch (Exception e) {
-            throw new MediaResourceException();
+            throw new MediaResourceException(e.getMessage());
         } finally {
             recSemaphore.release(1);
         }

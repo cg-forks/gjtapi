@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.telephony.ConnectionEvent;
@@ -411,7 +412,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
     // **************************** GJTAPI Specific ***************************
 
-    /** Returns de User Agent contact adress */
+    /** Returns the User Agent contact address */
     public String getAddress() {
         return ua.user_profile.contact_url;
     }
@@ -453,9 +454,8 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                 Thread.sleep(10);
             }
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            return;
         }
-        //ua.waitForEndOfRecord();
     }
 
     public void stopRecord() {
@@ -467,13 +467,14 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                         Thread.sleep(10);
                     }
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    return;
                 }
             }
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(e.getMessage());
+            }
         }
-
     }
 
     public void stopPlay() {
