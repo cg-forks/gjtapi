@@ -56,6 +56,8 @@
 <!-- MjSip support Get it from: http://www.mjsip.org -->
     	<include name="sip.jar"/>
     	<include name="ua.jar"/>
+<!-- njIAX support Get it from: http://code.google.com/p/njiax/ -->
+    	<include name="njiax.jar"/>
     </fileset>
   </path>
 
@@ -160,6 +162,7 @@
   			<exclude name="iax/**"/>
   			<exclude name="org/**"/>
   			<exclude name="classes/**"/>
+            <exclude name="javax/**"/>
   			<exclude name="Asterisk.gjtapi"/>
   			<exclude name="Corba.gjtapi"/>
   			<exclude name="CorbaProvider.idl"/>
@@ -178,7 +181,13 @@
   			<exclude name="ua2"/>
 		</fileset>
     </jar>
-  	
+
+    <jar jarfile="${staging}/media1.3override.jar">
+        <fileset dir="${build}">
+            <include name="javax/telephony/**"/>
+        </fileset>
+    </jar>
+
   	<!-- Simple test jar for a provider specified in a jar file -->
   	<jar jarfile="${staging}/gjtapi-testProvider-${version}.jar">
   		<fileset dir="${src}">
