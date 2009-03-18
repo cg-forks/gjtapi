@@ -37,7 +37,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -60,13 +59,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.telephony.Address;
 import javax.telephony.Call;
 import javax.telephony.Connection;
-import javax.telephony.JtapiPeer;
-import javax.telephony.JtapiPeerFactory;
-import javax.telephony.JtapiPeerUnavailableException;
 import javax.telephony.Provider;
 import javax.telephony.Terminal;
 import javax.telephony.TerminalConnection;
-//import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 import javax.telephony.media.MediaProvider;
@@ -79,96 +74,81 @@ import org.apache.log4j.Logger;
 public class GjtapiGui {
     private static final Logger logger = Logger.getLogger(GjtapiGui.class);
     
-    private JtapiPeer peer;
     private CallListenerObserver obsListener;
     private Provider provider;
     private Address address;    
 
-    private JFrame tapi3Frame;
-	private JTextField txtCalledNumber;
-	private JButton butCall;
+    private JFrame gjtapiFrame;
+    private JTextField txtCalledNumber;
+    private JButton butCall;
 
     private JCheckBox ckPrivateData;
     
-	private JTextField txtDTMFOut;
-	private JButton butDTMFOut;
+    private JTextField txtDTMFOut;
+    private JButton butDTMFOut;
 
     private JLabel lbDTMFIn;
     private JTextField txtDTMFIn;
 
-	private JScrollPane callsScrollPane;
-	private JList lstCalls;
-	private JButton butAnswer;
-	private JButton butHangUp;
-	private JButton butHold;
+    private JScrollPane callsScrollPane;
+    private JList lstCalls;
+    private JButton butAnswer;
+    private JButton butHangUp;
+    private JButton butHold;
     private JButton butUnHold;
     private JButton butJoin;
 	
-	private JScrollPane traceScrollPane;
-	private JTextArea txtTrace;
+    private JScrollPane traceScrollPane;
+    private JTextArea txtTrace;
     
+    /**
+     * Constructs a new object.
+     */
     public GjtapiGui() {
         Logger.getRootLogger().addAppender(new GuiAppender(this));
     }
     
-    private void initGjtapi(String providerName) throws GjtapiGuiException {
+    private void initGjtapi(ProviderSelecion selection)
+        throws GjtapiGuiException {
+        obsListener = new CallListenerObserver();
+
         try {
-            this.peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");
-            logger.debug("JTapi Peer successfully loaded.");
-        } catch (JtapiPeerUnavailableException e) {
-            throw new GjtapiGuiException("Cannot load JTapi Peer.", e);
-        }
-		obsListener = new CallListenerObserver();
-		
-        try {
-            provider = peer.getProvider(providerName);
-            logger.debug("Provider " + providerName + " successfully loaded.");
+            provider = selection.getProvider();
+            logger.debug("Provider " + provider.getName()
+                    + " successfully loaded.");
         } catch (Exception e) {
-            throw new GjtapiGuiException("Cannot load provider " + providerName + ".", e);
+            throw new GjtapiGuiException("Cannot load provider "
+                    + provider.getName() + ".", e);
         }
 
-        String addressName = chooseAddress();
         try {
-            address = provider.getAddress(addressName);
-            logger.debug("Address set to " + addressName);
+            address = selection.getAddress();
+            logger.debug("Address set to " + address.getName());
             
             address.addCallObserver(obsListener);
             
-            logger.debug("Setting a listener on address " + addressName + "...");
+            logger.debug("Setting a listener on address " + address.getName()
+                    + "...");
             address.addCallListener(obsListener);
         } catch (Exception e) {
-            throw new GjtapiGuiException("Cannot set address " + addressName, e);
+            throw new GjtapiGuiException("Cannot set address "
+                    + address.getName(), e);
         }
     }
-    
-    private String chooseAddress() throws GjtapiGuiException {
-        Address[] addresses;
-        try {
-            addresses = provider.getAddresses();
-        } catch (Exception e) {
-            throw new GjtapiGuiException("Cannot retrieve addresses for " + provider.getName());
-        }
-        if(addresses == null || addresses.length == 0) {
-            throw new GjtapiGuiException("No addresses available for " + provider.getName());
-        }
-        String[] names = new String[addresses.length];
-        for(int i=0; i<names.length; i++) {
-            names[i] = addresses[i].getName();
-        }
-        Arrays.sort(names);
-        String addressName = (String)JOptionPane.showInputDialog(null, "Select an address", "Address selection", 
-                				JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
-        if(addressName == null) {
-            System.exit(0);
-        }
-        return addressName;
-    }
+
+    /**
+     * Shows the GUI.
+     */
+    private void showGui() {
+        gjtapiFrame.setVisible(true);
+     }
+
     
     public void initGui() {
-        tapi3Frame = new JFrame("GJTAPI Demo - " + address.getName());
+        gjtapiFrame = new JFrame("GJTAPI Demo - " + address.getName());
         
         JPanel tapiPanel = new JPanel(new BorderLayout());
-        tapi3Frame.getContentPane().add(tapiPanel, BorderLayout.NORTH);
+        gjtapiFrame.getContentPane().add(tapiPanel, BorderLayout.NORTH);
         
         JPanel inputPanel = new JPanel(new GridBagLayout());
         tapiPanel.add(inputPanel, BorderLayout.NORTH);
@@ -262,7 +242,7 @@ public class GjtapiGui {
         
         JPanel tracePanel = new JPanel(new BorderLayout());
         tracePanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        tapi3Frame.getContentPane().add(tracePanel, BorderLayout.CENTER);
+        gjtapiFrame.getContentPane().add(tracePanel, BorderLayout.CENTER);
 	    txtTrace = new JTextArea(16, 80);
 	    traceScrollPane = new JScrollPane(txtTrace);
 	    tracePanel.add(traceScrollPane, BorderLayout.CENTER);
@@ -275,7 +255,7 @@ public class GjtapiGui {
                             call(getCalledNumber());
                         } catch (GjtapiGuiException e) {
                             logger.error(e.getMessage(), e.getCause());
-		                    new MessageBox("Call error", "Cannot call.", e).show();
+		                    new MessageBox("Call error", "Cannot call.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -303,7 +283,7 @@ public class GjtapiGui {
                             ms.sendSignals(txtDTMFOut.getText(), null, null);
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e.getCause());
-		                    new MessageBox("DTMF error", "Cannot send DTMF.", e).show();
+		                    new MessageBox("DTMF error", "Cannot send DTMF.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -344,7 +324,7 @@ public class GjtapiGui {
                                     terminalConnection.wait(3000);
                                     state = TapiUtil.getTerminalConnectionState(terminalConnection);
                                     if(state != CallControlTerminalConnection.TALKING) {
-                                        JOptionPane.showMessageDialog(tapi3Frame, "Cannot reject the call.");
+                                        JOptionPane.showMessageDialog(gjtapiFrame, "Cannot reject the call.");
                                         return;
                                     }
                                 }
@@ -353,7 +333,7 @@ public class GjtapiGui {
 	                        connection.disconnect();
 		                } catch (Exception e) {
 		                    logger.error("Cannot disconnect.", e);
-		                    new MessageBox("HangUp error", "Cannot disconnect.", e).show();
+		                    new MessageBox("HangUp error", "Cannot disconnect.", e).setVisible(true);
 		                }
                     }
                 }.start();
@@ -372,7 +352,7 @@ public class GjtapiGui {
 		                    }
 		                } catch (Exception e) {
 		                    logger.error("Cannot hold.", e);
-		                    new MessageBox("Hold error", "Cannot hold.", e).show();
+		                    new MessageBox("Hold error", "Cannot hold.", e).setVisible(true);
 		                }
                     }
                 }.start();
@@ -391,7 +371,7 @@ public class GjtapiGui {
                             }
                         } catch (Exception e) {
                             logger.error("Cannot unhold.", e);
-                            new MessageBox("Unhold error", "Cannot unhold.", e).show();
+                            new MessageBox("Unhold error", "Cannot unhold.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -420,7 +400,7 @@ public class GjtapiGui {
                             }
                         } catch (Exception e) {
                             logger.error("Cannot join.", e);
-                            new MessageBox("Join error", "Cannot join.", e).show();
+                            new MessageBox("Join error", "Cannot join.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -478,8 +458,8 @@ public class GjtapiGui {
             }
         });		
 	            
-	    tapi3Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    tapi3Frame.pack();
+	    gjtapiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    gjtapiFrame.pack();
     }
 
     private DTMFThread dtmfThread = null;
@@ -553,7 +533,7 @@ public class GjtapiGui {
 		try {
 			terminalConnection = getSelectedTerminalConnection();
 		} catch (RuntimeException e) {
-            new MessageBox("DTMF error", "Cannot send digits.", e).show();
+            new MessageBox("DTMF error", "Cannot send digits.", e).setVisible(true);
 			return;
 		}
 		int ccTermConnState = (terminalConnection != null) ? 
@@ -667,18 +647,32 @@ public class GjtapiGui {
             }
         });
 	}
-	
+
+
+    /**
+     * Starts the program
+     * @param args command line arguments
+     *
+     * <p>
+     * The first argument is expected to be the fully qualified name of the
+     * provider.
+     * </p>
+     */
     public static void main(String[] args) {
+        ProviderSelecion selection = new ProviderSelecion();
+        if (selection.isCanceled()) {
+            System.exit(0);
+        }
         GjtapiGui gui = new GjtapiGui();
-        String providerName = (args.length > 0) ? args[0] : "Tapi3";
         try {
-            gui.initGjtapi(providerName);
+            gui.initGjtapi(selection);
         } catch (GjtapiGuiException e) {
-            logger.error("", e);
-            new MessageBox("Tapi3 initialization error", "Tapi3 initialization failed.", e).show();
+            logger.error(e.getMessage(), e);
+            new MessageBox("Gjtapi initialization error",
+                    "Gjtapi initialization failed.", e).setVisible(true);
             System.exit(-1);
         }
         gui.initGui();
-        gui.tapi3Frame.setVisible(true);
+        gui.showGui();
     }
 }

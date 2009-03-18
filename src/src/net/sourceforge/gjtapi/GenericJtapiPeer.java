@@ -32,8 +32,9 @@ package net.sourceforge.gjtapi;
 */
 
 /**
- * This is the GJTAPI implementation of the JTAPI peer.  It's main capabilities
- * are its abilities to plug in the appropriate low-level proxy (delegate)
+ * This is the GJTAPI implementation of the JTAPI peer.
+ * It's main capabilities are its abilities to plug in the appropriate
+ * low-level proxy (delegate)
  */
 
 import java.util.*;
@@ -53,16 +54,16 @@ public class GenericJtapiPeer implements JtapiPeer {
 	private final static String PROV_PROP_SUFFIX = ".gjtapi";
 	private final static String PROV_AUTOPROPERTY = "provider.gjtapi";
 	
-	// key for the property for disconnecting a Connection when a MediaService releases
+	/** key for the property for disconnecting a Connection when a MediaService releases. */
 	private final String MEDIA_RELEASE_DISCONNECT = "mediaReleaseDisconnect";
 	
-	// System property key for looking up resource directory
+	/** System property key for looking up resource directory. */
 	private final static String RESOURCE_DIR = "net.sourceforge.gjtapi.resourceDir";
 
 	private Properties properties = null;
 	private Hashtable providers = new Hashtable();
 	
-	// Should we disconnect the Connection when the MediaService releases (JTAPI spec. says yes)
+	/** Should we disconnect the Connection when the MediaService releases (JTAPI spec. says yes). */
 	private boolean disconnectMediaOnRelease = true;
 	
 	/**

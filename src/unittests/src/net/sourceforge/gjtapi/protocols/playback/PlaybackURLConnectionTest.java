@@ -1,11 +1,12 @@
 /**
  * 
  */
-package net.sourceforge.gjtapi.protocols;
+package net.sourceforge.gjtapi.protocols.playback;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.UnknownServiceException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class PlaybackURLConnectionTest {
      * @exception Exception
      *            test failed.
      */
-    @Test
+    @Test(expected = UnknownServiceException.class)
     public void testGetInputStream() throws Exception {
         final URL url =
             new URL("capture://audio?rate=8000&channels=1&encoding=pcm");
