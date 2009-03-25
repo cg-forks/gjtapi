@@ -139,6 +139,8 @@
 	        <include name="*.props"/>
 	        <include name="*.gjtapi"/>
 			<include name="*.idl"/>
+		    <include name="ua1" />
+            <include name="ua2" />
 			<include name="listProviders.*"/>
 			<include name="${releaseNotes}"/>
 		</fileset>
