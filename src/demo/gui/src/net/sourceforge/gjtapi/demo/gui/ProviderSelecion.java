@@ -97,7 +97,7 @@ class ProviderSelecion extends JDialog {
             }
         });
         providerSelectionChanged();
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         setVisible(true);
     }
