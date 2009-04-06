@@ -21,13 +21,10 @@
 
 package net.sourceforge.gjtapi.raw.mjsip.ua;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,8 +40,6 @@ import net.sourceforge.gjtapi.raw.mjsip.MjSipProvider;
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
-import org.zoolu.tools.Log;
-import org.zoolu.tools.LogLevel;
 
 
 
@@ -58,35 +53,26 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     private static final Logger LOGGER =
         Logger.getLogger(MjSipProvider.class.getName());
 
-    /** Event logger. */
-    Log log;
-
     /** User Agent */
-    UserAgent ua;
+    private UserAgent ua;
 
     /** Register Agent */
-    RegisterAgent ra;
+    private RegisterAgent ra;
 
     /** UserAgentProfile */
-    UserAgentProfile user_profile;
-
-    /** Standard input */
-    BufferedReader stdin;
+    private UserAgentProfile user_profile;
 
     /** Streams **/
     //InputStream playStream;
     //OutputStream recStream;
-    InputStreamConverter convertedInStream;
-    OutputStreamConverter convertedOutStream;
-
-    /** Standard output */
-    PrintStream stdout;
+    private InputStreamConverter convertedInStream;
+    private OutputStreamConverter convertedOutStream;
 
     /** SIP Provder */
-    SipProvider sip_provider;
+    private SipProvider sip_provider;
 
     /** MjSipUAProvider Provder */
-    MjSipProvider provider;
+    private MjSipProvider provider;
 
     /** Id from current call
      * It's assumed an agent can only handle one call at a time */
@@ -124,8 +110,6 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         sip_provider = new SipProvider(file);
         user_profile = new UserAgentProfile(file);
 
-        log = sip_provider.getLog();
-
         ua = new UserAgent(sip_provider, user_profile, this);
         //convertedOutStream = new OutputStreamConverter(ulawformat, linear8Khz);
         //convertedOutStream = new OutputStreamConverter(ulawformat, ulawformat);
@@ -142,17 +126,6 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         ra = new RegisterAgent(sip_provider, user_profile.from_url,
                                user_profile.contact_url, user_profile.username,
                                user_profile.realm, user_profile.passwd, this);
-
-        if (!user_profile.no_prompt) {
-            stdin = new BufferedReader(new InputStreamReader(System.in));
-        } else {
-            stdin = null;
-        }
-        if (!user_profile.no_prompt) {
-            stdout = System.out;
-        } else {
-            stdout = null;
-        }
 
         run();
     }
@@ -202,9 +175,9 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     /** Makes a new call */
     public void call(String target_url) {
         ua.hangup();
-        ua.printLog("UAC: CALLING " + target_url);
+        LOGGER.info("UAC: CALLING " + target_url);
         if (!ua.user_profile.audio && !ua.user_profile.video) {
-            ua.printLog("ONLY SIGNALING, NO MEDIA");
+            LOGGER.info("ONLY SIGNALING, NO MEDIA");
         }
         ua.call(target_url);
         addressCalled = target_url;
@@ -213,12 +186,11 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
     /** Receives incoming calls (auto accept) */
     public void listen() {
-        ua.printLog("UAS: WAITING FOR INCOMING CALL");
+        LOGGER.info("UAS: WAITING FOR INCOMING CALL");
         if (!ua.user_profile.audio && !ua.user_profile.video) {
-            ua.printLog("ONLY SIGNALING, NO MEDIA");
+            LOGGER.info("ONLY SIGNALING, NO MEDIA");
         }
         ua.listen();
-        //printOut("digit the callee's URL to make a call or press 'enter' to exit");
     }
 
 
@@ -240,59 +212,33 @@ public class UA implements UserAgentListener, RegisterAgentListener {
             if (user_profile.do_unregister_all)
             // ########## unregisters ALL contact URLs
             {
-                ua.printLog("UNREGISTER ALL contact URLs");
+                LOGGER.info("UNREGISTER ALL contact URLs");
                 unregisterall();
             }
 
             if (user_profile.do_unregister)
             // unregisters the contact URL
             {
-                ua.printLog("UNREGISTER the contact URL");
+                LOGGER.info("UNREGISTER the contact URL");
                 unregister();
             }
 
             if (user_profile.do_register)
             // ########## registers the contact URL with the registrar server
             {
-                ua.printLog("REGISTRATION");
+                LOGGER.info("REGISTRATION");
                 loopRegister(user_profile.expires, user_profile.expires / 2,
                              user_profile.keepalive_time);
             }
 
             if (user_profile.call_to != null) { // UAC
                 call(user_profile.call_to);
-                LOGGER.info("press 'enter' to hangup");
-                readLine();
                 ua.hangup();
             } else { // UAS
                 if (user_profile.accept_time >= 0) {
-                    ua.printLog("UAS: AUTO ACCEPT MODE");
+                    LOGGER.info("UAS: AUTO ACCEPT MODE");
                 }
                 listen();
-                /*while (stdin!=null)
-                        {  String line=readLine();
-                           if (ua.statusIs(UserAgent.UA_INCOMING_CALL))
-                           {  if (line.toLowerCase().startsWith("n"))
-                              {  ua.hangup();
-                              }
-                              else
-                              {  ua.accept();
-                              }
-                           }
-                           else
-                           if (ua.statusIs(UserAgent.UA_IDLE))
-                           {  if (line!=null && line.length()>0)
-                              {  call(line);
-                              }
-                              else
-                              {  exit();
-                              }
-                           }
-                           else
-                           if (ua.statusIs(UserAgent.UA_ONCALL))
-                           {  ua.hangup();
-                           }
-                        }*/
             }
         } catch (Exception e) {
             LOGGER.severe(e.getMessage());
@@ -368,46 +314,15 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     /** When a UA has been successfully (un)registered. */
     public void onUaRegistrationSuccess(RegisterAgent ra, NameAddress target,
                                         NameAddress contact, String result) {
-        ua.printLog("Registration success: " + result, LogLevel.HIGH);
+        LOGGER.info("Registration success: " + result);
     }
 
     /** When a UA failed on (un)registering. */
     public void onUaRegistrationFailure(RegisterAgent ra, NameAddress target,
                                         NameAddress contact, String result) {
-        ua.printLog("Registration failure: " + result, LogLevel.HIGH);
+        LOGGER.info("Registration failure: " + result);
     }
 
-
-    // ****************************** Logs *****************************
-
-    /** Read a new line from stantard input. */
-    protected String readLine() {
-        try {
-            if (stdin != null) {
-                return stdin.readLine();
-            }
-        } catch (IOException e) {}
-        return null;
-    }
-
-    /** Adds a new string to the default Log */
-    void printLog(String str) {
-        printLog(str, LogLevel.HIGH);
-    }
-
-    /** Adds a new string to the default Log */
-    void printLog(String str, int level) {
-        if (log != null) {
-            log.println("CommandLineUA: " + str, level + SipStack.LOG_LEVEL_UA);
-        }
-    }
-
-    /** Adds the Exception message to the default Log */
-    void printException(Exception e, int level) {
-        if (log != null) {
-            log.printException(e, level + SipStack.LOG_LEVEL_UA);
-        }
-    }
 
 
     // **************************** GJTAPI Specific ***************************

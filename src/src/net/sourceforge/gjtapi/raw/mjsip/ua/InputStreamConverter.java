@@ -3,8 +3,6 @@ package net.sourceforge.gjtapi.raw.mjsip.ua;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.sound.sampled.AudioFormat;
-
 
 public class InputStreamConverter extends InputStream {
 
@@ -72,7 +70,7 @@ public class InputStreamConverter extends InputStream {
                 try {
                     closeLock.wait(500);
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    return;
                 }
             }
         }

@@ -5,18 +5,30 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import local.media.AudioClipPlayer;
 import local.ua.MediaLauncher;
 import local.ua.VICLauncher;
-import org.zoolu.sdp.*;
+
+import org.zoolu.sdp.AttributeField;
+import org.zoolu.sdp.ConnectionField;
+import org.zoolu.sdp.MediaDescriptor;
+import org.zoolu.sdp.MediaField;
+import org.zoolu.sdp.SessionDescriptor;
+import org.zoolu.sdp.TimeField;
 import org.zoolu.sip.address.NameAddress;
-import org.zoolu.sip.call.*;
+import org.zoolu.sip.call.Call;
+import org.zoolu.sip.call.CallListenerAdapter;
+import org.zoolu.sip.call.ExtendedCall;
+import org.zoolu.sip.call.SdpTools;
 import org.zoolu.sip.header.StatusLine;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
-import org.zoolu.tools.*;
+import org.zoolu.tools.Log;
+import org.zoolu.tools.LogLevel;
+import org.zoolu.tools.Parser;
 
 
 /** Simple SIP user agent (UA).
@@ -25,8 +37,11 @@ import org.zoolu.tools.*;
   * It can use external audio/video tools as media applications.
   * Currently only RAT (Robust Audio Tool) and VIC are supported as external applications.
   */
-public class UserAgent extends CallListenerAdapter
-{
+public class UserAgent extends CallListenerAdapter {
+    /** Logger instance. */
+    private static final Logger LOGGER =
+        Logger.getLogger(UserAgent.class.getName());
+
    /** Event logger. */
    Log log;
 
@@ -259,13 +274,18 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Makes a new call (acting as UAC). */
-   public void call(String target_url)
-   {  changeStatus(UA_OUTGOING_CALL);
-      call=new ExtendedCall(sip_provider,user_profile.from_url,user_profile.contact_url,user_profile.username,user_profile.realm,user_profile.passwd,this);
+   public void call(String target_url) {
+      changeStatus(UA_OUTGOING_CALL);
+      call = new ExtendedCall(sip_provider, user_profile.from_url,
+              user_profile.contact_url, user_profile.username,
+              user_profile.realm, user_profile.passwd, this);
       // in case of incomplete url (e.g. only 'user' is present), try to complete it
       target_url=sip_provider.completeNameAddress(target_url).toString();
-      if (user_profile.no_offer) call.call(target_url);
-      else call.call(target_url,local_session);
+      if (user_profile.no_offer) {
+          call.call(target_url);
+      } else {
+          call.call(target_url,local_session);
+      }
    }
 
 
@@ -331,8 +351,8 @@ public class UserAgent extends CallListenerAdapter
    protected void launchMediaApplication()
    {
       // exit if the Media Application is already running
-      if (audio_app!=null || video_app!=null)
-      {  printLog("DEBUG: media application is already running",LogLevel.HIGH);
+      if (audio_app!=null || video_app!=null) {
+         LOGGER.info("DEBUG: media application is already running");
          return;
       }
       SessionDescriptor local_sdp=new SessionDescriptor(call.getLocalSessionDescriptor());
@@ -397,14 +417,15 @@ public class UserAgent extends CallListenerAdapter
                java.lang.reflect.Constructor constructor=myclass.getConstructor(parameter_types);
                video_app=(MediaLauncher)constructor.newInstance(parameters);
             }
-            catch (Exception e)
-            {  printException(e,LogLevel.HIGH);
-               printLog("Error trying to create the JMFVideoLauncher",LogLevel.HIGH);
+            catch (Exception e) {
+               printException(e,LogLevel.HIGH);
+               LOGGER.warning("Error trying to create the JMFVideoLauncher "
+                       + e.getMessage());
             }
          }
          // else
-         if (video_app==null)
-         {  printLog("No external video application nor JMF has been provided: Video not started",LogLevel.HIGH);
+         if (video_app==null) {
+            LOGGER.info("No external video application nor JMF has been provided: Video not started");
             return;
          }
          video_app.startMedia();
@@ -430,12 +451,12 @@ public class UserAgent extends CallListenerAdapter
    /** Callback function called when arriving a new INVITE method (incoming call) */
    public void onCallIncoming(Call call, NameAddress callee,
             NameAddress caller, String sdp, Message invite) {
-        printLog("onCallIncoming()", LogLevel.LOW);
+        LOGGER.fine("onCallIncoming()");
         if (call != this.call) {
-            printLog("NOT the current call", LogLevel.LOW);
+            LOGGER.fine("NOT the current call");
             return;
         }
-        printLog("INCOMING", LogLevel.HIGH);
+        LOGGER.info("INCOMING");
         //System.out.println("DEBUG: inside UserAgent.onCallIncoming(): sdp=\n"+
         // sdp);
         changeStatus(UA_INCOMING_CALL);
@@ -463,10 +484,13 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving a new Re-INVITE method (re-inviting/call modify) */
-   public void onCallModifying(Call call, String sdp, Message invite)
-   {  printLog("onCallModifying()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("RE-INVITE/MODIFY",LogLevel.HIGH);
+   public void onCallModifying(Call call, String sdp, Message invite) {
+      LOGGER.fine("onCallModifying()");
+      if (call!=this.call) {  
+          LOGGER.fine("NOT the current call");
+          return;  
+      }
+      LOGGER.info("RE-INVITE/MODIFY");
       // to be implemented.
       // currently it simply accepts the session changes (see method onCallModifying() in CallListenerAdapter)
       super.onCallModifying(call,sdp,invite); //original
@@ -474,21 +498,31 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function that may be overloaded (extended). Called when arriving a 180 Ringing */
-   public void onCallRinging(Call call, Message resp)
-   {  printLog("onCallRinging()",LogLevel.LOW);
-      if (call!=this.call && call!=call_transfer) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("RINGING",LogLevel.HIGH);
+   public void onCallRinging(Call call, Message resp) {
+      LOGGER.fine("onCallRinging()");
+      if (call!=this.call && call!=call_transfer) {  
+          LOGGER.fine("NOT the current call"); 
+          return;
+      }
+      LOGGER.info("RINGING");
       // play "on" sound
-      if (clip_on!=null) clip_on.replay();
-      if (listener!=null) listener.onUaCallRinging(this);
+      if (clip_on!=null) {
+          clip_on.replay();
+      }
+      if (listener!=null) {
+          listener.onUaCallRinging(this);
+      }
    }
 
 
    /** Callback function called when arriving a 2xx (call accepted) */
-   public void onCallAccepted(Call call, String sdp, Message resp)
-   {  printLog("onCallAccepted()",LogLevel.LOW);
-      if (call!=this.call && call!=call_transfer) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("ACCEPTED/CALL",LogLevel.HIGH);
+   public void onCallAccepted(Call call, String sdp, Message resp) {
+      LOGGER.fine("onCallAccepted()");
+      if (call!=this.call && call!=call_transfer) {  
+          LOGGER.fine("NOT the current call");  
+          return;  
+      }
+      LOGGER.info("ACCEPTED/CALL");
       changeStatus(UA_ONCALL);
       if (user_profile.no_offer)
       {  // Create the new SDP
@@ -522,10 +556,13 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving an ACK method (call confirmed) */
-   public void onCallConfirmed(Call call, String sdp, Message ack)
-   {  printLog("onCallConfirmed()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("CONFIRMED/CALL",LogLevel.HIGH);
+   public void onCallConfirmed(Call call, String sdp, Message ack) {
+      LOGGER.fine("onCallConfirmed()");
+      if (call!=this.call) {  
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("CONFIRMED/CALL");
       changeStatus(UA_ONCALL);
       // play "on" sound
       if (clip_on!=null) clip_on.replay();
@@ -537,27 +574,38 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving a 2xx (re-invite/modify accepted) */
-   public void onCallReInviteAccepted(Call call, String sdp, Message resp)
-   {  printLog("onCallReInviteAccepted()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("RE-INVITE-ACCEPTED/CALL",LogLevel.HIGH);
+   public void onCallReInviteAccepted(Call call, String sdp, Message resp) {
+      LOGGER.fine("onCallReInviteAccepted()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");  
+          return;
+      }
+      LOGGER.info("RE-INVITE-ACCEPTED/CALL");
    }
 
 
    /** Callback function called when arriving a 4xx (re-invite/modify failure) */
-   public void onCallReInviteRefused(Call call, String reason, Message resp)
-   {  printLog("onCallReInviteRefused()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("RE-INVITE-REFUSED ("+reason+")/CALL",LogLevel.HIGH);
-      if (listener!=null) listener.onUaCallFailed(this);
+   public void onCallReInviteRefused(Call call, String reason, Message resp) {
+      LOGGER.fine("onCallReInviteRefused()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;  
+      }
+      LOGGER.info("RE-INVITE-REFUSED ("+reason+")/CALL");
+      if (listener!=null) {
+          listener.onUaCallFailed(this);
+      }
    }
 
 
    /** Callback function called when arriving a 4xx (call failure) */
-   public void onCallRefused(Call call, String reason, Message resp)
-   {  printLog("onCallRefused()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("REFUSED ("+reason+")",LogLevel.HIGH);
+   public void onCallRefused(Call call, String reason, Message resp) {
+      LOGGER.fine("onCallRefused()");
+      if (call!=this.call) { 
+          LOGGER.fine("NOT the current call");
+          return;  
+      }
+      LOGGER.info("REFUSED ("+reason+")");
       changeStatus(UA_IDLE);
       if (call==call_transfer)
       {  StatusLine status_line=resp.getStatusLine();
@@ -573,19 +621,25 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving a 3xx (call redirection) */
-   public void onCallRedirection(Call call, String reason, Vector contact_list, Message resp)
-   {  printLog("onCallRedirection()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("REDIRECTION ("+reason+")",LogLevel.HIGH);
+   public void onCallRedirection(Call call, String reason, Vector contact_list, Message resp) {
+      LOGGER.fine("onCallRedirection()");
+      if (call!=this.call) {  
+          LOGGER.fine("NOT the current call");  
+          return;  
+      }
+      LOGGER.info("REDIRECTION ("+reason+")");
       call.call(((String)contact_list.elementAt(0)));
    }
 
 
    /** Callback function that may be overloaded (extended). Called when arriving a CANCEL request */
-   public void onCallCanceling(Call call, Message cancel)
-   {  printLog("onCallCanceling()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("CANCEL",LogLevel.HIGH);
+   public void onCallCanceling(Call call, Message cancel) {
+      LOGGER.fine("onCallCanceling()");
+      if (call!=this.call) { 
+          LOGGER.fine("NOT the current call");  
+          return;  
+      }
+      LOGGER.info("CANCEL");
       changeStatus(UA_IDLE);
       // stop ringing
       if (clip_ring!=null) clip_ring.stop();
@@ -596,17 +650,20 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving a BYE request */
-   public void onCallClosing(Call call, Message bye)
-   {  printLog("onCallClosing()",LogLevel.LOW);
-      if (call!=this.call && call!=call_transfer) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      if (call!=call_transfer && call_transfer!=null)
-      {  printLog("CLOSE PREVIOUS CALL",LogLevel.HIGH);
+   public void onCallClosing(Call call, Message bye) {
+      LOGGER.fine("onCallClosing()");
+      if (call!=this.call && call!=call_transfer) {
+          LOGGER.fine("NOT the current call");  
+          return;  
+      }
+      if (call!=call_transfer && call_transfer!=null) {
+         LOGGER.info("CLOSE PREVIOUS CALL");
          this.call=call_transfer;
          call_transfer=null;
          return;
       }
       // else
-      printLog("CLOSE",LogLevel.HIGH);
+      LOGGER.info("CLOSE");
       closeMediaApplication();
       // play "off" sound
       if (clip_off!=null) clip_off.replay();
@@ -616,19 +673,25 @@ public class UserAgent extends CallListenerAdapter
 
 
    /** Callback function called when arriving a response after a BYE request (call closed) */
-   public void onCallClosed(Call call, Message resp)
-   {  printLog("onCallClosed()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("CLOSE/OK",LogLevel.HIGH);
+   public void onCallClosed(Call call, Message resp) {
+      LOGGER.fine("onCallClosed()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;  
+      }
+      LOGGER.info("CLOSE/OK");
       if (listener!=null) listener.onUaCallClosed(this);
       changeStatus(UA_IDLE);
    }
 
    /** Callback function called when the invite expires */
-   public void onCallTimeout(Call call)
-   {  printLog("onCallTimeout()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("NOT FOUND/TIMEOUT",LogLevel.HIGH);
+   public void onCallTimeout(Call call) {
+      LOGGER.fine("onCallTimeout()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("NOT FOUND/TIMEOUT");
       changeStatus(UA_IDLE);
       if (call==call_transfer)
       {  int code=408;
@@ -646,43 +709,58 @@ public class UserAgent extends CallListenerAdapter
    // ****************** ExtendedCall callback functions ******************
 
    /** Callback function called when arriving a new REFER method (transfer request) */
-   public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, Message refer)
-   {  printLog("onCallTransfer()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("Transfer to "+refer_to.toString(),LogLevel.HIGH);
+   public void onCallTransfer(ExtendedCall call, NameAddress refer_to, NameAddress refered_by, Message refer) {
+      LOGGER.fine("onCallTransfer()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("Transfer to "+refer_to.toString());
       call.acceptTransfer();
       call_transfer=new ExtendedCall(sip_provider,user_profile.from_url,user_profile.contact_url,this);
       call_transfer.call(refer_to.toString(),local_session);
    }
 
    /** Callback function called when a call transfer is accepted. */
-   public void onCallTransferAccepted(ExtendedCall call, Message resp)
-   {  printLog("onCallTransferAccepted()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("Transfer accepted",LogLevel.HIGH);
+   public void onCallTransferAccepted(ExtendedCall call, Message resp) {
+      LOGGER.fine("onCallTransferAccepted()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("Transfer accepted");
    }
 
    /** Callback function called when a call transfer is refused. */
-   public void onCallTransferRefused(ExtendedCall call, String reason, Message resp)
-   {  printLog("onCallTransferRefused()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("Transfer refused",LogLevel.HIGH);
+   public void onCallTransferRefused(ExtendedCall call, String reason, Message resp) {
+      LOGGER.fine("onCallTransferRefused()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("Transfer refused");
    }
 
    /** Callback function called when a call transfer is successfully completed */
-   public void onCallTransferSuccess(ExtendedCall call, Message notify)
-   {  printLog("onCallTransferSuccess()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("Transfer successed",LogLevel.HIGH);
+   public void onCallTransferSuccess(ExtendedCall call, Message notify) {
+      LOGGER.fine("onCallTransferSuccess()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("Transfer successed");
       call.hangup();
       if (listener!=null) listener.onUaCallTrasferred(this);
    }
 
    /** Callback function called when a call transfer is NOT sucessfully completed */
-   public void onCallTransferFailure(ExtendedCall call, String reason, Message notify)
-   {  printLog("onCallTransferFailure()",LogLevel.LOW);
-      if (call!=this.call) {  printLog("NOT the current call",LogLevel.LOW);  return;  }
-      printLog("Transfer failed",LogLevel.HIGH);
+   public void onCallTransferFailure(ExtendedCall call, String reason, Message notify) {
+      LOGGER.fine("onCallTransferFailure()");
+      if (call!=this.call) {
+          LOGGER.fine("NOT the current call");
+          return;
+      }
+      LOGGER.info("Transfer failed");
    }
 
 
@@ -697,12 +775,14 @@ public class UserAgent extends CallListenerAdapter
    }
 
    /** Re-invite. */
-   private void runReInvite(String contact, String body, int delay_time)
-   {  try
-      {  if (delay_time>0) Thread.sleep(delay_time*1000);
-         printLog("RE-INVITING/MODIFING");
-         if (call!=null && call.isOnCall())
-         {  printLog("REFER/TRANSFER");
+   private void runReInvite(String contact, String body, int delay_time) {
+      try {
+         if (delay_time>0) {
+             Thread.sleep(delay_time*1000);
+         }
+         LOGGER.info("RE-INVITING/MODIFING");
+         if (call!=null && call.isOnCall()) {
+            LOGGER.info("REFER/TRANSFER");
             call.modify(contact,body);
          }
       }
@@ -719,8 +799,8 @@ public class UserAgent extends CallListenerAdapter
    private void runCallTransfer(String transfer_to, int delay_time)
    {  try
       {  if (delay_time>0) Thread.sleep(delay_time*1000);
-         if (call!=null && call.isOnCall())
-         {  printLog("REFER/TRANSFER");
+         if (call!=null && call.isOnCall()) {
+            LOGGER.info("REFER/TRANSFER");
             call.transfer(transfer_to);
          }
       }
@@ -737,8 +817,8 @@ public class UserAgent extends CallListenerAdapter
    private void runAutomaticAccept(int delay_time)
    {  try
       {  if (delay_time>0) Thread.sleep(delay_time*1000);
-         if (call!=null)
-         {  printLog("AUTOMATIC-ANSWER");
+         if (call!=null) {
+            LOGGER.info("AUTOMATIC-ANSWER");
             accept();
          }
       }
@@ -755,8 +835,8 @@ public class UserAgent extends CallListenerAdapter
    private void runAutomaticHangup(int delay_time)
    {  try
       {  if (delay_time>0) Thread.sleep(delay_time*1000);
-         if (call!=null && call.isOnCall())
-         {  printLog("AUTOMATIC-HANGUP");
+         if (call!=null && call.isOnCall()) {
+            LOGGER.info("AUTOMATIC-HANGUP");
             hangup();
             listen();
          }
@@ -766,17 +846,6 @@ public class UserAgent extends CallListenerAdapter
 
 
    // ****************************** Logs *****************************
-
-   /** Adds a new string to the default Log */
-   void printLog(String str)
-   {  printLog(str,LogLevel.HIGH);
-   }
-
-   /** Adds a new string to the default Log */
-   void printLog(String str, int level)
-   {  if (log!=null) log.println("UA: "+str,level+SipStack.LOG_LEVEL_UA);
-      //if ((user_profile==null || !user_profile.no_prompt) && level<=LogLevel.HIGH) System.out.println("UA: "+str);
-   }
 
    /** Adds the Exception message to the default Log */
    void printException(Exception e,int level)
