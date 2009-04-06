@@ -66,7 +66,8 @@ import javax.telephony.events.Ev;
 import javax.telephony.events.TermConnActiveEv;
 import javax.telephony.events.TermConnCreatedEv;
 import javax.telephony.events.TermConnDroppedEv;
-import javax.telephony.events.TermConnEv;import javax.telephony.events.TermConnPassiveEv;
+import javax.telephony.events.TermConnEv;
+import javax.telephony.events.TermConnPassiveEv;
 import javax.telephony.events.TermConnRingingEv;
 import javax.telephony.events.TermConnUnknownEv;
 import javax.telephony.media.events.MediaTermConnAvailableEv;
@@ -78,13 +79,40 @@ import net.sourceforge.gjtapi.raw.tapi3.Tapi3PrivateData;
 
 import org.apache.log4j.Logger;
 
-public class CallListenerObserver extends DefaultListModel implements TerminalConnectionListener, CallControlCallObserver {
-    private static final Logger logger = Logger.getLogger(CallListenerObserver.class);
+@SuppressWarnings("serial")
+public class CallListenerObserver extends DefaultListModel
+    implements TerminalConnectionListener, CallControlCallObserver {
+    private static final Logger LOGGER =
+        Logger.getLogger(CallListenerObserver.class);
 
     private boolean usePrivateData = false;
-    // Map of Tapi3PrivateData indexed by Call
-    private Map callMap = new HashMap();    
+    /** Map of Tapi3PrivateData indexed by Call. */
+    private Map<Call, Tapi3PrivateData> callMap =
+        new HashMap<Call, Tapi3PrivateData>();
+
+    /** Map of cause descriptions. */
+    private final Map<Integer, String> CAUSE_DESCRIPTIONS;
     
+    {
+        CAUSE_DESCRIPTIONS = new java.util.HashMap<Integer, String>();
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_CALL_CANCELLED, "Call cancelled");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_DEST_NOT_OBTAINABLE,
+                "Destination not obtainable");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_INCOMPATIBLE_DESTINATION,
+                "Incompatible destination");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_LOCKOUT, "Lockout");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_NETWORK_CONGESTION,
+                "Network congestion");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_NETWORK_NOT_OBTAINABLE,
+                "Network not obtainable");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_NEW_CALL, "New call");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_NORMAL, "Normal");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_RESOURCES_NOT_AVAILABLE,
+                "Resources not available");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_NORMAL, "Snapshot");
+        CAUSE_DESCRIPTIONS.put(Event.CAUSE_UNKNOWN, "Unknown");
+    }
+
     public class Item {
         private final Connection connection;
         
@@ -104,7 +132,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
             TerminalConnection[] tc = connection.getTerminalConnections();
             if(tc != null && tc.length > 0) {
                 if(tc.length > 1) {
-                    logger.warn("Item: " + tc.length + "");
+                    LOGGER.warn("Item: " + tc.length + "");
                 }
                 terminalConnection = tc[0];
             }
@@ -169,7 +197,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
     }
     
     public void update() {
-    	logger.debug("CallMap: " + callMap);
+    	LOGGER.debug("CallMap: " + callMap);
         fireContentsChanged(this, 0, getSize());
     }
 
@@ -191,9 +219,9 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
     
     private void updateConnection(Connection connection) {
         Item item = new Item(connection);
-        logger.debug("Updating connection(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
+        LOGGER.debug("Updating connection(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
         if(!contains(item)) {
-            logger.debug("Calling addElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
+            LOGGER.debug("Calling addElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
             addElement(item);
         }
         TerminalConnection tc = item.getTerminalConnection();
@@ -211,7 +239,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
 
     private void removeConnection(Connection connection) {
         Item item = new Item(connection);
-        logger.debug("removeElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
+        LOGGER.debug("removeElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
 //        boolean contained = callMap.containsKey(connection.getCall());
         removeElement(item);
         callMap.remove(connection.getCall());
@@ -229,40 +257,9 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      *            The Event cause id.
      */
     public String causeToString(int cause) {
-        switch (cause) {
-            case Event.CAUSE_CALL_CANCELLED: {
-                return "Call cancelled";
-            }
-            case Event.CAUSE_DEST_NOT_OBTAINABLE: {
-                return "Destination not obtainable";
-            }
-            case Event.CAUSE_INCOMPATIBLE_DESTINATION: {
-                return "Incompatable destination";
-            }
-            case Event.CAUSE_LOCKOUT: {
-                return "Lockout";
-            }
-            case Event.CAUSE_NETWORK_CONGESTION: {
-                return "Network congestion";
-            }
-            case Event.CAUSE_NETWORK_NOT_OBTAINABLE: {
-                return "Network not obtainable";
-            }
-            case Event.CAUSE_NEW_CALL: {
-                return "New call";
-            }
-            case Event.CAUSE_NORMAL: {
-                return "Normal";
-            }
-            case Event.CAUSE_RESOURCES_NOT_AVAILABLE: {
-                return "Resource not available";
-            }
-            case Event.CAUSE_SNAPSHOT: {
-                return "Snapshot";
-            }
-            case Event.CAUSE_UNKNOWN: {
-                return "Unknown";
-            }
+        final String description = CAUSE_DESCRIPTIONS.get(cause);
+        if (description != null) {
+            return description;
         }
         return "Cause mapping error: " + cause;
     }
@@ -281,7 +278,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * callActive method comment.
      */
     public void callActive(javax.telephony.CallEvent event) {
-        logger.debug("Active Call event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Active Call event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -289,7 +286,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * callEventTransmissionEnded method comment.
      */
     public void callEventTransmissionEnded(javax.telephony.CallEvent event) {
-        logger.debug("Event Transmission Ended Call event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Event Transmission Ended Call event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -297,7 +294,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * callInvalid method comment.
      */
     public void callInvalid(javax.telephony.CallEvent event) {
-        logger.debug("Invalid Call event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Invalid Call event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -305,7 +302,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * multiCallMetaMergeEnded method comment.
      */
     public void multiCallMetaMergeEnded(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall merge ended event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall merge ended event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -313,7 +310,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * multiCallMetaMergeStarted method comment.
      */
     public void multiCallMetaMergeStarted(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall merge started event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall merge started event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -321,7 +318,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * multiCallMetaTransferEnded method comment.
      */
     public void multiCallMetaTransferEnded(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall transfer ended event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall transfer ended event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -329,7 +326,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * multiCallMetaTransferStarted method comment.
      */
     public void multiCallMetaTransferStarted(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall transfer started event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall transfer started event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -337,7 +334,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * singleCallMetaProgressEnded method comment.
      */
     public void singleCallMetaProgressEnded(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall progress ended event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall progress ended event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -345,7 +342,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * singleCallMetaProgressStarted method comment.
      */
     public void singleCallMetaProgressStarted(javax.telephony.MetaEvent event) {
-        logger.debug("Multicall progress started event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Multicall progress started event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -353,7 +350,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * singleCallMetaSnapshotEnded method comment.
      */
     public void singleCallMetaSnapshotEnded(javax.telephony.MetaEvent event) {
-        logger.debug("Singlecall snapshot ended event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Singlecall snapshot ended event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -361,7 +358,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * singleCallMetaSnapshotStarted method comment.
      */
     public void singleCallMetaSnapshotStarted(javax.telephony.MetaEvent event) {
-        logger.debug("Singlecall snapshot started event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Singlecall snapshot started event with cause: " + this.causeToString(event.getCause()));
         update();
     }
 
@@ -369,7 +366,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionAlerting method comment.
      */
     public void connectionAlerting(javax.telephony.ConnectionEvent event) {
-        logger.debug("Alerting Connection event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Alerting Connection event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
 
@@ -377,7 +374,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionConnected method comment.
      */
     public void connectionConnected(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection Connected event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection Connected event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
 
@@ -385,7 +382,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionCreated method comment.
      */
     public void connectionCreated(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection Created event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection Created event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
 
@@ -393,7 +390,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionDisconnected method comment.
      */
     public void connectionDisconnected(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection Disconnected event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection Disconnected event with cause: " + this.causeToString(event.getCause()));
 //        updateConnection(event.getConnection());
         removeConnection(event.getConnection());
     }
@@ -402,7 +399,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionFailed method comment.
      */
     public void connectionFailed(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection Failed event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection Failed event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
 
@@ -410,7 +407,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionInProgress method comment.
      */
     public void connectionInProgress(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection in Progress event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection in Progress event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
 
@@ -418,7 +415,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * connectionUnknown method comment.
      */
     public void connectionUnknown(javax.telephony.ConnectionEvent event) {
-        logger.debug("Connection Unknown event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("Connection Unknown event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getConnection());
     }
     
@@ -426,7 +423,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionActive(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionActive(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Active event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Active event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -434,7 +431,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionCreated(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionCreated(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Created event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Created event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -442,7 +439,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionDropped(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionDropped(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Dropped event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Dropped event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -450,7 +447,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionPassive(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionPassive(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Passive event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Passive event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -458,7 +455,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionRinging(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionRinging(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Ringing event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Ringing event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -466,7 +463,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionUnknown(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionUnknown(TerminalConnectionEvent event) {
-        logger.debug("TerminalConnection Unknown event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Unknown event with cause: " + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }    
     
@@ -517,7 +514,7 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
             case MediaTermConnUnavailableEv.ID: event = "MediaTerminalConnection unavailable"; break;
             default: event = "unknown: " + id; break;
         }
-        logger.debug("Observer event: " + event);
+        LOGGER.debug("Observer event: " + event);
         Connection connection = null;
         if(ev instanceof ConnEv) {
             connection = ((ConnEv)ev).getConnection();
@@ -526,9 +523,9 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
         } else if(id != CallActiveEv.ID && !(ev instanceof PrivateCallEv)) {
             Connection[] connections = ev.getCall().getConnections();
             if(connections != null) {
-        		logger.warn(ev.getClass().getName() + " with " + connections.length + " connections.");
+        		LOGGER.warn(ev.getClass().getName() + " with " + connections.length + " connections.");
                 if(ev instanceof CallObservationEndedEv || ev instanceof CallInvalidEv) {
-            		logger.info("Removing " + connections.length + " connections...");
+            		LOGGER.info("Removing " + connections.length + " connections...");
                 	for(int i=0; i<connections.length; i++) {
                         removeConnection(connections[i]);
                 	}
@@ -542,16 +539,17 @@ public class CallListenerObserver extends DefaultListModel implements TerminalCo
                 try {
                     connection.disconnect();
                 } catch(Exception e) {
-                    logger.error("Cannot disconnect", e);
+                    LOGGER.error("Cannot disconnect", e);
                 }
             } else {
                 state = connection.getState();
             }
-            logger.debug("Observer: connection state=" + state);
+            LOGGER.debug("Observer: connection state="
+                    + TapiUtil.getConnectionStateName(connection));
             if(state == Connection.DISCONNECTED || state == Connection.FAILED || state == Connection.UNKNOWN) {
-                logger.debug("Observer: Removing connection...");
+                LOGGER.debug("Observer: Removing connection...");
                 removeConnection(connection);
-                logger.debug("Observer: Connection removed.");
+                LOGGER.debug("Observer: Connection removed.");
             } else {
                 updateConnection(connection);
             }

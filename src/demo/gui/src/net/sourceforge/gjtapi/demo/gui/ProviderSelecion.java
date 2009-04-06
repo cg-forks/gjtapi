@@ -15,6 +15,7 @@ import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.telephony.Address;
 import javax.telephony.InvalidArgumentException;
@@ -96,6 +97,7 @@ class ProviderSelecion extends JDialog {
             }
         });
         providerSelectionChanged();
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
         setVisible(true);
     }

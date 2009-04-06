@@ -114,7 +114,7 @@ public class GjtapiGui {
 
         try {
             provider = selection.getProvider();
-            logger.debug("Provider " + provider.getName()
+            logger.info("Provider " + provider.getName()
                     + " successfully loaded.");
         } catch (Exception e) {
             throw new GjtapiGuiException("Cannot load provider "
@@ -124,9 +124,6 @@ public class GjtapiGui {
         try {
             address = selection.getAddress();
             logger.debug("Address set to " + address.getName());
-            
-            address.addCallObserver(obsListener);
-            
             logger.debug("Setting a listener on address " + address.getName()
                     + "...");
             address.addCallListener(obsListener);

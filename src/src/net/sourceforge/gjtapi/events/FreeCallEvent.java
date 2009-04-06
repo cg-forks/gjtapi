@@ -57,7 +57,8 @@ public FreeCallEvent(int cause, FreeCall c) {
  * @author: Richard Deadman
  */
 public void dispatch() {
-	((FreeCall)this.getCall()).sendToObservers(this);
+    final FreeCall freecall = (FreeCall) this.getCall();
+    freecall.sendToObservers(this);
 }
 /**
  * Get the Call I represent an event on
