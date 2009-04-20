@@ -30,6 +30,7 @@
 */
 package net.sourceforge.gjtapi.demo.gui;
 
+@SuppressWarnings("serial")
 public class GjtapiGuiException extends Exception {
 	
 	public GjtapiGuiException() {

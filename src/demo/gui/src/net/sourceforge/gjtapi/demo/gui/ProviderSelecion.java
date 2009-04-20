@@ -11,6 +11,7 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -44,6 +45,9 @@ class ProviderSelecion extends JDialog {
 
     /** <code>true</code> if the user clicked the cancel button. */
     private boolean canceled;
+
+    /** Loaded providers. */
+    private final Map<String, Provider> loadedProviders;
 
     /**
      * Constructs a new object.
@@ -99,6 +103,7 @@ class ProviderSelecion extends JDialog {
         providerSelectionChanged();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
+        loadedProviders = new java.util.HashMap<String, Provider>();
         setVisible(true);
     }
 
@@ -181,7 +186,12 @@ class ProviderSelecion extends JDialog {
             final JtapiPeer peer = JtapiPeerFactory.getJtapiPeer(
                     GenericJtapiPeer.class.getCanonicalName());
             final String name = (String) providers.getSelectedItem();
-            return peer.getProvider(name);
+            Provider provider = loadedProviders.get(name);
+            if (provider == null) {
+                provider = peer.getProvider(name);
+                loadedProviders.put(name, provider);
+            }
+            return provider;
         } catch (Exception e) {
             return null;
         } catch (UnsatisfiedLinkError e) {
