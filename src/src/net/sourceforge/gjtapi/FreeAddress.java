@@ -40,7 +40,7 @@ public class FreeAddress implements Address, PrivateData {
   private Provider provider;
   private boolean local;		// Is this an Address in the Provider's domain?
   
-  private Vector callObservers = new Vector();
+  private Vector<CallObserver> callObservers = new Vector<CallObserver>();
   private ObservableHelper observers = new ObservableHelper(){
 	  Object [] mkObserverArray(int i) { return new AddressObserver[i];}
 	  void notifyObserver(Object o, Ev [] e) { ((AddressObserver)o).addressChangedEvent((AddrEv[])e);}
@@ -48,27 +48,30 @@ public class FreeAddress implements Address, PrivateData {
   private Set terminals = null;		// holds the TermData of the terminals
   private Vector connections = new Vector(2);	// holds weak references to the Connection
 
-  private transient Vector callListeners = new Vector();
-  private transient Vector addressListeners = new Vector();
+  private transient Vector<CallListener> callListeners
+  = new Vector<CallListener>();
+  private transient Vector<AddressListener> addressListeners
+      = new Vector<AddressListener>();
   private boolean reporting = false;
 
   /**
    * A weak reference to a Connection that can re-instantiate itself as necessary
    **/
   class ConnectionHolder {
-	  private CallId callId;
-	  private String address;
-	  WeakReference connRef = null;
+	  private final CallId callId;
+	  private final String address;
+	  final WeakReference<FreeConnection> connRef;
 
 	  ConnectionHolder(CallId id, String addr) {
 		  callId = id;
 		  address = addr;
+		  connRef = null;
 	  }
 
 	  ConnectionHolder(FreeConnection connection) {
 		  callId = ((FreeCall)connection.getCall()).getCallID();
 		  address = connection.getAddress().getName();
-		  connRef = new WeakReference(connection);
+		  connRef = new WeakReference<FreeConnection>(connection);
 	  }
 
 	  CallId getCallId() {
@@ -83,10 +86,11 @@ public class FreeAddress implements Address, PrivateData {
 	   * Return the current referrent or null
 	   **/
 	  private FreeConnection getReferent() {
-		  WeakReference wr = connRef;
+		  WeakReference<FreeConnection> wr = connRef;
 		  FreeConnection conn = null;
-		  if (wr != null)
+		  if (wr != null) {
 			  conn = (FreeConnection)wr.get();
+		  }
 		  return conn;
 	  }
 	  public int hashCode() {
@@ -144,22 +148,22 @@ FreeAddress(String num, Provider prov, boolean local){
 	  addressListeners = v;
 	}
   }            
-  public synchronized void addCallListener(CallListener l)
+  public void addCallListener(CallListener l)
 	throws ResourceUnavailableException,MethodNotSupportedException {
-	/* add to our list */
-	Vector v = (Vector) callListeners.clone();
-	if (!v.contains(l)) {
-	  v.addElement(l);
-	  callListeners = v;
-	  this.startEvents();
-	}
-	/* and add to any existing calls */
-	Call [] cs = getCalls();
-	if (cs != null){
-	  for (int i = 0; i<cs.length;i++){
-		((FreeCall)cs[i]).addCallListener(l, this);
-	  }
-	}
+        synchronized (callListeners) {
+            /* add to our list */
+            if (!callListeners.contains(l)) {
+                callListeners.addElement(l);
+              this.startEvents();
+            }
+            /* and add to any existing calls */
+            Call [] cs = getCalls();
+            if (cs != null){
+              for (int i = 0; i<cs.length;i++){
+                    ((FreeCall)cs[i]).addCallListener(l, this);
+              }
+            }
+        }
   }              
   public void addCallObserver(CallObserver observer) throws javax.telephony.ResourceUnavailableException, javax.telephony.MethodNotSupportedException {
 	callObservers.add(observer);
@@ -175,20 +179,24 @@ FreeAddress(String num, Provider prov, boolean local){
   }              
   void addConnection(FreeConnection con) {
 	Call call = con.getCall();
-	CallListener []cl = getCallListeners();
+	CallListener[] cl = getCallListeners();
 	if (cl != null){
-		for(int i =0; i<cl.length; i++) {
-			((FreeCall)call).addCallListener(cl[i], this);
-		}
+            final FreeCall freeCall = (FreeCall) call;
+	    for (CallListener current : cl) {
+	        freeCall.addCallListener(current, this);
+	    }
 	}
-	CallObserver [] cobs = getCallObservers();
+	CallObserver[] cobs = getCallObservers();
 	if (cobs != null) {
-		for (int i=0; i<cobs.length; i++) {
-			 ((FreeCall)call).addCallObserver(cobs[i], this);
-		}
+            final FreeCall freeCall = (FreeCall) call;
+            for (CallObserver current : cobs) {
+                freeCall.addCallObserver(current, this);
+            }
 	}
-	connections.addElement(new ConnectionHolder(con));
-  }                
+	final ConnectionHolder holder = new ConnectionHolder(con);
+	connections.addElement(holder);
+  }
+
 /**
  * Add an old-style Observer to the Address object.
  * This will report Observation ended events and little else.
@@ -234,7 +242,14 @@ public void addObserver(AddressObserver observer) throws javax.telephony.Resourc
 	return ret;
   }        
   public CallObserver[] getCallObservers() {
-	return (CallObserver[]) callObservers.toArray(new CallObserver[0]);
+      CallObserver[] ret = null;
+      if (callObservers != null) {
+              synchronized (callObservers) {
+                              ret = new CallObserver[callObservers.size()];
+                              callObservers.copyInto(ret);
+              }
+      }
+      return ret;
   }          
   /**
    * utility routine to get all calls associated with our connections

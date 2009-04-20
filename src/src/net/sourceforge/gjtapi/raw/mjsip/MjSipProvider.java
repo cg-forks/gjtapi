@@ -8,12 +8,14 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
+import javax.telephony.CallListener;
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
 import javax.telephony.MethodNotSupportedException;
@@ -50,7 +52,7 @@ public class MjSipProvider implements MediaTpi {
         Logger.getLogger(MjSipProvider.class.getName());
     
     private HashMap<String, UA> loadedUAs = new HashMap<String, UA>();
-    private TelephonyListener listener;
+    private Collection<TelephonyListener> listener;
 
     private Semaphore playSemaphore;
     private Semaphore recSemaphore;
@@ -188,13 +190,11 @@ public class MjSipProvider implements MediaTpi {
      */
     public void addListener(TelephonyListener ro) {
         if (listener == null) {
-            listener = ro;
-        } else {
-            System.err.println("Request to add a TelephonyListener to "
-                               + this.getClass().getName() +
-                               ", but one is already registered");
+            listener = new java.util.ArrayList<TelephonyListener>();
         }
-
+        synchronized (listener) {
+            listener.add(ro);
+        }
     }
 
     /**
@@ -295,32 +295,52 @@ public class MjSipProvider implements MediaTpi {
      * {@inheritDoc}
      */
     public void callActive(CallId id, int cause) {
-        if (listener != null)
-            listener.callActive(id, cause);
+        if (listener != null) {
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.callActive(id, cause);
+                }
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void connectionInProgress(CallId id, String address, int cause) {
-        if (listener != null)
-            listener.connectionInProgress(id, address, cause);
+        if (listener != null) {
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.connectionInProgress(id, address, cause);
+                }
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void connectionAlerting(CallId id, String address, int cause) {
-        if (listener != null)
-            listener.connectionAlerting(id, address, cause);
+        if (listener != null) {
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.connectionAlerting(id, address, cause);
+                }
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void connectionConnected(CallId id, String address, int cause) {
-        if (listener != null)
-            listener.connectionConnected(id, address, cause);
+        if (listener != null) {
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.connectionConnected(id, address, cause);
+                }
+            }
+        }
     }
 
     /**
@@ -336,7 +356,11 @@ public class MjSipProvider implements MediaTpi {
         }
 
         if (listener != null) {
-            listener.connectionDisconnected(id, address, cause);
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.connectionDisconnected(id, address, cause);
+                }
+            }
         }
 
     }
@@ -347,7 +371,11 @@ public class MjSipProvider implements MediaTpi {
     public void terminalConnectionCreated(CallId id, String address,
                                           String terminal, int cause) {
         if (listener != null) {
-            listener.terminalConnectionCreated(id, address, terminal, cause);
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.terminalConnectionCreated(id, address, terminal, cause);
+                }
+            }
         }
     }
 
@@ -357,7 +385,11 @@ public class MjSipProvider implements MediaTpi {
     public void terminalConnectionRinging(CallId id, String address,
                                           String terminal, int cause) {
         if (listener != null) {
-            listener.terminalConnectionRinging(id, address, terminal, cause);
+            synchronized (listener) {
+                for (TelephonyListener current : listener) {
+                    current.terminalConnectionRinging(id, address, terminal, cause);
+                }
+            }
         }
     }
 

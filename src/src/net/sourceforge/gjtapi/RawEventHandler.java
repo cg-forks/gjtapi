@@ -89,9 +89,10 @@ class RawEventHandler implements TelephonyListener {
 				eh.process(this.getGenProvider());
 			} catch (RuntimeException ex) {
 				ExceptionHandler exh = this.exHandler;
-				if (exh != null)
+				if (exh != null) {
 					// handle the exception
 					exh.handleException(eh, ex, this.getGenProvider());
+				}
 			}
 		}
 	}
@@ -488,7 +489,8 @@ public void connectionSuspended(final CallId id, final String address, final int
  * @param ev The event to dispatch
  */
 void dispatch(FreeCallEvent ev) {
-	this.getDispatchPool().put(new ClientNotifier(ev));
+    final ClientNotifier notifier = new ClientNotifier(ev);
+    this.getDispatchPool().put(notifier);
 }
 /**
  * The pool for dispatching events to client applications.
@@ -843,8 +845,12 @@ public void terminalConnectionRinging(final CallId id, final String address, fin
 	// define action block
 	EventHandler eh = new EventHandler() {
 		public void process(Object o) {
-			// Dispatch off to Terminal Connection
-			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal).toRinging(cause);
+		    // Dispatch off to Terminal Connection
+		    final GenericProvider provider = (GenericProvider) o;
+		    final FreeTerminalConnection connection =
+		        provider.getCallMgr().getLazyTermConn(id, address,
+		                terminal);
+		    connection.toRinging(cause);
 		}
 	};
 

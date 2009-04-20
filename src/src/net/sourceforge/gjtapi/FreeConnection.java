@@ -69,8 +69,11 @@ FreeConnection(FreeCall fca, String addrName){
 	hookUpAddress(addrName);
 
 	// now dispatch a new Connection event
-	((GenericProvider)fca.getProvider()).
-		dispatch(new FreeConnCreatedEv(CallEvent.CAUSE_NORMAL, Ev.META_UNKNOWN, false, this));
+	final GenericProvider provider = (GenericProvider)fca.getProvider();
+	final FreeCallEvent event =
+	    new FreeConnCreatedEv(CallEvent.CAUSE_NORMAL, Ev.META_UNKNOWN,
+	            false, this);
+	provider.dispatch(event);
 }
 /**
  * Create a connection between a call and an address

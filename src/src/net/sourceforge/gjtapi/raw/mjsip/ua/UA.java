@@ -38,6 +38,7 @@ import net.sourceforge.gjtapi.raw.mjsip.MjSipCallId;
 import net.sourceforge.gjtapi.raw.mjsip.MjSipProvider;
 
 import org.zoolu.sip.address.NameAddress;
+import org.zoolu.sip.address.SipURL;
 import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
 
@@ -253,14 +254,14 @@ public class UA implements UserAgentListener, RegisterAgentListener {
                                  NameAddress caller) {
         LOGGER.info("incoming call from " + caller.toString() + " to " +
                  callee.toString());
-        //printOut("accept? [yes/no]");
         callID = new MjSipCallId();
-        provider.terminalConnectionRinging(callID, callee.getAddress().toString(),
-                                           callee.getAddress().toString(),
+        final SipURL address = callee.getAddress();
+        provider.terminalConnectionRinging(callID, address.toString(),
+                                           address.toString(),
                                            ConnectionEvent.CAUSE_NORMAL);
-        provider.connectionInProgress(callID, callee.getAddress().toString(),
+        provider.connectionInProgress(callID, address.toString(),
                                       Event.CAUSE_NORMAL);
-        provider.connectionAlerting(callID, callee.getAddress().toString(),
+        provider.connectionAlerting(callID, address.toString(),
                                     ConnectionEvent.CAUSE_NORMAL);
     }
 
