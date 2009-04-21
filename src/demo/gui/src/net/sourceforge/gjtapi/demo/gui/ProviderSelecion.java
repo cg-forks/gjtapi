@@ -146,9 +146,7 @@ class ProviderSelecion extends JDialog {
     private String[] getAddresses(String name) {
         Address[] addresses;
         try {
-            JtapiPeer peer = JtapiPeerFactory.getJtapiPeer(
-                    GenericJtapiPeer.class.getCanonicalName());
-            Provider provider = peer.getProvider(name);
+            Provider provider = getProvider();
             addresses = provider.getAddresses();
         } catch (Exception e) {
             return null;

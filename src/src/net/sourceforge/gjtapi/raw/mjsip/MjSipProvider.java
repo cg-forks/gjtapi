@@ -15,7 +15,6 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
-import javax.telephony.CallListener;
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
 import javax.telephony.MethodNotSupportedException;

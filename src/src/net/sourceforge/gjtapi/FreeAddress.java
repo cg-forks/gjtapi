@@ -41,15 +41,22 @@ public class FreeAddress implements Address, PrivateData {
   private boolean local;		// Is this an Address in the Provider's domain?
   
   private Vector<CallObserver> callObservers = new Vector<CallObserver>();
-  private ObservableHelper observers = new ObservableHelper(){
-	  Object [] mkObserverArray(int i) { return new AddressObserver[i];}
-	  void notifyObserver(Object o, Ev [] e) { ((AddressObserver)o).addressChangedEvent((AddrEv[])e);}
+  private ObservableHelper observers = new ObservableHelper() {
+	  Object[] mkObserverArray(int i) { 
+	      return new AddressObserver[i];
+	  }
+
+	  void notifyObserver(Object o, Ev [] e) {
+	      final AddressObserver obs = (AddressObserver) o;
+	      obs.addressChangedEvent((AddrEv[])e);
+	  }
   };
+
   private Set terminals = null;		// holds the TermData of the terminals
   private Vector connections = new Vector(2);	// holds weak references to the Connection
 
   private transient Vector<CallListener> callListeners
-  = new Vector<CallListener>();
+      = new Vector<CallListener>();
   private transient Vector<AddressListener> addressListeners
       = new Vector<AddressListener>();
   private boolean reporting = false;
@@ -231,16 +238,18 @@ public void addObserver(AddressObserver observer) throws javax.telephony.Resourc
 	addressListeners.copyInto(ret);
 	return ret;
   }        
+
   public CallListener[] getCallListeners() {
-	CallListener[] ret = null;
-	if (callListeners != null) {
-		synchronized (callListeners) {
-				ret = new CallListener[callListeners.size()];
-				callListeners.copyInto(ret);
-		}
-	}
-	return ret;
-  }        
+      CallListener[] ret = null;
+      if (callListeners != null) {
+          synchronized (callListeners) {
+              ret = new CallListener[callListeners.size()];
+              callListeners.copyInto(ret);
+          }
+      }
+      return ret;
+  }
+
   public CallObserver[] getCallObservers() {
       CallObserver[] ret = null;
       if (callObservers != null) {
@@ -250,7 +259,8 @@ public void addObserver(AddressObserver observer) throws javax.telephony.Resourc
               }
       }
       return ret;
-  }          
+  }
+
   /**
    * utility routine to get all calls associated with our connections
    */

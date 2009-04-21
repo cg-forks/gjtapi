@@ -153,44 +153,44 @@ public class GjtapiGui {
 	    txtCalledNumber = new JTextField(16);
 		inputPanel.add(txtCalledNumber, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(40, 15, 20, 10), 0, 0));
+		        new Insets(10, 10, 0, 10), 0, 0));
 	    
         butCall = new JButton("Call");
         butCall.setEnabled(false);
         inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
-                new Insets(40, 10, 20, 10), 0, 0));
+                new Insets(10, 2, 0, 10), 0, 0));
                 
         ckPrivateData = new JCheckBox("Use TAPI3 private data");
         inputPanel.add(ckPrivateData, new GridBagConstraints(2, 0, 2, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_END, GridBagConstraints.NONE, 
-                new Insets(40, 10, 20, 10), 0, 0));
+                new Insets(10, 10, 0, 10), 0, 0));
                 
 	    txtDTMFOut = new JTextField(16);
 		inputPanel.add(txtDTMFOut, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 15, 10, 10), 0, 0));
+		        new Insets(10, 10, 0, 10), 0, 0));
 	    
 	    butDTMFOut = new JButton("DTMF");
 	    butDTMFOut.setEnabled(false);
 		inputPanel.add(butDTMFOut, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, 
 		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 10, 10), 0, 0));
+		        new Insets(10, 2, 0, 10), 0, 0));
 
         lbDTMFIn = new JLabel("Received digits");
         inputPanel.add(lbDTMFIn, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, 
-                new Insets(10, 20, 10, 2), 0, 0));
+                new Insets(10, 10, 0, 2), 0, 0));
         
         txtDTMFIn = new JTextField(32);
         txtDTMFIn.setEditable(false);
         inputPanel.add(txtDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-                new Insets(10, 2, 10, 10), 0, 0));
+                new Insets(10, 2, 0, 0), 0, 0));
         
         inputPanel.add(new JPanel(), new GridBagConstraints(4, 0, 1, 2, 1.0, 1.0, 
 		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
-		        new Insets(10, 10, 10, 10), 0, 0));
+		        new Insets(10, 10, 0, 10), 0, 0));
         
         JPanel callPanel = new JPanel(new GridBagLayout());
         tapiPanel.add(callPanel, BorderLayout.CENTER);
@@ -200,52 +200,52 @@ public class GjtapiGui {
 	    callsScrollPane.setPreferredSize(new Dimension(480, 72));
 		callPanel.add(callsScrollPane, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 15, 20, 10), 0, 0));
+		        new Insets(10, 10, 0, 10), 0, 0));
 	    
 	    butAnswer = new JButton("Answer");
 	    butAnswer.setEnabled(false);
 		callPanel.add(butAnswer, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 2, 10), 0, 0));
+		        new Insets(10, 2, 0, 0), 0, 0));
 
 	    butHold = new JButton("Hold");
 	    butHold.setEnabled(false);
 		callPanel.add(butHold, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 2, 10), 0, 0));
+		        new Insets(10, 2, 0, 0), 0, 0));
 		
 	    butHangUp = new JButton("Hang up");
 	    butHangUp.setEnabled(false);
 		callPanel.add(butHangUp, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(2, 10, 20, 10), 0, 0));
+		        new Insets(2, 2, 0, 0), 0, 0));
 		
 	    butUnHold = new JButton("UnHold");
 	    butUnHold.setEnabled(false);
 		callPanel.add(butUnHold, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
 		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(2, 10, 20, 10), 0, 0));
+		        new Insets(2, 2, 0, 0), 0, 0));
 		
         butJoin= new JButton("Join");
         butJoin.setEnabled(false);
         callPanel.add(butJoin, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.LINE_START, GridBagConstraints.NONE, 
-                new Insets(2, 10, 20, 10), 0, 0));
+                new Insets(2, 2, 0, 0), 0, 0));
         
         
-		callPanel.add(new JPanel(), new GridBagConstraints(3, 0, 1, 2, 1.0, 1.0, 
-		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
-		        new Insets(10, 10, 20, 10), 0, 0));
-        
-        JPanel tracePanel = new JPanel(new BorderLayout());
-        tracePanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        gjtapiFrame.getContentPane().add(tracePanel, BorderLayout.CENTER);
-	    txtTrace = new JTextArea(16, 80);
-	    traceScrollPane = new JScrollPane(txtTrace);
-	    tracePanel.add(traceScrollPane, BorderLayout.CENTER);
+        callPanel.add(new JPanel(), new GridBagConstraints(3, 0, 1, 2, 1.0, 1.0, 
+                GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
+                new Insets(10, 10, 0, 0), 0, 0));
 
-		butCall.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+        JPanel tracePanel = new JPanel(new BorderLayout());
+        tracePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        gjtapiFrame.getContentPane().add(tracePanel, BorderLayout.CENTER);
+        txtTrace = new JTextArea(16, 80);
+        traceScrollPane = new JScrollPane(txtTrace);
+        tracePanel.add(traceScrollPane, BorderLayout.CENTER);
+
+        butCall.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
                 new Thread() {
                     public void run() {
                         try {
@@ -634,17 +634,16 @@ public class GjtapiGui {
             throw new GjtapiGuiException("Call failed.", e);
         }
     }
-    
-	public void addLogEntry(final String message) {
-	    SwingUtilities.invokeLater(new Runnable() {
+
+    public void addLogEntry(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-        	    if(txtTrace != null && txtTrace.isShowing()) {
-        		    txtTrace.append(message);
-        	    }
+                if((txtTrace != null) && txtTrace.isShowing()) {
+                    txtTrace.append(message);
+                }
             }
         });
-	}
-
+    }
 
     /**
      * Starts the program
