@@ -152,8 +152,10 @@ public class CallListenerObserver extends DefaultListModel
             if(usePrivateData) {
                 Tapi3PrivateData privateData = getPrivateData();
                 if(privateData != null) {
-                    return privateData.getCalledName() + "(" + privateData.getCalledNumber() + ") " + "<-- "
-                            + privateData.getCallerName() + "(" + privateData.getCallerNumber() + ")";
+                    return privateData.getCalledName() + "(" 
+                    + privateData.getCalledNumber() + ") " + "<-- "
+                    + privateData.getCallerName() + "(" 
+                    + privateData.getCallerNumber() + ")";
                 } else {
                     return "???@" + connection.getAddress();
                 }
@@ -197,7 +199,7 @@ public class CallListenerObserver extends DefaultListModel
     }
     
     public void update() {
-    	LOGGER.debug("CallMap: " + callMap);
+        LOGGER.debug("CallMap: " + callMap);
         fireContentsChanged(this, 0, getSize());
     }
 
@@ -423,7 +425,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionActive(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionActive(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Active event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Active event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -431,7 +434,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionCreated(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionCreated(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Created event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Created event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -439,7 +443,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionDropped(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionDropped(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Dropped event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Dropped event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -447,7 +452,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionPassive(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionPassive(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Passive event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Passive event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -455,7 +461,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionRinging(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionRinging(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Ringing event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Ringing event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }
 
@@ -463,7 +470,8 @@ public class CallListenerObserver extends DefaultListModel
      * @see javax.telephony.TerminalConnectionListener#terminalConnectionUnknown(javax.telephony.TerminalConnectionEvent)
      */
     public void terminalConnectionUnknown(TerminalConnectionEvent event) {
-        LOGGER.debug("TerminalConnection Unknown event with cause: " + this.causeToString(event.getCause()));
+        LOGGER.debug("TerminalConnection Unknown event with cause: "
+                + this.causeToString(event.getCause()));
         updateConnection(event.getTerminalConnection().getConnection());
     }    
     
@@ -487,32 +495,84 @@ public class CallListenerObserver extends DefaultListModel
                 }
                 break;
             }
-            case CallActiveEv.ID: event = "call active"; break;
-            case CallInvalidEv.ID: event = "call invalid"; break;
-            case CallObservationEndedEv.ID: event = "call obervation ended"; break;
-            case ConnAlertingEv.ID:event = "Connection alerting"; break;
-            case ConnConnectedEv.ID: event = "Connection connected"; break;
-            case ConnCreatedEv.ID: event = "Connection created"; break;
-            case ConnDisconnectedEv.ID: event = "Connection disconnected"; break;
-            case ConnFailedEv.ID: event = "Connection failed"; break;
-            case ConnInProgressEv.ID: event = "Connection in progress"; break;
-            case ConnUnknownEv.ID: event = "Connection unknown"; break;
-            case TermConnActiveEv.ID: event = "Terminal Connection active"; break;
-            case TermConnCreatedEv.ID: event = "Terminal Connection created"; break;
-            case TermConnDroppedEv.ID: event = "Terminal Connection dropped"; break;
-            case TermConnPassiveEv.ID: event = "Terminal Connection passive"; break;
-            case TermConnRingingEv.ID: event = "Terminal Connection ringing"; break;
-            case TermConnUnknownEv.ID: event = "Terminal Connection unknown"; break;
-            case CallCtlTermConnBridgedEv.ID: event = "CallControlTerminalConnection bridged"; break;
-            case CallCtlTermConnDroppedEv.ID: event = "CallControlTerminalConnection dropped"; break;
-        	case CallCtlTermConnHeldEv.ID: event = "CallControlTerminalConnection held"; break;
-            case CallCtlTermConnInUseEv.ID: event = "CallControlTerminalConnection in use"; break;
-            case CallCtlTermConnRingingEv.ID: event = "CallControlTerminalConnection ringing"; break;
-            case CallCtlTermConnTalkingEv.ID: event = "CallControlTerminalConnection talking"; break;
-            case CallCtlTermConnUnknownEv.ID: event = "CallControlTerminalConnection unknown"; break;
-            case MediaTermConnAvailableEv.ID: event = "MediaTerminalConnection available"; break;
-            case MediaTermConnUnavailableEv.ID: event = "MediaTerminalConnection unavailable"; break;
-            default: event = "unknown: " + id; break;
+            case CallActiveEv.ID:
+                event = "call active"; 
+                break;
+            case CallInvalidEv.ID:
+                event = "call invalid";
+                break;
+            case CallObservationEndedEv.ID:
+                event = "call obervation ended"; 
+                break;
+            case ConnAlertingEv.ID:
+                event = "Connection alerting"; 
+                break;
+            case ConnConnectedEv.ID: 
+                event = "Connection connected";
+                break;
+            case ConnCreatedEv.ID:
+                event = "Connection created";
+                break;
+            case ConnDisconnectedEv.ID:
+                event = "Connection disconnected";
+                break;
+            case ConnFailedEv.ID:
+                event = "Connection failed";
+                break;
+            case ConnInProgressEv.ID:
+                event = "Connection in progress";
+                break;
+            case ConnUnknownEv.ID:
+                event = "Connection unknown";
+                break;
+            case TermConnActiveEv.ID:
+                event = "Terminal Connection active";
+                break;
+            case TermConnCreatedEv.ID:
+                event = "Terminal Connection created";
+                break;
+            case TermConnDroppedEv.ID:
+                event = "Terminal Connection dropped";
+                break;
+            case TermConnPassiveEv.ID:
+                event = "Terminal Connection passive";
+                break;
+            case TermConnRingingEv.ID:
+                event = "Terminal Connection ringing";
+                break;
+            case TermConnUnknownEv.ID:
+                event = "Terminal Connection unknown";
+                break;
+            case CallCtlTermConnBridgedEv.ID:
+                event = "CallControlTerminalConnection bridged";
+                break;
+            case CallCtlTermConnDroppedEv.ID:
+                event = "CallControlTerminalConnection dropped";
+                break;
+            case CallCtlTermConnHeldEv.ID:
+                event = "CallControlTerminalConnection held";
+                break;
+            case CallCtlTermConnInUseEv.ID:
+                event = "CallControlTerminalConnection in use";
+                break;
+            case CallCtlTermConnRingingEv.ID:
+                event = "CallControlTerminalConnection ringing";
+                break;
+            case CallCtlTermConnTalkingEv.ID:
+                event = "CallControlTerminalConnection talking";
+                break;
+            case CallCtlTermConnUnknownEv.ID:
+                event = "CallControlTerminalConnection unknown";
+                break;
+            case MediaTermConnAvailableEv.ID:
+                event = "MediaTerminalConnection available"
+                    ; break;
+            case MediaTermConnUnavailableEv.ID:
+                event = "MediaTerminalConnection unavailable";
+                break;
+            default:
+                event = "unknown: " + id;
+                break;
         }
         LOGGER.debug("Observer event: " + event);
         Connection connection = null;
@@ -534,7 +594,8 @@ public class CallListenerObserver extends DefaultListModel
         }
         if(connection != null) {
             final int state;
-            if(ev.getCause() == Ev.CAUSE_CALL_CANCELLED || ev.getCause() == Ev.CAUSE_DEST_NOT_OBTAINABLE) {
+            if(ev.getCause() == Ev.CAUSE_CALL_CANCELLED 
+                    || ev.getCause() == Ev.CAUSE_DEST_NOT_OBTAINABLE) {
                 state = Connection.DISCONNECTED;
                 try {
                     connection.disconnect();
@@ -546,7 +607,8 @@ public class CallListenerObserver extends DefaultListModel
             }
             LOGGER.debug("Observer: connection state="
                     + TapiUtil.getConnectionStateName(connection));
-            if(state == Connection.DISCONNECTED || state == Connection.FAILED || state == Connection.UNKNOWN) {
+            if(state == Connection.DISCONNECTED || state == Connection.FAILED 
+                    || state == Connection.UNKNOWN) {
                 LOGGER.debug("Observer: Removing connection...");
                 removeConnection(connection);
                 LOGGER.debug("Observer: Connection removed.");

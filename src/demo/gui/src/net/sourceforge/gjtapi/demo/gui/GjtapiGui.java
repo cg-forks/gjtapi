@@ -37,9 +37,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -87,8 +90,13 @@ public class GjtapiGui {
     private JTextField txtDTMFOut;
     private JButton butDTMFOut;
 
-    private JLabel lbDTMFIn;
     private JTextField txtDTMFIn;
+    /** The file to be played. */
+    private JTextField txtFile;
+    /** A file chooser for the file to be played. */
+    private JButton butSelectFile;
+    /** Plays the selected file. */
+    private JButton butPlayFile;
 
     private JScrollPane callsScrollPane;
     private JList lstCalls;
@@ -150,82 +158,112 @@ public class GjtapiGui {
         JPanel inputPanel = new JPanel(new GridBagLayout());
         tapiPanel.add(inputPanel, BorderLayout.NORTH);
         
-	    txtCalledNumber = new JTextField(16);
-		inputPanel.add(txtCalledNumber, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, 
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 0, 10), 0, 0));
-	    
+        txtCalledNumber = new JTextField(16);
+        inputPanel.add(txtCalledNumber, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 10, 0, 10), 0, 0));
+
         butCall = new JButton("Call");
         butCall.setEnabled(false);
-        inputPanel.add(butCall, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, 
+        inputPanel.add(butCall, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0, 
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
                 new Insets(10, 2, 0, 10), 0, 0));
                 
         ckPrivateData = new JCheckBox("Use TAPI3 private data");
-        inputPanel.add(ckPrivateData, new GridBagConstraints(2, 0, 2, 1, 0.0, 0.0, 
+        inputPanel.add(ckPrivateData, new GridBagConstraints(3, 0, 2, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_END, GridBagConstraints.NONE, 
                 new Insets(10, 10, 0, 10), 0, 0));
                 
-	    txtDTMFOut = new JTextField(16);
-		inputPanel.add(txtDTMFOut, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 0, 10), 0, 0));
-	    
-	    butDTMFOut = new JButton("DTMF");
-	    butDTMFOut.setEnabled(false);
-		inputPanel.add(butDTMFOut, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, 
-		        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 2, 0, 10), 0, 0));
+        txtDTMFOut = new JTextField(16);
+        inputPanel.add(txtDTMFOut, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 10, 0, 10), 0, 0));
 
-        lbDTMFIn = new JLabel("Received digits");
-        inputPanel.add(lbDTMFIn, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, 
+        butDTMFOut = new JButton("DTMF");
+        butDTMFOut.setEnabled(false);
+        inputPanel.add(butDTMFOut, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 10), 0, 0));
+
+        txtFile = new JTextField();
+        inputPanel.add(txtFile, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 10, 0, 10), 0, 0));
+        butSelectFile = new JButton("Select...");
+        butSelectFile.setEnabled(false);
+        inputPanel.add(butSelectFile, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 10), 0, 0));
+        butSelectFile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                JFileChooser chooser = new JFileChooser();
+                int ret = chooser.showOpenDialog(gjtapiFrame);;
+                if (ret == JFileChooser.CANCEL_OPTION) {
+                    return;
+                }
+                File file = chooser.getSelectedFile();
+                try {
+                    txtFile.setText(file.getCanonicalPath());
+                    butPlayFile.setEnabled(true);
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        });
+        butPlayFile = new JButton("Play");
+        butPlayFile.setEnabled(false);
+        inputPanel.add(butPlayFile, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 10), 0, 0));
+        JLabel lbDTMFIn = new JLabel("Received digits");
+        inputPanel.add(lbDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, 
                 new Insets(10, 10, 0, 2), 0, 0));
         
         txtDTMFIn = new JTextField(32);
         txtDTMFIn.setEditable(false);
-        inputPanel.add(txtDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
+        inputPanel.add(txtDTMFIn, new GridBagConstraints(4, 1, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
                 new Insets(10, 2, 0, 0), 0, 0));
         
-        inputPanel.add(new JPanel(), new GridBagConstraints(4, 0, 1, 2, 1.0, 1.0, 
-		        GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
-		        new Insets(10, 10, 0, 10), 0, 0));
-        
+        inputPanel.add(new JPanel(), new GridBagConstraints(4, 0, 1, 3, 1.0, 1.0, 
+                GridBagConstraints.PAGE_END, GridBagConstraints.BOTH, 
+                new Insets(10, 10, 0, 10), 0, 0));
+
         JPanel callPanel = new JPanel(new GridBagLayout());
         tapiPanel.add(callPanel, BorderLayout.CENTER);
         
-	    lstCalls = new JList(obsListener);
-	    callsScrollPane = new JScrollPane(lstCalls);
-	    callsScrollPane.setPreferredSize(new Dimension(480, 72));
-		callPanel.add(callsScrollPane, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 10, 0, 10), 0, 0));
-	    
-	    butAnswer = new JButton("Answer");
-	    butAnswer.setEnabled(false);
-		callPanel.add(butAnswer, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 2, 0, 0), 0, 0));
+        lstCalls = new JList(obsListener);
+        callsScrollPane = new JScrollPane(lstCalls);
+        callsScrollPane.setPreferredSize(new Dimension(480, 72));
+        callPanel.add(callsScrollPane, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 10, 0, 10), 0, 0));
 
-	    butHold = new JButton("Hold");
-	    butHold.setEnabled(false);
-		callPanel.add(butHold, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(10, 2, 0, 0), 0, 0));
-		
-	    butHangUp = new JButton("Hang up");
-	    butHangUp.setEnabled(false);
-		callPanel.add(butHangUp, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(2, 2, 0, 0), 0, 0));
-		
-	    butUnHold = new JButton("UnHold");
-	    butUnHold.setEnabled(false);
-		callPanel.add(butUnHold, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-		        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-		        new Insets(2, 2, 0, 0), 0, 0));
-		
+        butAnswer = new JButton("Answer");
+        butAnswer.setEnabled(false);
+        callPanel.add(butAnswer, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 2, 0, 0), 0, 0));
+
+        butHold = new JButton("Hold");
+        butHold.setEnabled(false);
+        callPanel.add(butHold, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(10, 2, 0, 0), 0, 0));
+
+        butHangUp = new JButton("Hang up");
+        butHangUp.setEnabled(false);
+        callPanel.add(butHangUp, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 0), 0, 0));
+
+        butUnHold = new JButton("UnHold");
+        butUnHold.setEnabled(false);
+        callPanel.add(butUnHold, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 0), 0, 0));
+
         butJoin= new JButton("Join");
         butJoin.setEnabled(false);
         callPanel.add(butJoin, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0,
@@ -252,7 +290,7 @@ public class GjtapiGui {
                             call(getCalledNumber());
                         } catch (GjtapiGuiException e) {
                             logger.error(e.getMessage(), e.getCause());
-		                    new MessageBox("Call error", "Cannot call.", e).setVisible(true);
+                            new MessageBox("Call error", "Cannot call.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -269,7 +307,7 @@ public class GjtapiGui {
             }
         });
         
-		butDTMFOut.addActionListener(new ActionListener() {
+        butDTMFOut.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     public void run() {
@@ -280,7 +318,7 @@ public class GjtapiGui {
                             ms.sendSignals(txtDTMFOut.getText(), null, null);
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e.getCause());
-		                    new MessageBox("DTMF error", "Cannot send DTMF.", e).setVisible(true);
+                            new MessageBox("DTMF error", "Cannot send DTMF.", e).setVisible(true);
                         }
                     }
                 }.start();
@@ -305,17 +343,17 @@ public class GjtapiGui {
             }
         });
         
-		butHangUp.addActionListener(new ActionListener() {
+        butHangUp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     public void run() {
-		                try {
-		                    Connection connection = getSelectedConnection();
-		                    if(connection == null) return;
-		                    logger.debug("HangUp for connection in state " + TapiUtil.getConnectionStateName(connection));
-		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
-		                    int state = TapiUtil.getTerminalConnectionState(terminalConnection);
-		                    if(state == CallControlTerminalConnection.RINGING) {
+                        try {
+                            Connection connection = getSelectedConnection();
+                            if(connection == null) return;
+                            logger.debug("HangUp for connection in state " + TapiUtil.getConnectionStateName(connection));
+                            TerminalConnection terminalConnection = getSelectedTerminalConnection();
+                            int state = TapiUtil.getTerminalConnectionState(terminalConnection);
+                            if(state == CallControlTerminalConnection.RINGING) {
                                 terminalConnection.answer();
                                 synchronized(terminalConnection) {
                                     terminalConnection.wait(3000);
@@ -325,13 +363,13 @@ public class GjtapiGui {
                                         return;
                                     }
                                 }
-		                    }
-		                    Thread.sleep(500);
-	                        connection.disconnect();
-		                } catch (Exception e) {
-		                    logger.error("Cannot disconnect.", e);
-		                    new MessageBox("HangUp error", "Cannot disconnect.", e).setVisible(true);
-		                }
+                            }
+                            Thread.sleep(500);
+                            connection.disconnect();
+                        } catch (Exception e) {
+                            logger.error("Cannot disconnect.", e);
+                            new MessageBox("HangUp error", "Cannot disconnect.", e).setVisible(true);
+                        }
                     }
                 }.start();
             }
@@ -427,9 +465,9 @@ public class GjtapiGui {
                 updateButDTMF();
             }            
         });
-		
-		lstCalls.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
+
+        lstCalls.addListSelectionListener(new ListSelectionListener() {
+        public void valueChanged(ListSelectionEvent e) {
                 updateAllControls();            
             }
         });
@@ -509,12 +547,12 @@ public class GjtapiGui {
     };
     
     
-	private void updateAllControls() {
-	    updateButCall();
-	    updateButDTMF();
-	    updateCallControls();
+    private void updateAllControls() {
+        updateButCall();
+        updateButDTMF();
+        updateCallControls();
         updateDTMFThread();
-	}
+    }
 	
     private void updateButCall() {
         int len = txtCalledNumber.getText().length();
@@ -550,6 +588,7 @@ public class GjtapiGui {
                 connState == Connection.ALERTING || 
                 connState == Connection.INPROGRESS || 
                 connState == Connection.FAILED);
+        butPlayFile.setEnabled(connState == Connection.CONNECTED);
         boolean holdEnabled = (ccTermConnState == CallControlTerminalConnection.TALKING);
         // TODO - this should be used only for swapOnHold
         // allow hold only if there is a terminalConnection in state HELD
@@ -592,30 +631,31 @@ public class GjtapiGui {
         butJoin.setEnabled(joinEnabled);
     }
     
-	private String getCalledNumber() {
-	    return txtCalledNumber.getText();
-	}
-	
-	private TerminalConnection getSelectedTerminalConnection() {
-	    TerminalConnection terminalConnection = null;
-	    CallListenerObserver.Item item = (CallListenerObserver.Item)lstCalls.getSelectedValue();
-	    if(item != null) {
-	        terminalConnection = item.getTerminalConnection();
-	    }
-	    return terminalConnection;
-	}
-	
-	private Connection getSelectedConnection() {
-	    Connection connection = null;
-	    if(obsListener.getSize() > 0) {
-		    CallListenerObserver.Item item = (CallListenerObserver.Item)lstCalls.getSelectedValue();
-		    if(item != null) {
-		        connection = item.getConnection();
-		    }
-	    }
-	    return connection;
-	}
-	
+    private String getCalledNumber() {
+        return txtCalledNumber.getText();
+    }
+
+    private TerminalConnection getSelectedTerminalConnection() {
+        TerminalConnection terminalConnection = null;
+        CallListenerObserver.Item item = (CallListenerObserver.Item)lstCalls.getSelectedValue();
+        if(item != null) {
+            terminalConnection = item.getTerminalConnection();
+        }
+        return terminalConnection;
+    }
+
+    private Connection getSelectedConnection() {
+        Connection connection = null;
+        if(obsListener.getSize() > 0) {
+            CallListenerObserver.Item item = 
+                (CallListenerObserver.Item) lstCalls.getSelectedValue();
+            if(item != null) {
+                connection = item.getConnection();
+            }
+        }
+        return connection;
+    }
+
     private void call(String toAddr) throws GjtapiGuiException {
 		try {
             logger.debug("Attempting to create call...");
