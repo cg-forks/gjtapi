@@ -207,8 +207,9 @@ Address[] getAddresses() throws ResourceUnavailableException {
 FreeAddress getCachedAddress(String number) {
 	FreeAddress addr = this.getCachedLocalAddress(number);
 
-	if (addr == null)
+	if (addr == null) {
 		addr = this.getCachedRemoteAddress(number);
+	}
 
 	return addr;
 }
@@ -220,6 +221,7 @@ FreeAddress getCachedAddress(String number) {
  * @param number The Address's logical number.
  */
 private FreeAddress getCachedLocalAddress(String number) {
+
 	return (FreeAddress)this.getLocalAddresses().get(number);
 }
 /**

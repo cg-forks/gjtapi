@@ -46,17 +46,11 @@ import net.sourceforge.gjtapi.media.FreeMediaTerminalConnection;
 public class FreeConnection implements Connection, PrivateData {
 
 	private FreeCall call;
-	private String address;	// weak handle to Address object in DomainMgr
+	/** weak handle to Address object in DomainMgr */
+	private String address;
 	private int state = UNKNOWN;
-	private HashMap terminalConnections = new HashMap();	// map of Terminal name -> TerminalConnection
-
-
-
-
-
-
-
-
+	/** Map of map of Terminal name -> TerminalConnection */
+	private HashMap terminalConnections = new HashMap(); 
 
 /**
  * Create a connection between a call and an address pointer
@@ -147,18 +141,22 @@ public void disconnect() throws InvalidStateException, PrivilegeViolationExcepti
 				throw re.morph((GenericProvider)((FreeAddress)this.getAddress()).getProvider());
 			}
 }
-	/**
-	 * Resurrect the Address object from the Domain manager
-	 **/
-public Address getAddress() {
-	return this.getGenProvider().getDomainMgr().getLazyAddress(this.address);
-}
-	/**
-	 * Return the pointer to the Connection's Address.
-	 **/
-String getAddressName() {
-	return this.address;
-}
+
+    /**
+     * Resurrect the Address object from the Domain manager
+     **/
+    public Address getAddress() {
+        final GenericProvider prov = getGenProvider();
+        return prov.getDomainMgr().getLazyAddress(this.address);
+    }
+
+    /**
+     * Return the pointer to the Connection's Address.
+     **/
+    String getAddressName() {
+        return this.address;
+    }
+
 /**
  * Return any cached TerminalConnection with a given name, or null if none in the cache.
  * Creation date: (2000-06-20 16:10:30)
@@ -227,15 +225,18 @@ public FreeTerminalConnection getLazyTermConn(String termName) {
  */
 public FreeTerminalConnection getLazyTermConn(FreeTerminal t) {
 	// look for existing one
-	FreeTerminalConnection tc = (FreeTerminalConnection)this.terminalConnections.get(t.getName());
-	if (tc != null)
+	FreeTerminalConnection tc =
+	    (FreeTerminalConnection)this.terminalConnections.get(t.getName());
+	if (tc != null) {
 		return tc;
+	}
 
 	// No terminal connection found -- create a new one
-	if (t instanceof MediaTerminal)
+	if (t instanceof MediaTerminal) {
 		tc = new FreeMediaTerminalConnection(this, (MediaTerminal)t);
-	else
+	} else {
 		tc = new FreeTerminalConnection(this, t);
+	}
 	return tc;
 }
 /**
@@ -315,8 +316,9 @@ private void setAddress(FreeAddress newAddress) {
 }
 	void setCall(FreeCall newCall) {
 		call = newCall;
-		if (newCall != null)
+		if (newCall != null) {
 			call.addConnection(this);
+		}
 	}
 /**
  * Set PrivateData to be used in the next low-level command.
@@ -394,7 +396,9 @@ void toConnected(int cause) {
 		this.call.setCallingAddress(this.getAddress(), false);
 		
 		// notify any listeners
-		this.getGenProvider().dispatch(new FreeConnConnectedEv(cause, this));
+		final FreeCallEvent event =
+		    new FreeConnConnectedEv(cause, this);
+		this.getGenProvider().dispatch(event);
 	}
 }
 /**

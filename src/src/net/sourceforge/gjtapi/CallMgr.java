@@ -360,8 +360,9 @@ void register(FreeCall call) {
 	
 	// tell the Jain Provider it should register any of its CallListeners
 	net.sourceforge.gjtapi.jcc.Provider prov = this.getProvider().getJainProvider();
-	if (prov != null)
+	if (prov != null) {
 		prov.registerCallListeners(call);
+	}
 }
 /**
  * Remove a call from my list.

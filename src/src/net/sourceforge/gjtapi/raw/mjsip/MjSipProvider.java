@@ -236,7 +236,7 @@ public class MjSipProvider implements MediaTpi {
             throw new ResourceUnavailableException(ResourceUnavailableException.
                     ORIGINATOR_UNAVAILABLE, "Address not found: " + address);
         }
-        if (ua.getMjSipCallId().equals((Object) call)) {
+        if (ua.getCallId().equals((Object) call)) {
             ua.accept();
         } else {
             throw new ResourceUnavailableException(ResourceUnavailableException.
@@ -248,8 +248,7 @@ public class MjSipProvider implements MediaTpi {
      * {@inheritDoc}
      */
     public CallId reserveCallId(String address) throws InvalidArgumentException {
-        MjSipCallId id = new MjSipCallId();
-        return id;
+        return new MjSipCallId();
     }
 
     /**
@@ -267,7 +266,7 @@ public class MjSipProvider implements MediaTpi {
             throw new ResourceUnavailableException(ResourceUnavailableException.
                     ORIGINATOR_UNAVAILABLE, "Address not found: " + address);
         }
-        ua.setMjSipCallId((MjSipCallId) id);
+        ua.setCallId(id);
         ua.call(dest);
         return id;
     }
@@ -386,7 +385,8 @@ public class MjSipProvider implements MediaTpi {
         if (listener != null) {
             synchronized (listener) {
                 for (TelephonyListener current : listener) {
-                    current.terminalConnectionRinging(id, address, terminal, cause);
+                    current.terminalConnectionRinging(id, address, terminal,
+                            cause);
                 }
             }
         }

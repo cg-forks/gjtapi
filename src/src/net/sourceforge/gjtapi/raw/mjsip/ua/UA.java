@@ -34,6 +34,7 @@ import javax.telephony.ProviderUnavailableException;
 
 import local.ua.RegisterAgent;
 import local.ua.RegisterAgentListener;
+import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.raw.mjsip.MjSipCallId;
 import net.sourceforge.gjtapi.raw.mjsip.MjSipProvider;
 
@@ -63,10 +64,9 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     /** UserAgentProfile */
     private UserAgentProfile user_profile;
 
-    /** Streams **/
-    //InputStream playStream;
-    //OutputStream recStream;
+    /** The record stream. */
     private InputStreamConverter convertedInStream;
+    /** The play stream. */
     private OutputStreamConverter convertedOutStream;
 
     /** SIP Provder */
@@ -77,11 +77,11 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
     /** Id from current call
      * It's assumed an agent can only handle one call at a time */
-    MjSipCallId callID;
+    private CallId callID;
 
     /** Address being called
      * It's assumed an agent can only handle one call at a time */
-    String addressCalled;
+    private String addressCalled;
 
     /*private float FrameRate8Khz = 8000.0F;
     private float FrameRate16Khz = 16000.0F;
@@ -255,6 +255,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         LOGGER.info("incoming call from " + caller.toString() + " to " +
                  callee.toString());
         callID = new MjSipCallId();
+
         final SipURL address = callee.getAddress();
         provider.terminalConnectionRinging(callID, address.toString(),
                                            address.toString(),
@@ -333,11 +334,11 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         return ua.user_profile.contact_url;
     }
 
-    public void setMjSipCallId(MjSipCallId id) {
+    public void setCallId(CallId id) {
         callID = id;
     }
 
-    public MjSipCallId getMjSipCallId() {
+    public CallId getCallId() {
         return callID;
     }
 

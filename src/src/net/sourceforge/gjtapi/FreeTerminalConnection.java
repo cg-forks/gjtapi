@@ -385,7 +385,9 @@ void toRinging(int cause) {
 		this.setState(CallControlTerminalConnection.RINGING);
 
 		// Create and dispatch the common event
-		this.getGenProvider().dispatch(new FreeTermConnRingingEv(cause, this));
+		final FreeCallEvent event =
+		    new FreeTermConnRingingEv(cause, this);
+		this.getGenProvider().dispatch(event);
 	}
 }
 /**

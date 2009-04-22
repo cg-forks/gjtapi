@@ -301,7 +301,15 @@ private void privateConference(javax.telephony.Call otherCall) throws InvalidSta
  *
  * @author: Richard Deadman
  **/
-public Connection[] connect(Terminal origterm, Address origaddr, String dialedDigits) throws javax.telephony.ResourceUnavailableException, javax.telephony.PrivilegeViolationException, javax.telephony.InvalidPartyException, javax.telephony.InvalidArgumentException, javax.telephony.InvalidStateException, javax.telephony.MethodNotSupportedException {
+public Connection[] connect(Terminal origterm, Address origaddr,
+        String dialedDigits)
+    throws javax.telephony.ResourceUnavailableException, 
+        javax.telephony.PrivilegeViolationException, 
+        javax.telephony.InvalidPartyException, 
+        javax.telephony.InvalidArgumentException, 
+        javax.telephony.InvalidStateException, 
+        javax.telephony.MethodNotSupportedException {
+
 	GenericProvider gp = (GenericProvider) this.getProvider();
 
 	// check if the terminal has the address
