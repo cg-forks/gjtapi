@@ -231,17 +231,17 @@ public class MjSipProvider implements MediaTpi {
             MethodNotSupportedException, RawStateException {
 
         //Get UA
-        UA ua = loadedUAs.get(address);
+        final UA ua = loadedUAs.get(address);
         if (ua == null) {
             throw new ResourceUnavailableException(ResourceUnavailableException.
                     ORIGINATOR_UNAVAILABLE, "Address not found: " + address);
         }
-        if (ua.getCallId().equals((Object) call)) {
-            ua.accept();
-        } else {
-            throw new ResourceUnavailableException(ResourceUnavailableException.
-                    UNSPECIFIED_LIMIT_EXCEEDED);
+        final CallId uaCallId = ua.getCallId();
+        if (!uaCallId.equals(call)) {
+            throw new ResourceUnavailableException(
+                    ResourceUnavailableException.UNSPECIFIED_LIMIT_EXCEEDED);
         }
+        ua.accept();
     }
 
     /**
@@ -371,7 +371,8 @@ public class MjSipProvider implements MediaTpi {
         if (listener != null) {
             synchronized (listener) {
                 for (TelephonyListener current : listener) {
-                    current.terminalConnectionCreated(id, address, terminal, cause);
+                    current.terminalConnectionCreated(id, address, terminal,
+                            cause);
                 }
             }
         }

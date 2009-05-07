@@ -32,10 +32,15 @@ package net.sourceforge.gjtapi.demo.gui;
 
 import javax.telephony.Connection;
 import javax.telephony.TerminalConnection;
+import javax.telephony.callcontrol.CallControlConnection;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
 
 public class TapiUtil {
-    private TapiUtil() {}	// Do not instantiate this class
+    /**
+     * Do not instantiate.
+     */
+    private TapiUtil() {
+    }
     
     public static int getTerminalConnectionState(TerminalConnection terminalConnection) {
         int state = CallControlTerminalConnection.UNKNOWN;
@@ -44,40 +49,67 @@ public class TapiUtil {
                 state = ((CallControlTerminalConnection)terminalConnection).getCallControlState();
             } else {
                 switch(terminalConnection.getState()) {
-                    case TerminalConnection.IDLE: state = CallControlTerminalConnection.IDLE; break; 
-                    case TerminalConnection.RINGING: state = CallControlTerminalConnection.RINGING; break; 
-                    case TerminalConnection.ACTIVE: state = CallControlTerminalConnection.TALKING; break; 
-                    case TerminalConnection.PASSIVE: state = CallControlTerminalConnection.INUSE; break; 
-                    case TerminalConnection.DROPPED: state = CallControlTerminalConnection.DROPPED; break; 
-                    default: state = CallControlTerminalConnection.UNKNOWN; break;
+                    case TerminalConnection.IDLE:
+                        state = CallControlTerminalConnection.IDLE;
+                        break; 
+                    case TerminalConnection.RINGING:
+                        state = CallControlTerminalConnection.RINGING;
+                        break; 
+                    case TerminalConnection.ACTIVE:
+                        state = CallControlTerminalConnection.TALKING;
+                        break; 
+                    case TerminalConnection.PASSIVE:
+                        state = CallControlTerminalConnection.INUSE;
+                        break; 
+                    case TerminalConnection.DROPPED:
+                        state = CallControlTerminalConnection.DROPPED;
+                        break; 
+                    default:
+                        state = CallControlTerminalConnection.UNKNOWN;
+                    break;
                 }
             }
         }
         return state;
     }
-    
+
     public static String getTerminalConnectionStateName(TerminalConnection terminalConnection) {        
         switch(getTerminalConnectionState(terminalConnection)) {
-            case CallControlTerminalConnection.IDLE: return "IDLE"; 
-            case CallControlTerminalConnection.RINGING: return "RINGING"; 
-            case CallControlTerminalConnection.TALKING: return "TALKING"; 
-            case CallControlTerminalConnection.HELD: return "HELD"; 
-            case CallControlTerminalConnection.INUSE: return "INUSE"; 
-            case CallControlTerminalConnection.BRIDGED: return "BRIDGED"; 
-            case CallControlTerminalConnection.DROPPED: return "DROPPED"; 
-            default: return "UNKNOWN";
+            case CallControlTerminalConnection.IDLE:
+                return "IDLE"; 
+            case CallControlTerminalConnection.RINGING:
+                return "RINGING"; 
+            case CallControlTerminalConnection.TALKING:
+                return "TALKING"; 
+            case CallControlTerminalConnection.HELD:
+                return "HELD"; 
+            case CallControlTerminalConnection.INUSE:
+                return "INUSE"; 
+            case CallControlTerminalConnection.BRIDGED:
+                return "BRIDGED"; 
+            case CallControlTerminalConnection.DROPPED:
+                return "DROPPED"; 
+            default:
+                return "UNKNOWN";
         }
     }
     
     public static String getConnectionStateName(Connection connection) {
         switch(connection.getState()) {
-            case Connection.IDLE: return "IDLE";
-            case Connection.INPROGRESS: return "INPROGRESS";
-            case Connection.ALERTING: return "ALERTING";
-            case Connection.CONNECTED: return "CONNECTED";
-            case Connection.DISCONNECTED: return "DISCONNECTED";
-            case Connection.FAILED: return "FAILED";
-            default: return "UNKNOWN";
+            case Connection.IDLE:
+                return "IDLE";
+            case Connection.INPROGRESS:
+                return "INPROGRESS";
+            case Connection.ALERTING:
+                return "ALERTING";
+            case Connection.CONNECTED:
+                return "CONNECTED";
+            case Connection.DISCONNECTED:
+                return "DISCONNECTED";
+            case Connection.FAILED:
+                return "FAILED";
+            default:
+                return "UNKNOWN";
         }
     }
 

@@ -31,6 +31,8 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.FreeCall;
+
+import javax.telephony.TerminalConnectionListener;
 import javax.telephony.events.*;
 
 /**
@@ -64,11 +66,14 @@ public FreeConnConnectedEv(int cause, net.sourceforge.gjtapi.FreeConnection conn
  * @author: Richard Deadman
  */
 public void dispatch() {
-	super.dispatch();	// send to Obsersers
+    super.dispatch();	// send to Obsersers
 
-	// now send to listeners
-	((FreeCall)this.getCall()).getListener().connectionConnected(this);
+    // now send to listeners
+    final FreeCall freeCall = (FreeCall) getCall();
+    final TerminalConnectionListener listener = freeCall.getListener();
+    listener.connectionConnected(this);
 }
+
 /**
  * Return the observer-style ConnEv subtype id.
  */

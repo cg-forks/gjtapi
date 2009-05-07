@@ -71,17 +71,22 @@ public FreeTerminalConnection(Connection con, Terminal term) {
 	// dispatch off created events
 	this.getGenProvider().dispatch(new FreeTermConnCreatedEv(Event.CAUSE_NORMAL, this));
 }
-	public void answer() throws PrivilegeViolationException, ResourceUnavailableException, MethodNotSupportedException, InvalidStateException {
-		FreeCall call = (FreeCall) connection.getCall();
-		TelephonyProvider p = ((GenericProvider) call.getProvider()).getRaw();
-		try {
-			p.answerCall(call.getCallID(),
-				this.getConnection().getAddress().getName(),
-				this.getTerminal().getName());
-		} catch (RawStateException re) {
-			throw re.morph((FreeTerminal)this.getTerminal());
-		}
-	}
+public void answer() throws PrivilegeViolationException, ResourceUnavailableException, MethodNotSupportedException, InvalidStateException {
+    final FreeCall call = (FreeCall) connection.getCall();
+    final GenericProvider provider =
+        (GenericProvider) call.getProvider();
+    final TelephonyProvider p = provider.getRaw();
+    try {
+        final Address address = getConnection().getAddress();
+        final Terminal terminal = getTerminal();
+        p.answerCall(call.getCallID(),
+                address.getName(),
+                terminal.getName());
+    } catch (RawStateException re) {
+        throw re.morph((FreeTerminal)this.getTerminal());
+    }
+}
+
 /**
  * Returns the call control state of the TerminalConnection.
  * The return values will be one of the integer state constants defined in the CallControlTerminalConnection interface.

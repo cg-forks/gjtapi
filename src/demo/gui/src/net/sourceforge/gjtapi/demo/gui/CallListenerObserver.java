@@ -187,10 +187,10 @@ public class CallListenerObserver extends DefaultListModel
             }
             return eq;
         }
-                
-		public int hashCode() {
-			return connection.getCall().hashCode();
-		}
+
+        public int hashCode() {
+            return connection.getCall().hashCode();
+        }
     };
 
     public void clear() {
@@ -221,9 +221,12 @@ public class CallListenerObserver extends DefaultListModel
     
     private void updateConnection(Connection connection) {
         Item item = new Item(connection);
-        LOGGER.debug("Updating connection(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
+        LOGGER.debug("Updating connection(" + connection + " - "
+                + connection.getAddress() + " - " + connection.getCall() + ")");
         if(!contains(item)) {
-            LOGGER.debug("Calling addElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
+            LOGGER.debug("Calling addElement(" + connection + " - "
+                    + connection.getAddress() + " - " + connection.getCall()
+                    + ")");
             addElement(item);
         }
         TerminalConnection tc = item.getTerminalConnection();
@@ -242,7 +245,6 @@ public class CallListenerObserver extends DefaultListModel
     private void removeConnection(Connection connection) {
         Item item = new Item(connection);
         LOGGER.debug("removeElement(" + connection + " - " + connection.getAddress() + " - " + connection.getCall() + ")");
-//        boolean contained = callMap.containsKey(connection.getCall());
         removeElement(item);
         callMap.remove(connection.getCall());
         update();
@@ -376,8 +378,10 @@ public class CallListenerObserver extends DefaultListModel
      * connectionConnected method comment.
      */
     public void connectionConnected(javax.telephony.ConnectionEvent event) {
-        LOGGER.debug("Connection Connected event with cause: " + this.causeToString(event.getCause()));
-        updateConnection(event.getConnection());
+        LOGGER.debug("Connection Connected event with cause: "
+                + this.causeToString(event.getCause()));
+        final Connection connection = event.getConnection();
+        updateConnection(connection);
     }
 
     /**
@@ -436,7 +440,8 @@ public class CallListenerObserver extends DefaultListModel
     public void terminalConnectionCreated(TerminalConnectionEvent event) {
         LOGGER.debug("TerminalConnection Created event with cause: "
                 + this.causeToString(event.getCause()));
-        updateConnection(event.getTerminalConnection().getConnection());
+        final TerminalConnection connection = event.getTerminalConnection();
+        updateConnection(connection.getConnection());
     }
 
     /* (non-Javadoc)
@@ -445,7 +450,8 @@ public class CallListenerObserver extends DefaultListModel
     public void terminalConnectionDropped(TerminalConnectionEvent event) {
         LOGGER.debug("TerminalConnection Dropped event with cause: "
                 + this.causeToString(event.getCause()));
-        updateConnection(event.getTerminalConnection().getConnection());
+        final TerminalConnection connection = event.getTerminalConnection();
+        updateConnection(connection.getConnection());
     }
 
     /* (non-Javadoc)
@@ -454,7 +460,8 @@ public class CallListenerObserver extends DefaultListModel
     public void terminalConnectionPassive(TerminalConnectionEvent event) {
         LOGGER.debug("TerminalConnection Passive event with cause: "
                 + this.causeToString(event.getCause()));
-        updateConnection(event.getTerminalConnection().getConnection());
+        final TerminalConnection connection = event.getTerminalConnection();
+        updateConnection(connection.getConnection());
     }
 
     /* (non-Javadoc)
@@ -463,7 +470,8 @@ public class CallListenerObserver extends DefaultListModel
     public void terminalConnectionRinging(TerminalConnectionEvent event) {
         LOGGER.debug("TerminalConnection Ringing event with cause: "
                 + this.causeToString(event.getCause()));
-        updateConnection(event.getTerminalConnection().getConnection());
+        final TerminalConnection connection = event.getTerminalConnection();
+        updateConnection(connection.getConnection());
     }
 
     /* (non-Javadoc)
@@ -472,7 +480,8 @@ public class CallListenerObserver extends DefaultListModel
     public void terminalConnectionUnknown(TerminalConnectionEvent event) {
         LOGGER.debug("TerminalConnection Unknown event with cause: "
                 + this.causeToString(event.getCause()));
-        updateConnection(event.getTerminalConnection().getConnection());
+        final TerminalConnection connection = event.getTerminalConnection();
+        updateConnection(connection.getConnection());
     }    
     
     

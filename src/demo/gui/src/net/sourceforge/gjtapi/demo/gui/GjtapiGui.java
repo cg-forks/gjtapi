@@ -330,7 +330,8 @@ public class GjtapiGui {
                 new Thread() {
                     public void run() {
                         try {
-                            TerminalConnection terminalConnection = getSelectedTerminalConnection();
+                            final TerminalConnection terminalConnection =
+                                getSelectedTerminalConnection();
                             if(terminalConnection != null) {
                                     terminalConnection.answer();
                             }
@@ -349,8 +350,11 @@ public class GjtapiGui {
                     public void run() {
                         try {
                             Connection connection = getSelectedConnection();
-                            if(connection == null) return;
-                            logger.debug("HangUp for connection in state " + TapiUtil.getConnectionStateName(connection));
+                            if(connection == null) {
+                                return;
+                            }
+                            logger.debug("HangUp for connection in state "
+                                    + TapiUtil.getConnectionStateName(connection));
                             TerminalConnection terminalConnection = getSelectedTerminalConnection();
                             int state = TapiUtil.getTerminalConnectionState(terminalConnection);
                             if(state == CallControlTerminalConnection.RINGING) {
@@ -588,7 +592,7 @@ public class GjtapiGui {
                 connState == Connection.ALERTING || 
                 connState == Connection.INPROGRESS || 
                 connState == Connection.FAILED);
-        butPlayFile.setEnabled(connState == Connection.CONNECTED);
+        butSelectFile.setEnabled(connState == Connection.CONNECTED);
         boolean holdEnabled = (ccTermConnState == CallControlTerminalConnection.TALKING);
         // TODO - this should be used only for swapOnHold
         // allow hold only if there is a terminalConnection in state HELD

@@ -785,7 +785,9 @@ public void terminalConnectionCreated(final CallId id, final String address, fin
 	EventHandler eh = new EventHandler() {
 		public void process(Object o) {
 			// Force the creation of the Terminal Connection
-			((GenericProvider)o).getCallMgr().getLazyTermConn(id, address, terminal);
+		    final GenericProvider provider = (GenericProvider) o;
+		    final CallMgr callMgr = provider.getCallMgr();
+		    callMgr.getLazyTermConn(id, address, terminal);
 		}
 	};
 

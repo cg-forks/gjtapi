@@ -249,15 +249,16 @@ FreeConnection getLazyConnection(CallId id, String address) {
  * @param terminal The name of the Terminal the connection is attached to.
  */
 FreeTerminalConnection getLazyTermConn(CallId id, String address, String terminal) {
-	FreeTerminalConnection tc = this.getCachedTermConn(id, address, terminal);
+    FreeTerminalConnection tc = this.getCachedTermConn(id, address, terminal);
 
-	if (tc == null) {	// create a new terminal connection
-		FreeConnection conn = this.getLazyConnection(id, address);
-		tc = conn.getLazyTermConn(terminal);
-	}
+    if (tc == null) {	// create a new terminal connection
+        final FreeConnection conn = this.getLazyConnection(id, address);
+        tc = conn.getLazyTermConn(terminal);
+    }
 
-	return tc;
+    return tc;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (2000-06-19 13:05:38)
