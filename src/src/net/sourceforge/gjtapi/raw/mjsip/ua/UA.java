@@ -56,32 +56,32 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         Logger.getLogger(MjSipProvider.class.getName());
 
     /** User Agent */
-    private UserAgent ua;
+    private final UserAgent ua;
 
     /** Register Agent */
-    private RegisterAgent ra;
+    private final RegisterAgent ra;
 
     /** UserAgentProfile */
-    private UserAgentProfile user_profile;
+    private final UserAgentProfile userProfile;
 
     /** The record stream. */
-    private InputStreamConverter convertedInStream;
+    private final InputStreamConverter convertedInStream;
     /** The play stream. */
-    private OutputStreamConverter convertedOutStream;
+    private final OutputStreamConverter convertedOutStream;
 
     /** SIP Provder */
-    private SipProvider sip_provider;
+    private final SipProvider sipProvider;
 
     /** MjSipUAProvider Provder */
-    private MjSipProvider provider;
+    private final MjSipProvider provider;
 
     /** Id from current call
      * It's assumed an agent can only handle one call at a time */
     private CallId callID;
 
-    /** Address being called
+    /** Currently handled address.
      * It's assumed an agent can only handle one call at a time */
-    private String addressCalled;
+    private String processingAddress;
 
     /*private float FrameRate8Khz = 8000.0F;
     private float FrameRate16Khz = 16000.0F;
@@ -108,10 +108,10 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         this.provider = provider;
 
         SipStack.init(file);
-        sip_provider = new SipProvider(file);
-        user_profile = new UserAgentProfile(file);
+        sipProvider = new SipProvider(file);
+        userProfile = new UserAgentProfile(file);
 
-        ua = new UserAgent(sip_provider, user_profile, this);
+        ua = new UserAgent(sipProvider, userProfile, this);
         //convertedOutStream = new OutputStreamConverter(ulawformat, linear8Khz);
         //convertedOutStream = new OutputStreamConverter(ulawformat, ulawformat);
         convertedOutStream = new OutputStreamConverter();
@@ -124,34 +124,34 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         ua.setSendStream(convertedInStream);
         ua.setAudio(true); //to indicate that we want to use the audio_line
 
-        ra = new RegisterAgent(sip_provider, user_profile.from_url,
-                               user_profile.contact_url, user_profile.username,
-                               user_profile.realm, user_profile.passwd, this);
+        ra = new RegisterAgent(sipProvider, userProfile.from_url,
+                               userProfile.contact_url, userProfile.username,
+                               userProfile.realm, userProfile.passwd, this);
 
         run();
     }
 
 
     /** Register with the registrar server.
-     * @param expire_time expiration time in seconds */
-    public void register(int expire_time) {
+     * @param expireTime expiration time in seconds */
+    public void register(int expireTime) {
         if (ra.isRegistering()) {
             ra.halt();
         }
-        ra.register(expire_time);
+        ra.register(expireTime);
     }
 
 
     /** Periodically registers the contact address with the registrar server.
-     * @param expire_time expiration time in seconds
-     * @param renew_time renew time in seconds
-     * @param keepalive_time keep-alive packet rate (inter-arrival time) in milliseconds */
-    public void loopRegister(int expire_time, int renew_time,
-                             long keepalive_time) {
+     * @param expireTime expiration time in seconds
+     * @param renewTime renew time in seconds
+     * @param keepaliveTime keep-alive packet rate (inter-arrival time) in milliseconds */
+    public void loopRegister(int expireTime, int renewTime,
+                             long keepaliveTime) {
         if (ra.isRegistering()) {
             ra.halt();
         }
-        ra.loopRegister(expire_time, renew_time, keepalive_time);
+        ra.loopRegister(expireTime, renewTime, keepaliveTime);
     }
 
 
@@ -174,14 +174,14 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
 
     /** Makes a new call */
-    public void call(String target_url) {
+    public void call(String targetUrl) {
         ua.hangup();
-        LOGGER.info("UAC: CALLING " + target_url);
+        LOGGER.info("UAC: CALLING " + targetUrl);
         if (!ua.user_profile.audio && !ua.user_profile.video) {
             LOGGER.info("ONLY SIGNALING, NO MEDIA");
         }
-        ua.call(target_url);
-        addressCalled = target_url;
+        ua.call(targetUrl);
+        processingAddress = targetUrl;
     }
 
 
@@ -198,45 +198,45 @@ public class UA implements UserAgentListener, RegisterAgentListener {
     /** Starts the UA */
     void run() {
         try { // Set the re-invite
-            if (user_profile.re_invite_time > 0) {
-                ua.reInvite(user_profile.contact_url,
-                            user_profile.re_invite_time);
+            if (userProfile.re_invite_time > 0) {
+                ua.reInvite(userProfile.contact_url,
+                            userProfile.re_invite_time);
             }
 
             // Set the transfer (REFER)
-            if (user_profile.transfer_to != null &&
-                user_profile.transfer_time > 0) {
-                ua.callTransfer(user_profile.transfer_to,
-                                user_profile.transfer_time);
+            if (userProfile.transfer_to != null &&
+                userProfile.transfer_time > 0) {
+                ua.callTransfer(userProfile.transfer_to,
+                                userProfile.transfer_time);
             }
 
-            if (user_profile.do_unregister_all)
+            if (userProfile.do_unregister_all)
             // ########## unregisters ALL contact URLs
             {
                 LOGGER.info("UNREGISTER ALL contact URLs");
                 unregisterall();
             }
 
-            if (user_profile.do_unregister)
+            if (userProfile.do_unregister)
             // unregisters the contact URL
             {
                 LOGGER.info("UNREGISTER the contact URL");
                 unregister();
             }
 
-            if (user_profile.do_register)
+            if (userProfile.do_register)
             // ########## registers the contact URL with the registrar server
             {
                 LOGGER.info("REGISTRATION");
-                loopRegister(user_profile.expires, user_profile.expires / 2,
-                             user_profile.keepalive_time);
+                loopRegister(userProfile.expires, userProfile.expires / 2,
+                             userProfile.keepalive_time);
             }
 
-            if (user_profile.call_to != null) { // UAC
-                call(user_profile.call_to);
+            if (userProfile.call_to != null) { // UAC
+                call(userProfile.call_to);
                 ua.hangup();
             } else { // UAS
-                if (user_profile.accept_time >= 0) {
+                if (userProfile.accept_time >= 0) {
                     LOGGER.info("UAS: AUTO ACCEPT MODE");
                 }
                 listen();
@@ -257,6 +257,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         callID = new MjSipCallId();
 
         final SipURL address = callee.getAddress();
+        processingAddress = address.toString();
         provider.terminalConnectionRinging(callID, address.toString(),
                                            address.toString(),
                                            ConnectionEvent.CAUSE_NORMAL);
@@ -268,18 +269,18 @@ public class UA implements UserAgentListener, RegisterAgentListener {
 
     /** When an outgoing call is remotely ringing */
     public void onUaCallRinging(UserAgent ua) {
-        provider.terminalConnectionCreated(callID, user_profile.contact_url,
-                                           user_profile.contact_url,
+        provider.terminalConnectionCreated(callID, userProfile.contact_url,
+                                           userProfile.contact_url,
                                            ConnectionEvent.CAUSE_NORMAL);
-        provider.connectionInProgress(callID, user_profile.contact_url,
+        provider.connectionInProgress(callID, userProfile.contact_url,
                                       Event.CAUSE_NORMAL);
-        provider.connectionAlerting(callID, user_profile.contact_url,
+        provider.connectionAlerting(callID, userProfile.contact_url,
                                     ConnectionEvent.CAUSE_NORMAL);
     }
 
     /** When an outgoing call has been accepted */
     public void onUaCallAccepted(UserAgent ua) {
-        provider.connectionConnected(callID, addressCalled,
+        provider.connectionConnected(callID, processingAddress,
                                      ConnectionEvent.CAUSE_NORMAL);
         provider.callActive(callID, Event.CAUSE_NORMAL);
     }
@@ -305,7 +306,7 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         if (ua.user_profile.call_to == null) {
             listen();
         }
-        provider.connectionDisconnected(callID, user_profile.contact_url,
+        provider.connectionDisconnected(callID, userProfile.contact_url,
                                         Event.CAUSE_NORMAL);
 
     }

@@ -59,6 +59,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import javax.telephony.Address;
 import javax.telephony.Call;
 import javax.telephony.Connection;
@@ -197,6 +198,8 @@ public class GjtapiGui {
         butSelectFile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 JFileChooser chooser = new JFileChooser();
+                FileFilter filter = new WaveFileFilter();
+                chooser.setFileFilter(filter);
                 int ret = chooser.showOpenDialog(gjtapiFrame);;
                 if (ret == JFileChooser.CANCEL_OPTION) {
                     return;
@@ -285,6 +288,7 @@ public class GjtapiGui {
         butCall.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             call(getCalledNumber());
@@ -300,6 +304,7 @@ public class GjtapiGui {
         ckPrivateData.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         obsListener.setUsePrivateData(ckPrivateData.isSelected());
                     }
@@ -310,6 +315,7 @@ public class GjtapiGui {
         butDTMFOut.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             GenericMediaService ms = new GenericMediaService((MediaProvider)provider);
@@ -328,6 +334,7 @@ public class GjtapiGui {
         butAnswer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             final TerminalConnection terminalConnection =
@@ -347,6 +354,7 @@ public class GjtapiGui {
         butHangUp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             Connection connection = getSelectedConnection();
@@ -382,6 +390,7 @@ public class GjtapiGui {
 		butHold.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
 		                try {
 		                    TerminalConnection terminalConnection = getSelectedTerminalConnection();
@@ -401,6 +410,7 @@ public class GjtapiGui {
         butUnHold.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             TerminalConnection terminalConnection = getSelectedTerminalConnection();
@@ -420,6 +430,7 @@ public class GjtapiGui {
         butJoin.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
+                    @Override
                     public void run() {
                         try {
                             TerminalConnection terminalConnection = getSelectedTerminalConnection();
@@ -530,6 +541,7 @@ public class GjtapiGui {
             this.terminal = terminal;
         }
         
+        @Override
         public void run() {
             final GenericMediaService ms = new GenericMediaService((MediaProvider)provider);
             try {

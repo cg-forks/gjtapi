@@ -11,6 +11,7 @@ import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
@@ -50,11 +51,11 @@ public class MjSipProvider implements MediaTpi {
     private static final Logger LOGGER =
         Logger.getLogger(MjSipProvider.class.getName());
     
-    private HashMap<String, UA> loadedUAs = new HashMap<String, UA>();
+    private final HashMap<String, UA> loadedUAs = new HashMap<String, UA>();
     private Collection<TelephonyListener> listener;
 
-    private Semaphore playSemaphore;
-    private Semaphore recSemaphore;
+    private final Semaphore playSemaphore;
+    private final Semaphore recSemaphore;
 
     public MjSipProvider() {
         playSemaphore = new Semaphore(1, true);
@@ -66,7 +67,7 @@ public class MjSipProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public void initialize(java.util.Map props) throws
+    public void initialize(Map props) throws
             ProviderUnavailableException {
 
         String strPhone = (String) props.get("gjtapi.mjsip.ua");

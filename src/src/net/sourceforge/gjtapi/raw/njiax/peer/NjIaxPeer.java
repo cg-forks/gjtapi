@@ -1,19 +1,19 @@
 package net.sourceforge.gjtapi.raw.njiax.peer;
 
-import net.sourceforge.gjtapi.raw.njiax.NjIaxCallId;
-import net.sourceforge.gjtapi.raw.njiax.NjIaxProvider;
-
-import javax.telephony.Event;
-import javax.telephony.ConnectionEvent;
-
 import iax.protocol.peer.Peer;
 import iax.protocol.peer.PeerListener;
 import iax.protocol.user.command.UserCommandFacade;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.util.Timer;
+
+import javax.telephony.ConnectionEvent;
+import javax.telephony.Event;
+
+import net.sourceforge.gjtapi.raw.njiax.NjIaxCallId;
+import net.sourceforge.gjtapi.raw.njiax.NjIaxProvider;
 
 /**
  * <p>Title: NjIaxAgent</p>
@@ -43,8 +43,9 @@ public class NjIaxPeer implements PeerListener {
                      String host, boolean register, int maxCalls) {
         this.provider = provider;
         this.userName = userName;
-        peer = new Peer(this, userName, password, host, register, maxCalls,
-                        outStream, inStream);
+        peer = new Peer(this, userName, password, host, register, maxCalls);
+//        peer = new Peer(this, userName, password, host, register, maxCalls,
+//                        outStream, inStream);
     }
 
     public void setCallId(NjIaxCallId id) {
