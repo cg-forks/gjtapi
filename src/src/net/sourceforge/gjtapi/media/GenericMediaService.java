@@ -30,11 +30,61 @@ package net.sourceforge.gjtapi.media;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.callcontrol.*;
-import javax.telephony.*;
-import javax.telephony.media.*;
-import java.util.*;
-import net.sourceforge.gjtapi.*;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Vector;
+
+import javax.telephony.Address;
+import javax.telephony.Call;
+import javax.telephony.Connection;
+import javax.telephony.InvalidArgumentException;
+import javax.telephony.InvalidStateException;
+import javax.telephony.JtapiPeer;
+import javax.telephony.JtapiPeerFactory;
+import javax.telephony.JtapiPeerUnavailableException;
+import javax.telephony.MethodNotSupportedException;
+import javax.telephony.PrivilegeViolationException;
+import javax.telephony.Provider;
+import javax.telephony.ProviderUnavailableException;
+import javax.telephony.ResourceUnavailableException;
+import javax.telephony.Terminal;
+import javax.telephony.TerminalConnection;
+import javax.telephony.callcontrol.CallControlCall;
+import javax.telephony.callcontrol.CallControlTerminalConnection;
+import javax.telephony.media.AlreadyBoundException;
+import javax.telephony.media.BindCancelledException;
+import javax.telephony.media.ConfigSpec;
+import javax.telephony.media.MediaBindException;
+import javax.telephony.media.MediaCallException;
+import javax.telephony.media.MediaConfigException;
+import javax.telephony.media.MediaEvent;
+import javax.telephony.media.MediaListener;
+import javax.telephony.media.MediaProvider;
+import javax.telephony.media.MediaResourceException;
+import javax.telephony.media.MediaService;
+import javax.telephony.media.MediaServiceListener;
+import javax.telephony.media.MediaTerminal;
+import javax.telephony.media.NoServiceReadyException;
+import javax.telephony.media.NotBoundException;
+import javax.telephony.media.Player;
+import javax.telephony.media.PlayerEvent;
+import javax.telephony.media.PlayerListener;
+import javax.telephony.media.RTC;
+import javax.telephony.media.Recorder;
+import javax.telephony.media.RecorderEvent;
+import javax.telephony.media.RecorderListener;
+import javax.telephony.media.ResourceNotSupportedException;
+import javax.telephony.media.SignalDetector;
+import javax.telephony.media.SignalDetectorEvent;
+import javax.telephony.media.SignalDetectorListener;
+import javax.telephony.media.SignalGenerator;
+import javax.telephony.media.SignalGeneratorEvent;
+import javax.telephony.media.Symbol;
+
+import net.sourceforge.gjtapi.GenericProvider;
 
 /**
  * Implements MediaService and the basic Resource interfaces.
@@ -438,6 +488,7 @@ private Dictionary extract(Dictionary dict, Symbol[] keys) {
  * Creation date: (2000-05-24 09:44:08)
  * @author: Richard Deadman
  */
+@Override
 public void finalize() {
 	// release and free the MediaGroup but don't disconnect the connection.
 	try {
@@ -761,8 +812,8 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	public PlayerEvent play(String streamId, int offset, RTC[] rtcs, Dictionary optArgs)
 	throws MediaResourceException 
 	{
-	return ((Player)checkGroup()).
-	play(streamId, offset, rtcs, optArgs);
+	    final Player player = checkGroup();
+	    return player.play(streamId, offset, rtcs, optArgs);
 	}
 	/* @see Recorder#record(String, RTC[], Dictionary) */ 
 	public RecorderEvent record(String string0, RTC[] rtc1, Dictionary dictionary2)

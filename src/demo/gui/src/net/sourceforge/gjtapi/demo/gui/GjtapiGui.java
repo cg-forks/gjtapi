@@ -39,6 +39,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Hashtable;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -68,7 +70,10 @@ import javax.telephony.Terminal;
 import javax.telephony.TerminalConnection;
 import javax.telephony.callcontrol.CallControlCall;
 import javax.telephony.callcontrol.CallControlTerminalConnection;
+import javax.telephony.media.MediaBindException;
+import javax.telephony.media.MediaConfigException;
 import javax.telephony.media.MediaProvider;
+import javax.telephony.media.MediaResourceException;
 import javax.telephony.media.SignalDetectorEvent;
 
 import net.sourceforge.gjtapi.media.GenericMediaService;
@@ -218,6 +223,34 @@ public class GjtapiGui {
         inputPanel.add(butPlayFile, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
                 new Insets(2, 2, 0, 10), 0, 0));
+        butPlayFile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                GenericMediaService ms = new GenericMediaService(
+                        (MediaProvider)provider);
+                TerminalConnection terminalConnection =
+                    getSelectedTerminalConnection();
+                Terminal terminal = terminalConnection.getTerminal();
+                try {
+                    ms.bindToTerminal(null, terminal);
+                    String fileName = txtFile.getText();
+                    File file = new File(fileName);
+                    ms.play(file.toURL().toString(), 0, null, new Hashtable());
+                } catch (MediaBindException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MediaConfigException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MediaResourceException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+
         JLabel lbDTMFIn = new JLabel("Received digits");
         inputPanel.add(lbDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_END, GridBagConstraints.HORIZONTAL, 
@@ -387,7 +420,7 @@ public class GjtapiGui {
             }
         });
 
-		butHold.addActionListener(new ActionListener() {
+        butHold.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 new Thread() {
                     @Override

@@ -30,10 +30,22 @@ package net.sourceforge.gjtapi.raw;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.capabilities.Capabilities;
 import java.util.Properties;
-import javax.telephony.*;
+
+import javax.telephony.InvalidArgumentException;
+import javax.telephony.InvalidPartyException;
+import javax.telephony.MethodNotSupportedException;
+import javax.telephony.PrivilegeViolationException;
+import javax.telephony.ProviderUnavailableException;
+import javax.telephony.ResourceUnavailableException;
+
+import net.sourceforge.gjtapi.CallData;
+import net.sourceforge.gjtapi.CallId;
+import net.sourceforge.gjtapi.RawSigDetectEvent;
+import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.TelephonyListener;
+import net.sourceforge.gjtapi.TelephonyProvider;
+import net.sourceforge.gjtapi.capabilities.Capabilities;
 /**
  * This is a factory for creating a TelephonyProvider wrapper around a coreTpi implementation.
  * <P>The big problem is that the TPI architecture relies on capabilities being dynamically
@@ -46,7 +58,7 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class ProviderFactory implements TelephonyProvider {
-	private CoreTpi core;
+	private final CoreTpi core;
 	private BasicJtapiTpi basicJtapi;
 	private CCTpi callControl;
 	private MediaTpi media;
@@ -326,8 +338,9 @@ public CallId join(CallId call1, CallId call2, String address, String terminal) 
  * play method comment.
  */
 public void play(String terminal, java.lang.String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
-	if (this.media != null)
-		this.media.play(terminal, streamIds, offset, rtcs, optArgs);
+    if (this.media != null) {
+        this.media.play(terminal, streamIds, offset, rtcs, optArgs);
+    }
 }
 /**
  * record method comment.
@@ -448,6 +461,7 @@ public boolean stopReportingCall(CallId call) {
  * Returns a String that represents the value of this object.
  * @return a string representation of the receiver
  */
+@Override
 public String toString() {
 	// Insert code to print the receiver here.
 	// This implementation forwards the message to super. You may replace or supplement this.

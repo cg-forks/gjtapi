@@ -30,10 +30,36 @@ package net.sourceforge.gjtapi.media;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import java.util.*;
-import javax.telephony.*;
-import javax.telephony.media.*;
-import net.sourceforge.gjtapi.*;
+import java.util.Dictionary;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+
+import javax.telephony.Terminal;
+import javax.telephony.media.ConfigSpec;
+import javax.telephony.media.MediaConfigException;
+import javax.telephony.media.MediaResourceException;
+import javax.telephony.media.MediaService;
+import javax.telephony.media.Player;
+import javax.telephony.media.PlayerConstants;
+import javax.telephony.media.PlayerEvent;
+import javax.telephony.media.RTC;
+import javax.telephony.media.Recorder;
+import javax.telephony.media.RecorderConstants;
+import javax.telephony.media.RecorderEvent;
+import javax.telephony.media.ResourceEvent;
+import javax.telephony.media.ResourceSpec;
+import javax.telephony.media.SignalDetector;
+import javax.telephony.media.SignalDetectorConstants;
+import javax.telephony.media.SignalDetectorEvent;
+import javax.telephony.media.SignalGenerator;
+import javax.telephony.media.SignalGeneratorConstants;
+import javax.telephony.media.SignalGeneratorEvent;
+import javax.telephony.media.Symbol;
+
+import net.sourceforge.gjtapi.GenericProvider;
+import net.sourceforge.gjtapi.RawSigDetectEvent;
+import net.sourceforge.gjtapi.TelephonyProvider;
 /**
  * A package-protected media group encapsualation.
  * This is an early simple architecture that will change or be replaced as the ECTF architecture matures.
@@ -43,7 +69,7 @@ import net.sourceforge.gjtapi.*;
 class GenericMediaGroup implements Player, Recorder, SignalDetector, SignalGenerator {
 	private GenericProvider prov = null;
 	private javax.telephony.media.ConfigSpec configSpec = null;
-	private Set resourceSet = new HashSet();
+	private final Set resourceSet = new HashSet();
 	private Dictionary dictionary = null;
 	private Dictionary parameters = null;
 	private javax.telephony.Terminal terminal = null;
@@ -118,6 +144,7 @@ public void allocate(ResourceSpec[] rs) throws MediaConfigException {
  * Creation date: (2000-03-29 14:44:08)
  * @author: Richard Deadman
  */
+@Override
 public void finalize() {
 	try {
 		this.free();
@@ -241,12 +268,17 @@ private int getResourceTypes() {
 javax.telephony.Terminal getTerminal() {
 	return terminal;
 }
+/**
+ * Convenience method to safely retrieve the name of the terminal
+ * @return name of the terminal, <code>null</code> if there is no terminal
+ */
 String getTerminalName() {
-	Terminal t = this.getTerminal();
-	if (t != null)
-		return t.getName();
-	else
-		return null;
+    Terminal term = this.getTerminal();
+    if (term == null) {
+        return null;
+    } else {
+        return term.getName();
+    }
 }
 	boolean isDone() {return true;}
 /**
@@ -274,9 +306,10 @@ public PlayerEvent play(String[] streamIDs, int offset, RTC[] rtc, Dictionary op
 		}
 	
 		try {
-			this.getProv().getRaw().play(this.getTerminalName(), streamIDs, offset, rtc, optargs);
+		    final TelephonyProvider raw = getProv().getRaw();
+		    raw.play(this.getTerminalName(), streamIDs, offset, rtc, optargs);
 		} catch (MediaResourceException mre) {
-				// morph and rethrow the event
+		    // morph and rethrow the event
 			ResourceEvent re = mre.getResourceEvent();
 			if (re != null && re instanceof GenericResourceEvent) {
 				((GenericResourceEvent)re).morph(this.getProv());

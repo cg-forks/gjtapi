@@ -446,16 +446,21 @@ public class MjSipProvider implements MediaTpi {
             for (String streamID : streamIds) {
                 URI uri = new URI(streamID);
 
+                InputStream in = null;
                 if (uri.getScheme().equals("file")) {
-                    FileInputStream fis = new FileInputStream(uri.getPath());
-                    ua.play(fis);
+                    in = new FileInputStream(uri.getPath());
                 } else {
                     URL url = new URL(streamID);
                     URLConnection c = url.openConnection();
                     c.connect();
-                    InputStream is = c.getInputStream();
-                    ua.play(is);
-                    is.close();
+                    in = c.getInputStream();
+                }
+                try {
+                    ua.play(in);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
                 }
             }
         } catch (IllegalMonitorStateException e) {
