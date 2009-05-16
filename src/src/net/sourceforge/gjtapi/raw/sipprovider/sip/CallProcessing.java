@@ -57,14 +57,32 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.sip;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import javax.sip.ClientTransaction;
+import javax.sip.Dialog;
+import javax.sip.InvalidArgumentException;
+import javax.sip.ServerTransaction;
+import javax.sip.SipException;
+import javax.sip.Transaction;
+import javax.sip.TransactionUnavailableException;
+import javax.sip.address.Address;
+import javax.sip.address.SipURI;
+import javax.sip.address.URI;
+import javax.sip.header.CSeqHeader;
+import javax.sip.header.CallIdHeader;
+import javax.sip.header.ContactHeader;
+import javax.sip.header.ContentLengthHeader;
+import javax.sip.header.ContentTypeHeader;
+import javax.sip.header.FromHeader;
+import javax.sip.header.MaxForwardsHeader;
+import javax.sip.header.ToHeader;
+import javax.sip.message.Request;
+import javax.sip.message.Response;
+
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
-import java.text.*;
-import java.util.*;
-import javax.sip.*;
-import javax.sip.address.*;
-import javax.sip.header.*;
-import javax.sip.message.*;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.security.SipSecurityException;
 
 /**
@@ -82,19 +100,12 @@ public class CallProcessing
     protected static final Console console = Console.getConsole(CallProcessing.class);
     protected SipManager sipManCallback = null;
     protected CallDispatcher callDispatcher = new CallDispatcher();
-    CallProcessing()
-    {
-        try {
-            console.logEntry();
-        }
-        finally {
-            console.logExit();
-        }
-    }
+    private final Properties sipProp;
 
-    public CallProcessing(SipManager sipManCallback)
+    public CallProcessing(SipManager sipManCallback, Properties props)
     {
         this.sipManCallback = sipManCallback;
+        sipProp = props;
     }
 
     void setSipManagerCallBack(SipManager sipManCallback)
@@ -215,7 +226,7 @@ public class CallProcessing
             try {
                 //Need to use dialog generated ACKs so that the remote UA core
                 //sees them - Fixed by M.Ranganathan
-                Request ack = (Request) clientTransaction.getDialog().
+                Request ack = clientTransaction.getDialog().
                     createRequest(Request.ACK);
                 clientTransaction.getDialog().sendAck(ack);
             }
@@ -722,7 +733,7 @@ public class CallProcessing
             callee = callee.trim();
             //Handle default domain name (i.e. transform 1234 -> 1234@sip.com
             String defaultDomainName =
-                Utils.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
+                sipProp.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
             if (defaultDomainName != null //no sip scheme
                 && callee.indexOf('@') == -1 //most probably a sip uri
                 ) {

@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.telephony.ConnectionEvent;
@@ -78,10 +79,9 @@ import javax.telephony.ResourceUnavailableException;
 
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.ResourceFinder;
 import net.sourceforge.gjtapi.TermData;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
 import net.sourceforge.gjtapi.raw.sipprovider.media.MediaException;
 import net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager;
 import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
@@ -107,59 +107,46 @@ import net.sourceforge.gjtapi.raw.sipprovider.sip.security.UserCredentials;
 public class SipPhone
         implements MediaListener, CommunicationsListener, SecurityAuthority,
         net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallListener {
+    private static Console console = Console.getConsole(SipPhone.class);
     private TermData terminal;
     protected MediaManager mediaManager;
     protected SipManager sipManager;
-    protected static Console console = Console.getConsole(SipPhone.class);
-    private Collection ids = new java.util.ArrayList();
-    private String address;
-    private SipProvider sipProvider;
-    public Properties sipProp;
+    private final Collection ids;
+    private final String address;
+    private final SipProvider sipProvider;
+    private final String password;
+    private final Map settings;
 
     /**
      * Constructs a new object.
      * 
      * @param propResource
      *                Name of the resource containing properties for this phone
+     * @param finder
+     *                utility to resolve resource
      * @param sipProvider
      *                the provider
      * @throws IOException
      *                 Error loading the properties.
      */
-    public SipPhone(String propResource, SipProvider sipProvider)
+    public SipPhone(String propResource, ResourceFinder finder,
+            SipProvider sipProvider)
             throws IOException {
-        sipProp = new Properties();
+        Properties sipProp = new Properties();
         InputStream in = null;
         try {
-            in = SipPhone.class.getResourceAsStream(propResource);
+            in = finder.findResource(propResource);
             sipProp.load(in);
-            System.getProperties().putAll(sipProp);
         } finally {
             if (in != null) {
                 in.close();
             }
         }
-
-        mediaManager = new MediaManager(sipProp);
-
-        this.sipProvider = sipProvider;
-        sipManager = new SipManager(sipProp);
-        this.launch();
-        address = "sip:" + sipManager.getLocalUser() + "@"
-                + sipManager.getLocalHostAddress();
-    }
-
-    /**
-     * Constructs a new object.
-     * 
-     * @param sipProperties
-     *                properties for this phone
-     * @param sipProvider
-     *                the provider
-     */
-    public SipPhone(Properties sipProperties, SipProvider sipProvider) {
-        sipProp = new Properties();
-        sipProp.putAll(sipProperties);
+        settings = new java.util.HashMap();
+        settings.putAll(sipProp);
+        password = sipProp.getProperty
+            ("net.java.sip.communicator.sip.PASSWORD");
+        ids = new java.util.ArrayList();
         mediaManager = new MediaManager(sipProp);
 
         this.sipProvider = sipProvider;
@@ -181,7 +168,6 @@ public class SipPhone
             MethodNotSupportedException {
         console.logEntry();
         console.debug("id = " + id);
-        // idd = id;
 
         try {
 
@@ -235,14 +221,6 @@ public class SipPhone
         }
     }
 
-    // end of sip call control
-    // section--------------------------------------------------
-
-    // /---------------------------------------------------------------------
-    // *************************************************************************
-    // *************************************************************************
-    // ************************************************************************
-    // /sip------------------------------------------------------------------
     // ======================= CALL LISTENER ==============================
     // callback du sipManager
     public void callStateChanged(CallStateEvent evt) {
@@ -358,8 +336,6 @@ public class SipPhone
         credentials.setUserName(defaultValues.getUserName());
 
         char[] pass;
-        String password = Utils
-                .getProperty("net.java.sip.communicator.sip.PASSWORD");
         if (password == null) {
             console.debug("Phone without password", new Throwable(
                     "verify file properties of the phone"));
@@ -432,7 +408,6 @@ public class SipPhone
         try {
             console.logEntry();
             // mode = PHONE_MODE;
-            NetworkAddressManager.start();
             try {
                 mediaManager.start();
 

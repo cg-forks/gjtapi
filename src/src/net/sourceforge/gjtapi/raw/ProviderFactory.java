@@ -30,6 +30,7 @@ package net.sourceforge.gjtapi.raw;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Map;
 import java.util.Properties;
 
 import javax.telephony.InvalidArgumentException;
@@ -43,21 +44,27 @@ import net.sourceforge.gjtapi.CallData;
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
 import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.ResourceConfigurable;
+import net.sourceforge.gjtapi.ResourceFinder;
 import net.sourceforge.gjtapi.TelephonyListener;
 import net.sourceforge.gjtapi.TelephonyProvider;
 import net.sourceforge.gjtapi.capabilities.Capabilities;
 /**
- * This is a factory for creating a TelephonyProvider wrapper around a coreTpi implementation.
- * <P>The big problem is that the TPI architecture relies on capabilities being dynamically
- * assigned and plugged in.  Unfortunately, both media and PrivateData rely on interface
- * implementation to determine if a capability is supported.  Since it is too hard to create
- * generic objects at runtime that selectively implement all these interfaces as more
- * capabilities are added, we choose to provide default No-op behaviour when MethodNotSupported
+ * This is a factory for creating a TelephonyProvider wrapper around a coreTpi
+ * implementation.
+ * <P>The big problem is that the TPI architecture relies on capabilities being
+ * dynamically
+ * assigned and plugged in.  Unfortunately, both media and PrivateData rely on
+ * interface implementation to determine if a capability is supported.
+ * Since it is too hard to create generic objects at runtime that selectively
+ * implement all these interfaces as more capabilities are added, we choose to
+ * provide default No-op behaviour when MethodNotSupported
  * cannot be thrown.
  * Creation date: (2000-10-04 14:19:45)
  * @author: Richard Deadman
  */
-public class ProviderFactory implements TelephonyProvider {
+public class ProviderFactory
+    implements TelephonyProvider, ResourceConfigurable {
 	private final CoreTpi core;
 	private BasicJtapiTpi basicJtapi;
 	private CCTpi callControl;
@@ -310,12 +317,27 @@ public void hold(CallId call, String address, String terminal) throws MethodNotS
 		throw new MethodNotSupportedException();
 	}
 }
+
 /**
- * initialize method comment.
+ * {@inheritDoc}
  */
-public void initialize(java.util.Map props) throws ProviderUnavailableException {
+public void initialize(Map props)
+    throws ProviderUnavailableException {
 	this.core.initialize(props);
 }
+
+/**
+ * {@inheritDoc}
+ */
+public void initializeResources(Map props, ResourceFinder resourceFinder) {
+    if (core instanceof ResourceConfigurable) {
+        final ResourceConfigurable configurable =
+            (ResourceConfigurable) core;
+        configurable.initializeResources(props, resourceFinder);
+    }
+
+}
+
 /**
  * isMediaTerminal method comment.
  */

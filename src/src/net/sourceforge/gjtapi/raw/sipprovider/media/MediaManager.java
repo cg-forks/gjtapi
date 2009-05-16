@@ -100,7 +100,6 @@ import javax.sdp.Version;
 
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
 import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaListener;
@@ -859,7 +858,7 @@ public class MediaManager implements Serializable {
                 //spaces in the user name mess everything up.
                 //bug report - Alessandro Melzi
                 Origin o = sdpFactory.createOrigin(
-                        Utils.getProperty("user.name").replace(' ', '_'), 0, 0,
+                        System.getProperty("user.name").replace(' ', '_'), 0, 0,
                         "IN", addrType, publicIpAddress.getHostAddress());
                 //"s=-"
                 SessionName s = sdpFactory.createSessionName("-");
@@ -925,6 +924,7 @@ public class MediaManager implements Serializable {
     }
 
 
+    @Override
     protected void finalize() {
         try {
             console.logEntry();

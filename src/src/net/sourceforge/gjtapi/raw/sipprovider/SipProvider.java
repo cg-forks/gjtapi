@@ -63,12 +63,10 @@
 package net.sourceforge.gjtapi.raw.sipprovider;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.Map;
 
 import javax.media.IncompatibleSourceException;
 import javax.telephony.InvalidArgumentException;
@@ -81,18 +79,22 @@ import javax.telephony.ResourceUnavailableException;
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
 import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.ResourceConfigurable;
+import net.sourceforge.gjtapi.ResourceFinder;
 import net.sourceforge.gjtapi.TelephonyListener;
 import net.sourceforge.gjtapi.TermData;
 import net.sourceforge.gjtapi.raw.MediaTpi;
 import net.sourceforge.gjtapi.raw.PrivateDataTpi;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
+import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.SipManager;
 
 /**
  * This is a provider that hooks into the SIP Communicator to provided Session
  * Initiation Protocol support for GJTAPI
  */
-public class SipProvider implements MediaTpi, PrivateDataTpi {
+public class SipProvider
+    implements MediaTpi, PrivateDataTpi, ResourceConfigurable {
     // Used by sendPrivateData to allow a client to get a MediaSource for a
     // terminal.
     public static final String GET_MEDIA_SOURCE = "GetMediaSource";
@@ -101,12 +103,11 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
     // private List addresses;
     // private TermData terminal;
     // private final static String RESOURCE_NAME = "sip.props";
-    private Properties properties = System.getProperties();
     /** Logger instance. */
     protected static Console console = Console.getConsole(SipProvider.class);
     // private CallId idd;
     /** Known sip phones. */
-    private Collection sipPhones = new java.util.ArrayList();
+    private final Collection sipPhones = new java.util.ArrayList();
 
     /**
      * Constructs a new object.
@@ -367,23 +368,43 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
         return ret;
     }
 
+    public void initialize(Map props) throws ProviderUnavailableException {
+        NetworkAddressManager manager = NetworkAddressManager.getInstance();
+        manager.init(props);
+    }
+
     /**
-     * This allows for any context-specific parameters to be set. The map may
-     * include such pairs as "name"="xxx" or "password"="yyy". The provider is
-     * not active until this has been called. The property map may be null.
-     * 
-     * Creation date: (2000-02-11 12:13:36)
-     * 
-     * @author: Richard Deadman
-     * @param props
-     *                The name value properties map
+     * {@inheritDoc}
      * 
      */
-    public void initialize(java.util.Map props)
-            throws ProviderUnavailableException {
-        console.logEntry();
-        loadProperties();
+    public void initializeResources(Map props, ResourceFinder finder)
+        throws ProviderUnavailableException {
+        String sipPhones = (String) props.get("gjtapi.sip.sip_phone");
+        String[] phones = sipPhones.split(",");
+        for (String phone : phones) {
+            try {
+                addPhone(phone, finder);
+            } catch (IOException e) {
+                throw new ProviderUnavailableException(e.getMessage());
+            }
+        }
     }
+
+    /**
+     * Adds the phone with the given configuration to the list of known
+     * phones.
+     * @param resource name of the properties resource.
+     * @param finder utility to resolve resources
+     * @throws IOException
+     *         Error reading the resource.
+     */
+    public void addPhone(String resource, ResourceFinder finder)
+        throws IOException {
+        SipPhone phone = new SipPhone(resource, finder, this);
+        sipPhones.add(phone);
+        console.debug("added phone " + phone.getAddress());
+    }
+
 
     /**
      * Release a connection to a call (Connection). This should block until the
@@ -449,55 +470,6 @@ public class SipProvider implements MediaTpi, PrivateDataTpi {
      */
     public void shutdown() {
         console.logEntry();
-    }
-
-    /**
-     * Initialization of the provider. Loads the properties and creates
-     * addresses and terminals.
-     */
-    public void loadProperties() {
-        String resource = System.getProperty("gjtapi.sip.properties",
-                "/sip-provider.properties");
-        InputStream in = null;
-        try {
-            in = SipProvider.class.getResourceAsStream(resource);
-            properties.load(in);
-            System.getProperties().putAll(properties);
-            String strPhone = properties.getProperty("gjtapi.sip.sip_phone");
-            StringTokenizer st = new StringTokenizer(strPhone, ",");
-            while (st.hasMoreTokens()) {
-                String phoneProperties = st.nextToken();
-                addPhone("/" + phoneProperties);
-            }
-        } catch (Exception exc) {
-            // Catch IO & FileNotFound & NullPointer exceptions
-            console
-                    .warn(
-                            "Warning:Failed to load properties!"
-                                    + "\nThis is only a warning.SipCommunicator will use defaults.",
-                            exc);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    console.debug("error closing input stream", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Adds the phone with the given configuration to the list of known
-     * phones.
-     * @param properties name of the properties resource.
-     * @throws IOException
-     *         Error reading the resource.
-     */
-    public void addPhone(String properties) throws IOException {
-        SipPhone phone = new SipPhone(properties, this);
-        sipPhones.add(phone);
-        console.debug("added phone " + phone.getAddress());
     }
 
     // methode utilitaires--------------------------------------

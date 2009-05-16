@@ -35,13 +35,13 @@ import net.sourceforge.gjtapi.GenericJtapiPeer;
 @SuppressWarnings("serial")
 class ProviderSelecion extends JDialog {
     /** The list of available providers. */
-    private JComboBox providers;
+    private final JComboBox providers;
 
     /** Addresses for the currently selected provider. */
-    private JComboBox addresses;
+    private final JComboBox addresses;
 
     /** The OK button. */
-    private JButton ok;
+    private final JButton ok;
 
     /** <code>true</code> if the user clicked the cancel button. */
     private boolean canceled;
@@ -191,8 +191,10 @@ class ProviderSelecion extends JDialog {
             }
             return provider;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         } catch (UnsatisfiedLinkError e) {
+            e.printStackTrace();
             return null;
         }
     }

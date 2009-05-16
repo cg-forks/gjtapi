@@ -60,16 +60,18 @@
 
 package net.sourceforge.gjtapi.raw.sipprovider.common;
 
-import net.java.stun4j.client.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import net.java.stun4j.StunAddress;
-import java.net.InetSocketAddress;
-import net.java.stun4j.*;
-import java.net.NetworkInterface;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.Map;
+
+import net.java.stun4j.StunAddress;
+import net.java.stun4j.StunException;
+import net.java.stun4j.client.SimpleAddressDetector;
 
 /**
  * The class handles network address selection and firewall support. It
@@ -85,27 +87,45 @@ import java.net.Inet6Address;
  */
 public class NetworkAddressManager
 {
-    private static Console console = Console.getConsole(NetworkAddressManager.class);
-    private static NetworkAddressManager manager = null;
+    private static Console console =
+        Console.getConsole(NetworkAddressManager.class);
+    private static NetworkAddressManager manager;
     private SimpleAddressDetector detector = null;
     private boolean useStun = true;
     private static final int RANDOM_PORT = 55055;
-//    private static final String WINDOWS_AUTO_CONFIGURED_ADDRESS_PREFIX = "169";
-    private NetworkAddressManager()
-    {
+    private Map settings;
+    private static boolean PREFER_IP4_STACK;
+
+    //    private static final String WINDOWS_AUTO_CONFIGURED_ADDRESS_PREFIX = "169";
+    
+    /**
+     * Constructs a new object.
+     */
+    private NetworkAddressManager() {
     }
 
-    private void init()
+    public static NetworkAddressManager getInstance() {
+        if (manager == null) {
+            manager = new NetworkAddressManager();
+        }
+        return manager;
+    }
+
+    public void init(Map settings)
     {
         try {
             console.logEntry();
+            this.settings = settings;
+            String value = (String) settings.get("java.net.preferIPv4Stack");
+            PREFER_IP4_STACK = Boolean.parseBoolean(value);
+
             // init stun
             String stunAddressStr = null;
             int port = -1;
             try {
-                stunAddressStr = Utils.getProperty(
+                stunAddressStr = (String) settings.get(
                     "net.java.sip.communicator.STUN_SERVER_ADDRESS");
-                String portStr = Utils.getProperty(
+                String portStr = (String) settings.get(
                     "net.java.sip.communicator.STUN_SERVER_PORT");
                 if (stunAddressStr == null || portStr == null) {
                     useStun = false;
@@ -138,26 +158,16 @@ public class NetworkAddressManager
                 detector = null;
                 useStun = false;
             }
+
+            //only used for debugging currently.
+            if (useStun) {
+                final NetworkDiagnostics diagnostics = new NetworkDiagnostics();
+                diagnostics.start();
+            }
         }
         finally {
             console.logExit();
         }
-    }
-
-    /**
-     * Initializes the address manager and the underlying STUN lib.
-     */
-    public static void start()
-    {
-        if (manager != null)
-            return;
-        manager = new NetworkAddressManager();
-        manager.init();
-        //Detect and output network configuration (Firewall and NAT type)
-
-        //only used for debugging currently.
-        if (manager.useStun)
-            new NetworkDiagnostics().start();
     }
 
     /**
@@ -166,8 +176,9 @@ public class NetworkAddressManager
      */
     public static void shutDown()
     {
-        if (manager == null || manager.detector == null)
+        if (manager == null || manager.detector == null) {
             return;
+        }
         manager.detector.shutDown();
         manager.detector = null;
         manager = null;
@@ -215,12 +226,6 @@ public class NetworkAddressManager
             InetAddress mappedAddress = null;
             InetAddress linkLocalAddress = null;
             InetAddress publicAddress = null;
-            boolean preferIPv4Stack =
-                Utils.getProperty("java.net.preferIPv4Stack") == null ?
-                false
-                : Boolean.valueOf(Utils.
-                                  getProperty("java.net.preferIPv4Stack")).
-                booleanValue();
             try {
                 //check whether we have a public address that matches one of the local interfaces
 
@@ -267,13 +272,13 @@ public class NetworkAddressManager
                                     (publicAddress != null
                                      && publicAddress instanceof Inet4Address
                                      && address instanceof Inet6Address
-                                     && preferIPv4Stack)
+                                     && PREFER_IP4_STACK)
                                     //in case we have an ipv6 addr and don't want to change it for an ipv4
                                     || (publicAddress != null
                                         &&
                                         publicAddress instanceof Inet6Address
                                         && address instanceof Inet4Address
-                                        && !preferIPv4Stack)
+                                        && !PREFER_IP4_STACK)
                                     )
                                     continue;
                                 publicAddress = address;

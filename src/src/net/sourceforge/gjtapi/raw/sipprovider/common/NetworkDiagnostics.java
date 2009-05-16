@@ -57,9 +57,11 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.common;
 
-import net.java.stun4j.*;
-import net.java.stun4j.client.*;
 import java.net.InetAddress;
+
+import net.java.stun4j.StunAddress;
+import net.java.stun4j.client.NetworkConfigurationDiscoveryProcess;
+import net.java.stun4j.client.StunDiscoveryReport;
 
 /**
  * The class is used to detect and output the type of the firewall and/or NAT
@@ -70,17 +72,16 @@ import java.net.InetAddress;
  * @author Emil Ivov
  * @version 0.1
  */
-class NetworkDiagnostics  extends Thread
+class NetworkDiagnostics extends Thread
 {
-    private Console console = Console.getConsole(NetworkDiagnostics.class);
+    private final Console console = Console.getConsole(NetworkDiagnostics.class);
 
-    public NetworkDiagnostics()
-    {
+    public NetworkDiagnostics() {
         setName("NetworkDiagnosticsThread");
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
         try
         {
             StunAddress localAddr = null;

@@ -30,8 +30,16 @@ package net.sourceforge.gjtapi.raw;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-import javax.telephony.*;
-import net.sourceforge.gjtapi.*;
+import javax.telephony.InvalidArgumentException;
+import javax.telephony.InvalidPartyException;
+import javax.telephony.MethodNotSupportedException;
+import javax.telephony.PrivilegeViolationException;
+import javax.telephony.ProviderUnavailableException;
+import javax.telephony.ResourceUnavailableException;
+
+import net.sourceforge.gjtapi.CallId;
+import net.sourceforge.gjtapi.RawStateException;
+import net.sourceforge.gjtapi.TelephonyListener;
 /**
  * This is the basic set of functionality common to JTAPI and Jcc
  * Creation date: (2000-10-04 13:44:49)
@@ -94,7 +102,8 @@ java.util.Properties getCapabilities();
  * @author: Richard Deadman
  * @param props The name value properties map
  */
-void initialize(java.util.Map props) throws ProviderUnavailableException;
+void initialize(java.util.Map props)
+    throws ProviderUnavailableException;
 /**
  * Tell the provider that it may release a call id for future use.  This is necessary to ensure that
  * TelephonyProvider call ids are not reused until the Generic JTAPI Framework layer is notified of

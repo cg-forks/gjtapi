@@ -57,7 +57,6 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.common;
 
-import java.io.File;
 import java.util.Enumeration;
 
 import org.apache.log4j.Category;
@@ -65,8 +64,6 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Priority;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * <p>Title: </p>
@@ -78,42 +75,6 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public class Console
 {
-    public static boolean debugMode = true;
-    private static final String LOG4J_PROPERTY_FILE = "log4j.props";
-    
-    /**
-     * Tell Log4j how to be configured
-     */
-    static {
-    	if(new File(LOG4J_PROPERTY_FILE).canRead())
-    	{
-    		PropertyConfigurator.configure(LOG4J_PROPERTY_FILE);
-    	}
-    }
-
-    //---------------- Printing Debug Info -----------------------------------
-    /**
-     * Prints the string representation of obj
-     * @param obj the object to print
-     *
-     * @deprecated Please use debug, info, error and fatal instead
-     */
-    public static void println(Object obj)
-    {
-        System.out.println(obj);
-    }
-
-    /**
-     * Prints the string representation of obj
-     * @param obj the object to print
-     *
-     * @deprecated Please use debug, info, error and fatal instead
-     */
-    public static void print(Object obj)
-    {
-        System.out.print(obj);
-    }
-
     //--------------- LOGGER ENCAPSULATION -----------------------------------
     // ------------------------------------------------------------- Attributes
     private static boolean initialized = false;
@@ -153,7 +114,7 @@ public class Console
                 ConsoleAppender.SYSTEM_OUT);
             app.setName("SIP COMMUNICATOR");
             root.addAppender(app);
-            root.setLevel(TraceLevel.TRACE);
+            root.setLevel(Level.TRACE);
         }
         initialized = true;
     }
@@ -163,9 +124,9 @@ public class Console
      */
     public void logEntry()
     {
-        if (logger.isEnabledFor(TraceLevel.TRACE)) {
+        if (logger.isEnabledFor(Level.TRACE)) {
             StackTraceElement caller = new Throwable().getStackTrace()[1];
-            logger.log(TraceLevel.TRACE, "[entry] " + caller.getMethodName());
+            logger.log(Level.TRACE, "[entry] " + caller.getMethodName());
         }
     }
 
@@ -174,9 +135,9 @@ public class Console
      */
     public void logExit()
     {
-        if (logger.isEnabledFor(TraceLevel.TRACE)) {
+        if (logger.isEnabledFor(Level.TRACE)) {
             StackTraceElement caller = new Throwable().getStackTrace()[1];
-            logger.log(TraceLevel.TRACE, "[exit] " + caller.getMethodName());
+            logger.log(Level.TRACE, "[exit] " + caller.getMethodName());
         }
     }
 
@@ -186,7 +147,7 @@ public class Console
      */
     public void trace(Object message)
     {
-        logger.log(TraceLevel.TRACE, message);
+        logger.log(this.getClass().getName(), Level.TRACE, message, null);
     }
 
     /**
@@ -195,7 +156,7 @@ public class Console
      */
     public void trace(Object message, Throwable t)
     {
-        logger.log(TraceLevel.TRACE, message, t);
+        logger.log(this.getClass().getName(), Level.TRACE, message, t);
     }
 
     public void debug(Object message, Throwable t)
@@ -260,7 +221,7 @@ public class Console
 
     public boolean isWarnEnabled()
     {
-        return logger.isEnabledFor(Priority.WARN);
+        return logger.isEnabledFor(Level.WARN);
     }
 
     //------------------------------- TEST --------------------------------
@@ -273,44 +234,10 @@ public class Console
         }
         catch (InterruptedException ex) {
         }
+        console.trace("Trace");
         console.info("Info");
         console.warn("Warn");
         console.error("Error");
         console.fatal("fatal");
-    }
-
-    public static class TraceLevel extends Level
-    {
-        public final static int TRACE_INT  = 5000;
-        /**
-         * The <code>TRACE</code> level designates very severe error
-         * events that will presumably lead the application to abort.
-         */
-        final static public Level TRACE = new TraceLevel();
-
-        public TraceLevel()
-        {
-            super(TRACE_INT, "TRACE", 8);
-        }
-
-        /**
-         * Convert an integer passed as argument to a level. If the
-         * conversion fails, then this method returns.
-         */
-        public static Level toLevel(String sArg)
-        {
-            return (Level) toLevel(sArg, TRACE);
-        }
-
-        /**
-          Convert an integer passed as argument to a level. If the
-          conversion fails, then this method returns.
-         */
-        public
-            static
-            Level toLevel(int val)
-        {
-            return (Level) toLevel(val, TRACE);
-        }
     }
 }

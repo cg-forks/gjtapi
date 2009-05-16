@@ -37,15 +37,29 @@ package net.sourceforge.gjtapi;
  * low-level proxy (delegate)
  */
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
-import javax.telephony.*;
+import javax.telephony.JtapiPeer;
+import javax.telephony.Provider;
+import javax.telephony.ProviderUnavailableException;
 
-import net.sourceforge.gjtapi.raw.*;
+import net.sourceforge.gjtapi.raw.CoreTpi;
+import net.sourceforge.gjtapi.raw.ProviderFactory;
 
-public class GenericJtapiPeer implements JtapiPeer {
+public class GenericJtapiPeer implements JtapiPeer, ResourceFinder {
 	// dictionary of raw providers
 	private final static String RESOURCE_NAME = "GenericResources.props";
 	private final static String DEFAULT_PROVIDER = "DefaultProvider";
@@ -61,7 +75,7 @@ public class GenericJtapiPeer implements JtapiPeer {
 	private final static String RESOURCE_DIR = "net.sourceforge.gjtapi.resourceDir";
 
 	private Properties properties = null;
-	private Hashtable providers = new Hashtable();
+	private final Hashtable providers = new Hashtable();
 	
 	/** Should we disconnect the Connection when the MediaService releases (JTAPI spec. says yes). */
 	private boolean disconnectMediaOnRelease = true;
@@ -222,6 +236,11 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
 	}
 	// initialize
 	rp.initialize(provProps);
+	if (rp instanceof ResourceConfigurable) {
+	    final ResourceConfigurable configurable =
+	        (ResourceConfigurable) rp;
+	    configurable.initializeResources(provProps, this);
+	}
 
 	// Create the high-level provider and return it
 	GenericProvider gp = new GenericProvider(provName, rp, provProps);
@@ -356,7 +375,7 @@ private String[] split(String line) {
  * @author rdeadman
  *
  */
-private InputStream findResource(String resourceName) {
+public InputStream findResource(String resourceName) {
 	// first we see if we should check for a resource directory
 	String resourceDir = System.getProperty(RESOURCE_DIR);
 	if (resourceDir != null) {
@@ -381,7 +400,7 @@ private InputStream findResource(String resourceName) {
 
 	// we didn't find the resource in the resource directory or the working directory
 	// now let's check the classpath
-	return this.getClass().getResourceAsStream("/" + resourceName);
+	return GenericJtapiPeer.class.getResourceAsStream("/" + resourceName);
 }
 
 /**

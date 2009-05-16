@@ -102,7 +102,6 @@ import javax.sip.message.Response;
 
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
-import net.sourceforge.gjtapi.raw.sipprovider.common.Utils;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CallRejectedEvent;
 import net.sourceforge.gjtapi.raw.sipprovider.sip.event.CommunicationsErrorEvent;
@@ -147,7 +146,7 @@ public class SipManager implements SipListener
     public SipFactory sipFactory;
 
     /**
-     * The AddressFactory used to create URLs ans Address objects.
+     * The AddressFactory used to create URLs and Address objects.
      */
     public AddressFactory addressFactory;
 
@@ -252,7 +251,7 @@ public class SipManager implements SipListener
 
     protected boolean isStarted = false;
 
-    private Properties sipProp;
+    private final Properties sipProp;
 
     /**
      * Constructor. It only creates a SipManager instance without initializing
@@ -264,7 +263,7 @@ public class SipManager implements SipListener
         this.sipProp.putAll(sipProp);
 
         registerProcessing  = new RegisterProcessing(this);
-        callProcessing      = new CallProcessing(this);
+        callProcessing      = new CallProcessing(this, sipProp);
         //  watcher = new Watcher(this);
 
         sipSecurityManager  = new SipSecurityManager(this.sipProp);
@@ -321,7 +320,7 @@ public class SipManager implements SipListener
             try
             {
                 //try and capture the firewall mapping for this address
-                //just befre it gets occuppied by the stack
+                //just before it gets occuppied by the stack
                 publicIpAddress = NetworkAddressManager.
                 getPublicAddressFor(localPort);
 
@@ -539,7 +538,7 @@ public class SipManager implements SipListener
 
             //Handle default domain name (i.e. transform 1234 -> 1234@sip.com
             String defaultDomainName =
-            Utils.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
+            sipProp.getProperty("net.java.sip.communicator.sip.DEFAULT_DOMAIN_NAME");
 
             //feature request, Michael Robertson (sipphone.com)
             //strip the following chars of their user names: ( - ) <space>
@@ -604,12 +603,12 @@ public class SipManager implements SipListener
             UserCredentials defaultCredentials = new UserCredentials();
 
             //avoid nullpointer exceptions
-            String uName = Utils.getProperty(
+            String uName = sipProp.getProperty(
             "net.java.sip.communicator.sip.USER_NAME");
             defaultCredentials.setUserName(uName == null? "" : uName);
             defaultCredentials.setPassword(new char[0]);
 
-            String realm = Utils.getProperty(
+            String realm = sipProp.getProperty(
             "net.java.sip.communicator.sip.DEFAULT_AUTHENTICATION_REALM");
             realm = realm == null ? "" : realm;
 
@@ -946,7 +945,7 @@ public class SipManager implements SipListener
                   and generate a correct ContactHeader
                   before: <sip:IP:port;transport=udp> after: <sip:user@IP:port;transport=udp>>
                     */
-                    String _publicAddrsUsed = Utils.getProperty(
+                    String _publicAddrsUsed = sipProp.getProperty(
                             "net.java.sip.communicator.sip.PUBLIC_ADDRESS");
                     contactURI = (SipURI) addressFactory.createURI(
                             _publicAddrsUsed);
@@ -1154,7 +1153,7 @@ public class SipManager implements SipListener
         {
             console.logEntry();
             // ------------------ stack properties --------------
-            stackAddress = Utils.getProperty("javax.sip.IP_ADDRESS");
+            stackAddress = sipProp.getProperty("javax.sip.IP_ADDRESS");
             if (stackAddress == null)
             {
                 stackAddress = getLocalHostAddress();
@@ -1172,7 +1171,7 @@ public class SipManager implements SipListener
             {
                 console.debug("stack address=" + stackAddress);
             }
-            stackName = Utils.getProperty("javax.sip.STACK_NAME");
+            stackName = sipProp.getProperty("javax.sip.STACK_NAME");
             if (stackName == null)
             {
                 stackName = "SipCommunicator@" + Integer.toString(hashCode());
@@ -1184,7 +1183,7 @@ public class SipManager implements SipListener
                 console.debug("stack name is:" + stackName);
             }
 
-            String retransmissionFilter = Utils.getProperty("javax.sip.RETRANSMISSION_FILTER");
+            String retransmissionFilter = sipProp.getProperty("javax.sip.RETRANSMISSION_FILTER");
             if (retransmissionFilter == null)
             {
                 retransmissionFilter = "true";
@@ -1196,11 +1195,11 @@ public class SipManager implements SipListener
                 console.debug("retransmission filter is:" + stackName);
             }
             //------------ application properties --------------
-            currentlyUsedURI = Utils.getProperty(
+            currentlyUsedURI = sipProp.getProperty(
             "net.java.sip.communicator.sip.PUBLIC_ADDRESS");
             if (currentlyUsedURI == null)
             {
-                currentlyUsedURI = Utils.getProperty("user.name") + "@" +
+                currentlyUsedURI = sipProp.getProperty("user.name") + "@" +
                 stackAddress;
             }
             if (!currentlyUsedURI.trim().toLowerCase().startsWith("sip:"))
@@ -1212,7 +1211,7 @@ public class SipManager implements SipListener
             {
                 console.debug("public address=" + currentlyUsedURI);
             }
-            registrarAddress = Utils.getProperty(
+            registrarAddress = sipProp.getProperty(
             "net.java.sip.communicator.sip.REGISTRAR_ADDRESS");
             if (console.isDebugEnabled())
             {
@@ -1220,7 +1219,7 @@ public class SipManager implements SipListener
             }
             try
             {
-                registrarPort = Integer.parseInt(Utils.getProperty(
+                registrarPort = Integer.parseInt(sipProp.getProperty(
                 "net.java.sip.communicator.sip.REGISTRAR_PORT"));
             }
             catch (NumberFormatException ex)
@@ -1231,7 +1230,7 @@ public class SipManager implements SipListener
             {
                 console.debug("registrar port=" + registrarPort);
             }
-            registrarTransport = Utils.getProperty(
+            registrarTransport = sipProp.getProperty(
             "net.java.sip.communicator.sip.REGISTRAR_TRANSPORT");
             if (registrarTransport == null)
             {
@@ -1239,7 +1238,7 @@ public class SipManager implements SipListener
             }
             try
             {
-                registrationsExpiration = Integer.parseInt(Utils.getProperty(
+                registrationsExpiration = Integer.parseInt(sipProp.getProperty(
                 "net.java.sip.communicator.sip.REGISTRATIONS_EXPIRATION"));
             }
             catch (NumberFormatException ex)
@@ -1251,7 +1250,7 @@ public class SipManager implements SipListener
                 console.debug("registrar transport=" + registrarTransport);
                 // Added by mranga
             }
-            String serverLog = Utils.getProperty
+            String serverLog = sipProp.getProperty
             ("gov.nist.javax.sip.SERVER_LOG");
             if (serverLog != null)
             {
@@ -1262,7 +1261,7 @@ public class SipManager implements SipListener
             {
                 console.debug("server log=" + serverLog);
             }
-            sipStackPath = Utils.getProperty(
+            sipStackPath = sipProp.getProperty(
             "net.java.sip.communicator.sip.STACK_PATH");
             if (sipStackPath == null)
             {
@@ -1272,7 +1271,7 @@ public class SipManager implements SipListener
             {
                 console.debug("stack path=" + sipStackPath);
             }
-            String routerPath = Utils.getProperty("javax.sip.ROUTER_PATH");
+            String routerPath = sipProp.getProperty("javax.sip.ROUTER_PATH");
             if (routerPath == null)
             {
               sipProp.setProperty("javax.sip.ROUTER_PATH",
@@ -1292,7 +1291,7 @@ public class SipManager implements SipListener
             {
                 console.debug("transport=" + transport);
             }
-            String localPortStr = Utils.getProperty(
+            String localPortStr = sipProp.getProperty(
             "net.java.sip.communicator.sip.PREFERRED_LOCAL_PORT");
             try
             {
@@ -1306,7 +1305,7 @@ public class SipManager implements SipListener
             {
                 console.debug("preferred local port=" + localPort);
             }
-            displayName = Utils.getProperty(
+            displayName = sipProp.getProperty(
             "net.java.sip.communicator.sip.DISPLAY_NAME");
             if (console.isDebugEnabled())
             {
@@ -2218,7 +2217,7 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            String hostAddress = Utils.getProperty("javax.sip.IP_ADDRESS");
+            String hostAddress = sipProp.getProperty("javax.sip.IP_ADDRESS");
             if (hostAddress == null)
             {
                 InetAddress localhost = NetworkAddressManager.getLocalHost();
