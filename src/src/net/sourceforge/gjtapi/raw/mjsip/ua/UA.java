@@ -412,6 +412,4 @@ public class UA implements UserAgentListener, RegisterAgentListener {
         stopPlay();
         stopRecord();
     }
-
-
 }

@@ -7,7 +7,7 @@ import java.io.InputStream;
 public class InputStreamConverter extends InputStream {
 
     private InputStream inputStream;
-    private Object closeLock = new Object();
+    private final Object closeLock = new Object();
 
     public InputStreamConverter() {
     }
@@ -17,6 +17,7 @@ public class InputStreamConverter extends InputStream {
     }
 
     //TODO verificar o sinal!!
+    @Override
     public int read() throws IOException {
         int a;
         byte[] b = new byte[1];
@@ -26,9 +27,10 @@ public class InputStreamConverter extends InputStream {
         if (a == -1)
             return a;
         else
-            return (int) b[0];
+            return b[0];
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int br;
         if (inputStream != null) {
@@ -39,6 +41,9 @@ public class InputStreamConverter extends InputStream {
                 inputStream = null;
                 return 0;
             }
+            if (br < 0) {
+                close();
+            }
             return br;
         }
         //Arrays.fill(b, off, off + len - 1, silenceSample);
@@ -46,9 +51,11 @@ public class InputStreamConverter extends InputStream {
         return 0;
     }
 
+    @Override
     public void close() throws IOException {
-        if (inputStream == null)
+        if (inputStream == null) {
             return;
+        }
 
         inputStream.close();
         inputStream = null;
