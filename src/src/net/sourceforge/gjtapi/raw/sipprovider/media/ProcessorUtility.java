@@ -97,12 +97,12 @@ class ProcessorUtility implements ControllerListener {
             .getConsole(ProcessorUtility.class);
 
     /** State lock for a wait/notify mechanism. */
-    private Integer stateLock = new Integer(0);
+    private final Integer stateLock = new Integer(0);
 
     /** <code>true</code> if the waiting failed. */
     private boolean failed = false;
 
-    private String name;
+    private final String name;
 
     /**
      * Constructs a new object.
@@ -164,7 +164,9 @@ class ProcessorUtility implements ControllerListener {
                 }
             }
             if (console.isDebugEnabled()) {
-                console.debug(state2String(processor.getState()));
+                console.debug(name + ": waiting for processor state "
+                        + state2String(state) + " ("
+                        + state2String(processor.getState()) + ")...");
             }
         }
 

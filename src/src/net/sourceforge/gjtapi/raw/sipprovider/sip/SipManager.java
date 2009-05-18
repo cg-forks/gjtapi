@@ -278,10 +278,10 @@ public class SipManager implements SipListener
      * point and provider). Once this method is called the application is ready
      * to handle (incoming and outgoing) sip messages.
      *
-     * @throws CommunicationsException if an axception should occur during the
+     * @throws CommunicationsException if an exception should occur during the
      * initialization process
      */
-    public   void start() throws CommunicationsException
+    public void start() throws CommunicationsException
     {
         try
         {
@@ -325,8 +325,7 @@ public class SipManager implements SipListener
             {
                 //try and capture the firewall mapping for this address
                 //just before it gets occuppied by the stack
-                publicIpAddress = addressManager.
-                getPublicAddressFor(localPort);
+                publicIpAddress = addressManager.getPublicAddressFor(localPort);
 
                 listeningPoint = sipStack.createListeningPoint(localPort, transport);
             }
@@ -858,9 +857,7 @@ public class SipManager implements SipListener
             try
             {
                 SipURI fromURI = (SipURI) addressFactory.createURI(
-                currentlyUsedURI);
-                //Unnecessary test (report by Willem Romijn)
-                //if (console.isDebugEnabled())
+                        currentlyUsedURI);
                 fromURI.setTransportParam(listeningPoint.getTransport());
 
                 fromURI.setPort(listeningPoint.getPort());
@@ -1094,7 +1091,10 @@ public class SipManager implements SipListener
         try
         {
             console.logEntry();
-            return ( (SipURI) getFromHeader().getAddress().getURI()).getUser();
+            final FromHeader header = getFromHeader();
+            final Address address = header.getAddress();
+            final SipURI uri = (SipURI) address.getURI();
+            return uri.getUser();
         }
         catch (CommunicationsException ex)
         {

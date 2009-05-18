@@ -144,7 +144,7 @@ class AVTransmitter {
                 throw ex;
             }
             // Start the transmission
-            //processor.start();
+            processor.start();
             return null;
         } finally {
             console.logExit();
@@ -307,15 +307,14 @@ class AVTransmitter {
             }
 
             //localAddr = new SessionAddress(mediaManCallback.getLocalHost(),((Integer)ports.get(0)).intValue() );
-            Integer localPort = new Integer(mediaManCallback.getAudioPort());
             localAddr = new SessionAddress(mediaManCallback.getLocalHost(),
-                                           localPort.intValue());
+                    mediaManCallback.getAudioPort());
             destAddr = new SessionAddress(remoteAddress,
                                           ((Integer) ports.get(0)).intValue());
 
             console.debug("IP localHostAVTRansM: " +
                           mediaManCallback.getLocalHost() + " localPort: " +
-                          localPort);
+                          mediaManCallback.getAudioPort());
             console.debug("IP remoteHostAVTRansM: " + remoteAddress +
                           " remotePort: " + ((Integer) ports.get(0)).intValue());
 
@@ -328,7 +327,7 @@ class AVTransmitter {
 
             try {
                 rtpMgrs[i].initialize(localAddr);
-                console.debug("Just bond to port " + localAddr.getDataPort());
+                console.debug("Just bound to port " + localAddr.getDataPort());
                 rtpMgrs[i].addTarget(destAddr);
                 sessionAddresses[i] = destAddr;
             } catch (InvalidSessionAddressException ex) {

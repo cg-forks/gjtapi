@@ -371,8 +371,8 @@ public class SipProvider
     }
 
     public void initialize(Map props) throws ProviderUnavailableException {
-        NetworkAddressManager manager = new NetworkAddressManager();
-        manager.init(props);
+        addressManager = new NetworkAddressManager();
+        addressManager.init(props);
     }
 
     /**

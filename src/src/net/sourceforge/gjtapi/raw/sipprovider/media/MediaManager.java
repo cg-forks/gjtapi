@@ -177,7 +177,7 @@ public class MediaManager implements Serializable {
     protected Processor processor = null;
     protected boolean isStarted = false;
     protected Properties sipProp;
-    protected String audioPort;
+    private final int audioPort;
     protected Vector transmitters = new Vector();
     protected Vector receivers = new Vector();
     protected DataSink sink = null;
@@ -186,8 +186,10 @@ public class MediaManager implements Serializable {
     private final NetworkAddressManager addressManager;
 
     public MediaManager(Properties sipProp, NetworkAddressManager manager) {
-        audioPort = sipProp.getProperty(
+        String port = sipProp.getProperty(
                 "net.java.sip.communicator.media.AUDIO_PORT");
+        audioPort = Integer.parseInt(port);
+        console.debug("using audio port " + audioPort);
         this.sipProp = new Properties();
         this.sipProp.putAll(sipProp);
         addressManager = manager;
@@ -851,7 +853,7 @@ public class MediaManager implements Serializable {
                 Version v = sdpFactory.createVersion(0);
 
                 InetSocketAddress publicAudioAddress = addressManager.
-                        getPublicAddressFor(Integer.parseInt(getAudioPort()));
+                        getPublicAddressFor(getAudioPort());
                 InetAddress publicIpAddress = publicAudioAddress.getAddress();
                 String addrType = publicIpAddress instanceof Inet6Address ?
                                   "IP6" : "IP4";
@@ -914,14 +916,8 @@ public class MediaManager implements Serializable {
         }
     }
 
-    public String getAudioPort() {
-        try {
-            console.logEntry();
-            String audioPort = this.audioPort;
-            return audioPort == null ? "22224" : audioPort;
-        } finally {
-            console.logExit();
-        }
+    public int getAudioPort() {
+        return audioPort;
     }
 
 

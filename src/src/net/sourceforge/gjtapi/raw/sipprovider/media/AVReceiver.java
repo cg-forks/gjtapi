@@ -57,17 +57,46 @@
  */
 package net.sourceforge.gjtapi.raw.sipprovider.media;
 
-import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
-import java.net.*;
-import javax.media.*;
-import javax.media.control.*;
-import javax.media.protocol.*;
-import javax.media.rtp.*;
-import javax.media.rtp.event.*;
-
-import java.util.Properties;
-import java.util.*;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import javax.media.ControllerClosedEvent;
+import javax.media.ControllerErrorEvent;
+import javax.media.ControllerEvent;
+import javax.media.ControllerListener;
+import javax.media.EndOfMediaEvent;
+import javax.media.Format;
+import javax.media.Manager;
+import javax.media.Player;
+import javax.media.Processor;
+import javax.media.RealizeCompleteEvent;
+import javax.media.StartEvent;
+import javax.media.control.BufferControl;
+import javax.media.control.TrackControl;
+import javax.media.protocol.DataSource;
+import javax.media.protocol.FileTypeDescriptor;
+import javax.media.rtp.InvalidSessionAddressException;
+import javax.media.rtp.Participant;
+import javax.media.rtp.RTPControl;
+import javax.media.rtp.RTPManager;
+import javax.media.rtp.ReceiveStream;
+import javax.media.rtp.ReceiveStreamListener;
+import javax.media.rtp.SendStreamListener;
+import javax.media.rtp.SessionAddress;
+import javax.media.rtp.SessionListener;
+import javax.media.rtp.event.ByeEvent;
+import javax.media.rtp.event.NewParticipantEvent;
+import javax.media.rtp.event.NewReceiveStreamEvent;
+import javax.media.rtp.event.ReceiveStreamEvent;
+import javax.media.rtp.event.SendStreamEvent;
+import javax.media.rtp.event.SessionEvent;
+import javax.media.rtp.event.StreamMappedEvent;
+
+import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
 /**
  * AVReceiver to receive RTP transmission using the new RTP API.
  * 
@@ -92,13 +121,13 @@ ControllerListener, SendStreamListener
     //private Object dataSync = new Object();
 
     private int bindRetries = 3;
-    private Properties sipProp;
+    private final Properties sipProp;
     private Processor processor = null;
     public DataSource ds;
     protected ArrayList formatSets = null;
     
     /** Utility to wait for processor state changes. */
-    private ProcessorUtility procUtility = new ProcessorUtility("AVReceiver");
+    private final ProcessorUtility procUtility = new ProcessorUtility("AVReceiver");
     
     public AVReceiver(String sessions[],Properties sipProp)
     {
@@ -241,7 +270,7 @@ ControllerListener, SendStreamListener
           SessionLabel session = new SessionLabel(sessions[0]);
 
           console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost() + " localPort: " + session.port);
-          console.debug("IP remoteHostAVRECV: " + session.addr + " remotePort: " +  (Integer) ports.get(0) );
+          console.debug("IP remoteHostAVRECV: " + session.addr + " remotePort: " +  ports.get(0) );
 
           InetSocketAddress dialogLocalAddr = new InetSocketAddress(
           mediaManager.getLocalHost(), session.port /*localPort*/);
@@ -336,7 +365,7 @@ ControllerListener, SendStreamListener
                     try
                     {
                         InetAddress inetAdd =  InetAddress.getByName(LocalAddress);
-                        SessionAddress sessionAddress = new SessionAddress(inetAdd, Integer.parseInt( mediaManager.getAudioPort()));
+                        SessionAddress sessionAddress = new SessionAddress(inetAdd, mediaManager.getAudioPort());
                         mgrs[i].removeTarget(sessionAddress ,"bye");
                         mgrs[i].dispose();
                         mgrs[i] = null;
@@ -544,7 +573,7 @@ ControllerListener, SendStreamListener
         public String addr = null;
         public int port;
         public int ttl = 1;
-        private Console console = Console.getConsole(SessionLabel.class);
+        private final Console console = Console.getConsole(SessionLabel.class);
         SessionLabel(String session) throws IllegalArgumentException
         {
             try
