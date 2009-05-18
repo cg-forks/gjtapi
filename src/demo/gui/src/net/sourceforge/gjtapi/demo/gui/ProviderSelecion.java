@@ -120,6 +120,14 @@ class ProviderSelecion extends JDialog {
     }
 
     /**
+     * Clears the error message.
+     */
+    public void clearError() {
+        errorMessage.setText("                    ");
+        errorMessage.setToolTipText(null);
+    }
+
+    /**
      * Displays an error message.
      * @param throwable the caught exception.
      */
@@ -201,6 +209,7 @@ class ProviderSelecion extends JDialog {
         if (canceled) {
             return null;
         }
+        clearError();
         try {
             final JtapiPeer peer = JtapiPeerFactory.getJtapiPeer(
                     GenericJtapiPeer.class.getCanonicalName());
