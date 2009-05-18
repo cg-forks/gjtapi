@@ -172,7 +172,6 @@ public class MediaManager implements Serializable {
     protected Map activeRtpManagers = new Hashtable();
     protected Map sessions = new Hashtable();
     protected RTPManager rtpManager;
-
     protected String mediaSource = null;
     protected DataSource avDataSource = null;
     protected Processor processor = null;
@@ -181,15 +180,17 @@ public class MediaManager implements Serializable {
     protected String audioPort;
     protected Vector transmitters = new Vector();
     protected Vector receivers = new Vector();
-    ;
     protected DataSink sink = null;
     private MediaLocator dest;
+    /** Reference to the address manager. */
+    private final NetworkAddressManager addressManager;
 
-    public MediaManager(Properties sipProp) {
+    public MediaManager(Properties sipProp, NetworkAddressManager manager) {
         audioPort = sipProp.getProperty(
                 "net.java.sip.communicator.media.AUDIO_PORT");
         this.sipProp = new Properties();
         this.sipProp.putAll(sipProp);
+        addressManager = manager;
     }
 
 
@@ -849,7 +850,7 @@ public class MediaManager implements Serializable {
                 //"v=0"
                 Version v = sdpFactory.createVersion(0);
 
-                InetSocketAddress publicAudioAddress = NetworkAddressManager.
+                InetSocketAddress publicAudioAddress = addressManager.
                         getPublicAddressFor(Integer.parseInt(getAudioPort()));
                 InetAddress publicIpAddress = publicAudioAddress.getAddress();
                 String addrType = publicIpAddress instanceof Inet6Address ?

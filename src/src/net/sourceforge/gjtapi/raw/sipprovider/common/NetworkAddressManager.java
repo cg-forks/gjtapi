@@ -89,11 +89,9 @@ public class NetworkAddressManager
 {
     private static Console console =
         Console.getConsole(NetworkAddressManager.class);
-    private static NetworkAddressManager manager;
     private SimpleAddressDetector detector = null;
     private boolean useStun = true;
-    private static final int RANDOM_PORT = 55055;
-    private Map settings;
+    private final int RANDOM_PORT = 55055;
     private static boolean PREFER_IP4_STACK;
 
     //    private static final String WINDOWS_AUTO_CONFIGURED_ADDRESS_PREFIX = "169";
@@ -101,21 +99,13 @@ public class NetworkAddressManager
     /**
      * Constructs a new object.
      */
-    private NetworkAddressManager() {
-    }
-
-    public static NetworkAddressManager getInstance() {
-        if (manager == null) {
-            manager = new NetworkAddressManager();
-        }
-        return manager;
+    public NetworkAddressManager() {
     }
 
     public void init(Map settings)
     {
         try {
             console.logEntry();
-            this.settings = settings;
             String value = (String) settings.get("java.net.preferIPv4Stack");
             PREFER_IP4_STACK = Boolean.parseBoolean(value);
 
@@ -174,14 +164,10 @@ public class NetworkAddressManager
      * Shuts down the address manager and the underlying stun lib and deletes
      * the manager.
      */
-    public static void shutDown()
+    public void shutDown()
     {
-        if (manager == null || manager.detector == null) {
-            return;
-        }
-        manager.detector.shutDown();
-        manager.detector = null;
-        manager = null;
+        detector.shutDown();
+        detector = null;
     }
 
     /**
@@ -190,7 +176,7 @@ public class NetworkAddressManager
      * @return an InetAddress instance representing the local host or null if no
      * IP address for the host could be found
      */
-    public static InetAddress getLocalHost()
+    public InetAddress getLocalHost()
     {
         return getLocalHost(true);
     }
@@ -215,7 +201,7 @@ public class NetworkAddressManager
      * @param anyAddressIsAccepted is 0.0.0.0 accepted as a return value.
      * @return the address that was detected the address of the localhost.
      */
-    public static InetAddress getLocalHost(boolean anyAddressIsAccepted)
+    public InetAddress getLocalHost(boolean anyAddressIsAccepted)
     {
         try {
             console.logEntry();
@@ -230,7 +216,7 @@ public class NetworkAddressManager
                 //check whether we have a public address that matches one of the local interfaces
 
                 //if not - return the first one that is not the loopback
-                if (manager.useStun) { //very important check to avoid recursion
+                if (useStun) { //very important check to avoid recursion
                     mappedAddress = getPublicAddressFor(RANDOM_PORT).getAddress();
                 }
                 Enumeration localIfaces = NetworkInterface.getNetworkInterfaces();
@@ -324,20 +310,20 @@ public class NetworkAddressManager
      * @return a public address corresponding to the specified port or null if
      * all attempts to retrieve such an address have failed.
      */
-    public static InetSocketAddress getPublicAddressFor(String address,
+    public InetSocketAddress getPublicAddressFor(String address,
         int port)
     {
         try {
             console.logEntry();
-            if (!manager.useStun) {
+            if (!useStun) {
                 console.debug(
                     "Stun is disabled, skipping mapped address recovery.");
                 return new InetSocketAddress(address, port);
             }
             StunAddress mappedAddress = null;
-            if (manager.detector != null)
+            if (detector != null)
                 try {
-                    mappedAddress = manager.detector.getMappingFor(new
+                    mappedAddress = detector.getMappingFor(new
                         StunAddress(address, port));
                     if (console.isDebugEnabled())
                         console.debug("For [" + address + "]:"
@@ -374,11 +360,11 @@ public class NetworkAddressManager
      * @return a public address corresponding to the specified port or null if
      * all attempts to retrieve such an address have failed.
      */
-    public static InetSocketAddress getPublicAddressFor(int port)
+    public InetSocketAddress getPublicAddressFor(int port)
     {
         try {
             console.logEntry();
-            if (!manager.useStun) {
+            if (!useStun) {
                 console.debug(
                     "Stun is disabled, skipping mapped address recovery.");
                 //we can call local method getLocalHost here since stun usage
@@ -387,10 +373,9 @@ public class NetworkAddressManager
                 return new InetSocketAddress(getLocalHost(), port);
             }
             StunAddress mappedAddress = null;
-            if (manager != null
-                && manager.detector != null)
+            if (detector != null)
                 try {
-                    mappedAddress = manager.detector.getMappingFor(port);
+                    mappedAddress = detector.getMappingFor(port);
                     if (console.isDebugEnabled())
                         console.debug("For port:"
                                       + port
@@ -439,7 +424,7 @@ public class NetworkAddressManager
      * @param add the address to inspect
      * @return true if the address is autoconfigured by windows, false otherwise.
      */
-    public static boolean isWindowsAutoConfiguredIPv4Address(InetAddress add)
+    public boolean isWindowsAutoConfiguredIPv4Address(InetAddress add)
     {
         return (add.getAddress()[0] & 0xFF) == 169
             && (add.getAddress()[1] & 0xFF) == 254;
@@ -479,7 +464,7 @@ public class NetworkAddressManager
      * @param address the address to test.
      * @return true if the address could be used in a VoIP session.
      */
-    public static boolean isRoutable(InetAddress address)
+    public boolean isRoutable(InetAddress address)
     {
         if(address instanceof Inet6Address)
         {

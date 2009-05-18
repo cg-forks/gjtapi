@@ -82,6 +82,7 @@ import net.sourceforge.gjtapi.RawStateException;
 import net.sourceforge.gjtapi.ResourceFinder;
 import net.sourceforge.gjtapi.TermData;
 import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
+import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import net.sourceforge.gjtapi.raw.sipprovider.media.MediaException;
 import net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager;
 import net.sourceforge.gjtapi.raw.sipprovider.media.event.MediaErrorEvent;
@@ -130,7 +131,7 @@ public class SipPhone
      *                 Error loading the properties.
      */
     public SipPhone(String propResource, ResourceFinder finder,
-            SipProvider sipProvider)
+            SipProvider sipProvider, NetworkAddressManager manager)
             throws IOException {
         Properties sipProp = new Properties();
         InputStream in = null;
@@ -147,10 +148,10 @@ public class SipPhone
         password = sipProp.getProperty
             ("net.java.sip.communicator.sip.PASSWORD");
         ids = new java.util.ArrayList();
-        mediaManager = new MediaManager(sipProp);
+        mediaManager = new MediaManager(sipProp, manager);
 
         this.sipProvider = sipProvider;
-        sipManager = new SipManager(sipProp);
+        sipManager = new SipManager(sipProp, manager);
         this.launch();
         address = "sip:" + sipManager.getLocalUser() + "@"
                 + sipManager.getLocalHostAddress();

@@ -253,14 +253,18 @@ public class SipManager implements SipListener
 
     private final Properties sipProp;
 
+    /** Reference to the address manager. */
+    private final NetworkAddressManager addressManager;
+
     /**
      * Constructor. It only creates a SipManager instance without initializing
      * the stack itself.
      */
-    public SipManager(Properties sipProp)
+    public SipManager(Properties sipProp, NetworkAddressManager manager)
     {
         this.sipProp = new Properties() ;
         this.sipProp.putAll(sipProp);
+        addressManager = manager;
 
         registerProcessing  = new RegisterProcessing(this);
         callProcessing      = new CallProcessing(this, sipProp);
@@ -321,7 +325,7 @@ public class SipManager implements SipListener
             {
                 //try and capture the firewall mapping for this address
                 //just before it gets occuppied by the stack
-                publicIpAddress = NetworkAddressManager.
+                publicIpAddress = addressManager.
                 getPublicAddressFor(localPort);
 
                 listeningPoint = sipStack.createListeningPoint(localPort, transport);
@@ -2220,7 +2224,7 @@ public class SipManager implements SipListener
             String hostAddress = sipProp.getProperty("javax.sip.IP_ADDRESS");
             if (hostAddress == null)
             {
-                InetAddress localhost = NetworkAddressManager.getLocalHost();
+                InetAddress localhost = addressManager.getLocalHost();
                 hostAddress = localhost.getHostAddress();
             }
             if (console.isDebugEnabled())

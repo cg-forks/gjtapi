@@ -108,6 +108,8 @@ public class SipProvider
     // private CallId idd;
     /** Known sip phones. */
     private final Collection sipPhones = new java.util.ArrayList();
+    /** The address manager. */
+    private NetworkAddressManager addressManager;
 
     /**
      * Constructs a new object.
@@ -369,7 +371,7 @@ public class SipProvider
     }
 
     public void initialize(Map props) throws ProviderUnavailableException {
-        NetworkAddressManager manager = NetworkAddressManager.getInstance();
+        NetworkAddressManager manager = new NetworkAddressManager();
         manager.init(props);
     }
 
@@ -400,7 +402,7 @@ public class SipProvider
      */
     public void addPhone(String resource, ResourceFinder finder)
         throws IOException {
-        SipPhone phone = new SipPhone(resource, finder, this);
+        SipPhone phone = new SipPhone(resource, finder, this, addressManager);
         sipPhones.add(phone);
         console.debug("added phone " + phone.getAddress());
     }
