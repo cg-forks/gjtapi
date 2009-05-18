@@ -4,6 +4,7 @@
 package net.sourceforge.gjtapi.demo.gui;
 
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,6 +19,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.telephony.Address;
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.JtapiPeer;
@@ -42,6 +44,9 @@ class ProviderSelecion extends JDialog {
 
     /** The OK button. */
     private final JButton ok;
+
+    /** Display of an error message. */
+    private final JLabel errorMessage;
 
     /** <code>true</code> if the user clicked the cancel button. */
     private boolean canceled;
@@ -100,11 +105,27 @@ class ProviderSelecion extends JDialog {
                 setVisible(false);
             }
         });
-        providerSelectionChanged();
+        JPanel statusBar = new JPanel();
+        statusBar.setLayout(new FlowLayout());
+        errorMessage = new JLabel();
+        statusBar.add(errorMessage);
+        pane.add(statusBar, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.BOTH, 
+                new Insets(10, 10, 10, 10), 0, 0));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         loadedProviders = new java.util.HashMap<String, Provider>();
+        providerSelectionChanged();
         setVisible(true);
+    }
+
+    /**
+     * Displays an error message.
+     * @param throwable the caught exception.
+     */
+    private void displayError(Throwable throwable) {
+        errorMessage.setText(throwable.getClass().getCanonicalName());
+        errorMessage.setToolTipText(throwable.getMessage());
     }
 
     /**
@@ -191,9 +212,11 @@ class ProviderSelecion extends JDialog {
             }
             return provider;
         } catch (Exception e) {
+            displayError(e);
             e.printStackTrace();
             return null;
         } catch (UnsatisfiedLinkError e) {
+            displayError(e);
             e.printStackTrace();
             return null;
         }
