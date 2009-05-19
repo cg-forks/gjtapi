@@ -172,7 +172,7 @@ public class MediaManager implements Serializable {
     protected Map activeRtpManagers = new Hashtable();
     protected Map sessions = new Hashtable();
     protected RTPManager rtpManager;
-    protected String mediaSource = null;
+    private final String mediaSource;
     protected DataSource avDataSource = null;
     protected Processor processor = null;
     protected boolean isStarted = false;
@@ -190,6 +190,9 @@ public class MediaManager implements Serializable {
                 "net.java.sip.communicator.media.AUDIO_PORT");
         audioPort = Integer.parseInt(port);
         console.debug("using audio port " + audioPort);
+        mediaSource = sipProp.getProperty(
+            "net.java.sip.communicator.media.MEDIA_SOURCE");
+        console.debug("using media source '" + mediaSource + "'");
         this.sipProp = new Properties();
         this.sipProp.putAll(sipProp);
         addressManager = manager;
@@ -214,7 +217,9 @@ public class MediaManager implements Serializable {
 
         for (int i = avTransmitters.size() - 1; i >= 0; i--) {
             try {
-                ((AVTransmitter) avTransmitters.elementAt(i)).play(processor);
+                AVTransmitter transmitter =
+                    (AVTransmitter) avTransmitters.elementAt(i);
+                transmitter.play(processor);
             } catch (net.sourceforge.gjtapi.raw.sipprovider.media.
                      MediaException ex) {
                 console.debug(ex.toString());
@@ -231,7 +236,9 @@ public class MediaManager implements Serializable {
 
         {
             try {
-                ((AVTransmitter) avTransmitters.elementAt(i)).stopPlaying();
+                AVTransmitter transmitter =
+                    (AVTransmitter) avTransmitters.elementAt(i);
+                transmitter.stopPlaying();
             } catch (Exception ex) {
                 console.debug(ex.toString());
             }
@@ -254,8 +261,8 @@ public class MediaManager implements Serializable {
 
             for (int i = receivers.size() - 1; i >= 0; i--) {
                 try {
-                    Processor pro = ((AVReceiver) receivers.elementAt(i)).
-                                    getProcessor();
+                    AVReceiver receiver = (AVReceiver) receivers.elementAt(i);
+                    Processor pro = receiver.getProcessor();
 
                     pro.start();
                 } catch (Exception ex) {
@@ -302,21 +309,16 @@ public class MediaManager implements Serializable {
 
     public void start() throws MediaException {
         try {
-        	console.logEntry();
-	        sdpFactory = SdpFactory.getInstance();
-	        mediaSource = sipProp.getProperty(
-	                "net.java.sip.communicator.media.MEDIA_SOURCE");
-	        //Init Capture devices
-	        //DataSource audioDataSource = null;
-	
-	        isStarted = true;
-	    } catch (Throwable ex) {
-	    	// also handles SdpException, which is thrown by some SIP implementations
-	    	// (such as older nist-sdp-1.0) and not by others (such as later versions of nist-sdp-1.0 -- not sure why the version number didn't change)
-	    	throw new MediaException(ex);
-	    } finally {
-	        console.logExit();
-	    }
+            console.logEntry();
+            sdpFactory = SdpFactory.getInstance();
+            isStarted = true;
+        } catch (Throwable ex) {
+            // also handles SdpException, which is thrown by some SIP implementations
+            // (such as older nist-sdp-1.0) and not by others (such as later versions of nist-sdp-1.0 -- not sure why the version number didn't change)
+            throw new MediaException(ex);
+        } finally {
+            console.logExit();
+        }
 
     }
 
@@ -658,8 +660,9 @@ public class MediaManager implements Serializable {
             console.logEntry();
             for (int i = avTransmitters.size() - 1; i >= 0; i--) {
                 try {
-                    ((AVTransmitter) avTransmitters.elementAt(i)).stop(
-                            addToStop);
+                    AVTransmitter transmitter =
+                        (AVTransmitter) avTransmitters.elementAt(i);
+                    transmitter.stop(addToStop);
                 } //Catch everything that comes out as we wouldn't want
                 //Some null pointer prevent us from closing a device and thus
                 //render it unusable
@@ -694,7 +697,7 @@ public class MediaManager implements Serializable {
         }
     }
 
-    protected void stopReceiver(String LocalAddress) {
+    protected void stopReceiver(String localAddress) {
         /*try
                  {
             console.logEntry();
@@ -716,7 +719,8 @@ public class MediaManager implements Serializable {
             console.logEntry();
             for (int i = receivers.size() - 1; i >= 0; i--) {
                 try {
-                    ((AVReceiver) receivers.elementAt(i)).close(LocalAddress);
+                    AVReceiver receiver = (AVReceiver) receivers.elementAt(i);
+                    receiver.close(localAddress);
                 } //Catch everything that comes out as we wouldn't want
                 //Some null pointer prevent us from closing a device and thus
                 //render it unusable
@@ -798,7 +802,8 @@ public class MediaManager implements Serializable {
         try {
             console.logEntry();
             for (int i = listeners.size() - 1; i >= 0; i--) {
-                ((MediaListener) listeners.get(i)).playerStopped();
+                final MediaListener listener = (MediaListener) listeners.get(i);
+                listener.playerStopped();
             }
         } finally {
             console.logExit();
