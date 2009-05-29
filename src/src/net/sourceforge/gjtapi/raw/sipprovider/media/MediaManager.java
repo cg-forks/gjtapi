@@ -208,7 +208,9 @@ public class MediaManager implements Serializable {
     public void play(String url) throws MediaException {
 
         console.logEntry();
-
+        if (console.isDebugEnabled()) {
+            console.debug("playing '" + url + "'...");
+        }
         MediaLocator locator = new MediaLocator(url);
         avDataSource = createDataSource(locator);
         if (avDataSource != null) {
@@ -687,11 +689,10 @@ public class MediaManager implements Serializable {
             //avReceiver.initialize();
             try {
                 avReceiver.initialize2(ports);
+                receivers.add(avReceiver);
             } catch (MediaException ex) {
                 ex.printStackTrace();
             }
-
-            receivers.add(avReceiver);
         } finally {
             console.logExit();
         }
@@ -1136,7 +1137,7 @@ public class MediaManager implements Serializable {
                         if (sdp != null &&
                             !transmittableAudioFormats.contains(sdp)) {
                             if (console.isDebugEnabled()) {
-                                console.debug("Audio=[" + (j + 1) + "]=" +
+                                console.debug("Audio[" + (j + 1) + "]=" +
                                               encoding + "; sdp=" + sdp);
                             }
                             transmittableAudioFormats.add(sdp);

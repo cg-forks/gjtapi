@@ -122,9 +122,8 @@ ControllerListener, SendStreamListener
 
     private int bindRetries = 3;
     private final Properties sipProp;
-    private Processor processor = null;
+    private Processor processor;
     public DataSource ds;
-    protected ArrayList formatSets = null;
     
     /** Utility to wait for processor state changes. */
     private final ProcessorUtility procUtility = new ProcessorUtility("AVReceiver");
@@ -268,25 +267,28 @@ ControllerListener, SendStreamListener
       for (int i = 0; i < sessions.length; i++) {
 
           SessionLabel session = new SessionLabel(sessions[0]);
-
-          console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost() + " localPort: " + session.port);
-          console.debug("IP remoteHostAVRECV: " + session.addr + " remotePort: " +  ports.get(0) );
+          final int localPort = session.port;
+          final String remoteAddress = session.addr;
+          final int remotePort = ((Integer)ports.get(0)).intValue();
+          console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost()
+                  + " localPort: " + localPort);
+          console.debug("IP remoteHostAVRECV: " + remoteAddress + " remotePort: "
+                  +  remotePort);
 
           InetSocketAddress dialogLocalAddr = new InetSocketAddress(
-          mediaManager.getLocalHost(), session.port /*localPort*/);
+          mediaManager.getLocalHost(), localPort);
 
-          Integer localPort = new Integer(session.port);
           InetAddress rtpLocalAddress = dialogLocalAddr.getAddress();
           SessionAddress local = new SessionAddress(rtpLocalAddress,
-                  session.port);
+                  localPort);
 
-          mgrs[i] = mediaManager.getRtpManager(new SessionAddress(
-                  mediaManager.
-                  getLocalHost(), session.port));
+          final SessionAddress address = new SessionAddress(
+                  mediaManager.getLocalHost(), localPort);
+          mgrs[i] = mediaManager.getRtpManager(address);
           if (mgrs[i] == null) {
               mgrs[i] = RTPManager.newInstance();
               mediaManager.putRtpManager(new SessionAddress(mediaManager.
-                      getLocalHost(), session.port), mgrs[i]);
+                      getLocalHost(), localPort), mgrs[i]);
           }
 
           mgrs[i].addSessionListener(this);
@@ -306,8 +308,7 @@ ControllerListener, SendStreamListener
           //int _dataPort = smgr.getLocalSessionAddress().getDataPort();
 
           InetSocketAddress dialogRemoteAddr = new InetSocketAddress(
-                  /*remoteAddress*/session.addr, /*remotePort*/
-                  ((Integer) ports.get(0)).intValue());
+                  remoteAddress, remotePort);
 
           InetAddress bogusAddress = dialogRemoteAddr.getAddress();
           InetAddress rtpRemoteAddress = null;
@@ -319,7 +320,7 @@ ControllerListener, SendStreamListener
               ex2.printStackTrace();
           }
           SessionAddress sessionAddress = new SessionAddress(rtpRemoteAddress,
-                  ((Integer) ports.get(0)).intValue());
+                  remotePort);
 
           //set buffer parameters
           BufferControl bc = (BufferControl) mgrs[i].getControl(

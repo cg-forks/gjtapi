@@ -39,8 +39,11 @@ public class MediaManagerTest {
         recordManager.record("file:out.wav");
         MediaManager playManager = new MediaManager(props1, addressManager);
         playManager.start();
+        String sdp = playManager.generateSdpDescription();
+        playManager.openMediaStreams(sdp);
         File file = new File("demo/gui/test.wav");
         playManager.play(file.toURL().toString());
+        Thread.sleep(3000);
     }
 
 }

@@ -132,7 +132,7 @@ class AVTransmitter {
         try {
             console.logEntry();
 
-            // configureProcessor(processor);
+             configureProcessor(processor);
             // Create an RTP session to transmit the output of the
             // processor to the specified IP address and port no.
             try {
@@ -259,6 +259,7 @@ class AVTransmitter {
             }
             // Realize the processor. This will internally create a flow
             // graph and attempt to create an output datasource
+            processor.realize();
             result = procUtility.waitForState(processor, Controller.Realized);
             if (result == false) {
                 console.error("Couldn't realize processor");
