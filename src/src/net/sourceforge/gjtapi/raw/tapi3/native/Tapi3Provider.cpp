@@ -479,9 +479,9 @@ JNIEXPORT jlong JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_ta
 void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause cause, wstring* callInfo) {
     static HANDLE hMutex = CreateMutex(NULL, FALSE, "callbackMutex");
     DWORD dwWaitResult = WaitForSingleObject(hMutex, 5000L);
+	logger->debug("Entering callback method %d: callID=%d, address=%S...", methodID, callID, address.c_str());
     if(dwWaitResult == WAIT_OBJECT_0) {
 	    try{
-		    logger->debug("Entering callback method %d: callID=%d, address=%S...", methodID, callID, address.c_str());
 		    JNIEnv *localEnv = NULL;
 		    g_javaVM->AttachCurrentThread((void**)&localEnv, NULL);
 		    jclass cls = localEnv->GetObjectClass(g_thisObj);
@@ -514,11 +514,12 @@ void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause ca
 				    logger->debug("No callInfo for this callback.");
 			    }
 			    localEnv->CallVoidMethod(g_thisObj, callbackID, jMethodID, jCallID, jAddress, jCause, objCallInfo);
+				g_javaVM->DetachCurrentThread();
 			    logger->debug("Java callback successfully called.");
 		    }
 	    } catch(...){
 		    logger->fatal("Callback failed.");
-        }
+		}
         ReleaseMutex(hMutex);
     } else {
 		logger->fatal("Cannot obtain callback mutex: dwWaitResult=%08X.", dwWaitResult);
