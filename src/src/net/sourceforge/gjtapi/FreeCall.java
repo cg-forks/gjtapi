@@ -1066,7 +1066,7 @@ void toActive(int cause) {
  */
 void toInvalid(int cause) {
 	// unHook any connections
-	Iterator conns = this.connections.values().iterator();
+	Iterator conns = ((HashMap)this.connections.clone()).values().iterator();
 	while (conns.hasNext()) {
 		((FreeConnection)conns.next()).toDisconnected(cause);
 	}
