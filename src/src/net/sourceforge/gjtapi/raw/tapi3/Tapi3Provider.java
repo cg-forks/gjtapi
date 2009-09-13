@@ -354,6 +354,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.info("CALLBACK: " + methodID + " (" + methodName + ") on " + address +
                 ": callID=" + tapi3CallID.getCallID() + ", privateData: " + privateData);
         Iterator it = listenerList.iterator();
+        boolean validCall = true;	// track if a call is made invalid, so we don't send private data
         while(it.hasNext()) {
             TelephonyListener listener = (TelephonyListener)it.next();
             switch(methodID) {
@@ -385,9 +386,15 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                     break;
                 case METHOD_CONNECTION_DISCONNECTED:
                     listener.connectionDisconnected(tapi3CallID, address, eventCause);
+                    // in TAPI land, we are 1st party, and so a disconnected connection causes the call to drop
+                    listener.callInvalid(tapi3CallID, eventCause);
+                    validCall = false;
                     break;
                 case METHOD_CONNECTION_FAILED:
                     listener.connectionFailed(tapi3CallID, address, eventCause);
+                    // in TAPI land, we are 1st party, and so a failed connection causes the call to drop
+                    listener.callInvalid(tapi3CallID, eventCause);
+                    validCall = false;
                     break;
                 case METHOD_CONNECTION_IN_PROGRESS:
                     // events added because there was no information about the called number in a jtapi call
@@ -407,6 +414,9 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                     break;
                 case METHOD_TERMINAL_CONNECTION_DROPPED:
                     listener.terminalConnectionDropped(tapi3CallID, address, terminal, eventCause);
+                    // in TAPI land, we are 1st party, and so a dropped terminal connection causes the call to drop
+                    listener.callInvalid(tapi3CallID, eventCause);
+                    validCall = false;
                     break;
                 case METHOD_TERMINAL_CONNECTION_HELD:
                     listener.terminalConnectionHeld(tapi3CallID, address, terminal, eventCause);
@@ -429,7 +439,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                             (callInfo != null ? Arrays.asList(callInfo).toString() : "null"));
                     break;
             }
-            if(privateData != null) {
+            // don't send private data to a call we have just invalidated
+            if(validCall && (privateData != null)) {
                 listener.callPrivateData(tapi3CallID, privateData, eventCause);
             }
         }
