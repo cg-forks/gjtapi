@@ -34,6 +34,7 @@ import javax.telephony.callcontrol.CallControlCallObserver;
 import net.sourceforge.gjtapi.events.*;
 import javax.telephony.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a package-visible Observer and Listener Manager object that a Call
@@ -137,7 +138,7 @@ class ListenerManager implements TerminalConnectionListener {
      * Internal HashMap wrapper that catches put and remove calls to turn on
      * throttling
      */
-    private class ListenerMap extends HashMap {
+    private class ListenerMap extends ConcurrentHashMap {
         static final long serialVersionUID = 0L; // never serialized
 
         public Object put(CallListener list, ListenerStatus status) {
@@ -729,9 +730,13 @@ class ListenerManager implements TerminalConnectionListener {
             this.removeSubTypes(cl);
 
             // trigger the callListener that it is no longer being triggered
-            cl
-                    .callEventTransmissionEnded(new net.sourceforge.gjtapi.events.FreeCallObservationEndedEv(
+            // Observer code may thow exception
+            try {
+            	cl.callEventTransmissionEnded(new net.sourceforge.gjtapi.events.FreeCallObservationEndedEv(
                             this.getCall()));
+            } catch (Exception ex) {
+            	// No-op code -- should we log it?
+            }
 
             // check if we should unprotect the call
             this.unProtect();
@@ -757,7 +762,12 @@ class ListenerManager implements TerminalConnectionListener {
             // trigger the callObserver that it is no longer being triggered
             FreeCallObservationEndedEv[] evs = new FreeCallObservationEndedEv[1];
             evs[0] = new FreeCallObservationEndedEv(this.getCall());
-            co.callChangedEvent(evs);
+            // Observer code may thow exception
+            try {
+            	co.callChangedEvent(evs);
+            } catch (Exception ex) {
+            	// No-op -- we could log it?
+            }
 
             // check if we should unprotect the call
             this.unProtect();
