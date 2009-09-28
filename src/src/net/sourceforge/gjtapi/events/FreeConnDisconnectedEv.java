@@ -31,6 +31,7 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
+
 import javax.telephony.events.*;
 /**
  * A connection disconnection event.
@@ -66,14 +67,17 @@ public FreeConnDisconnectedEv(int cause, net.sourceforge.gjtapi.FreeConnection c
  * @author: Richard Deadman
  */
 public void dispatch() {
-	super.dispatch();	// send to Obsersers
-
-	// now send to listeners
+	// we don't want errors in the observers and listeners to halt our cleanup
 	FreeCall c = (FreeCall)this.getCall();
-	c.getListener().connectionDisconnected(this);
+	try {
+		super.dispatch();	// send to Obsersers
 
-	// tell the call to remove any address-registered only listeners
-	c.removeCallListAndObs(this.droppedAddr);
+		// now send to listeners
+		c.getListener().connectionDisconnected(this);
+	} finally {
+		// tell the call to remove any address-registered only listeners
+		c.removeCallListAndObs(this.droppedAddr);
+	}
 }
 /**
  * Return the observer-style ConnEv subtype id.

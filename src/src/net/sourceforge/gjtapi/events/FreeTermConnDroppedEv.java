@@ -31,6 +31,7 @@ package net.sourceforge.gjtapi.events;
 	of the copyright holder.
 */
 import net.sourceforge.gjtapi.*;
+
 import javax.telephony.events.TermConnDroppedEv;
 /**
  * An Observer-style TermConnEv subclass
@@ -65,14 +66,17 @@ public FreeTermConnDroppedEv(int cause, net.sourceforge.gjtapi.FreeTerminalConne
  * @author: Richard Deadman
  */
 public void dispatch() {
-	super.dispatch();	// send to Obsersers
-
-	// now send to listeners
+	// we don't want errors in the observers and listeners to halt our cleanup
 	FreeCall c = (FreeCall)this.getCall();
-	c.getListener().terminalConnectionDropped(this);
+	try {
+		super.dispatch();	// send to Obsersers
 
-	// tell the call to remove any Terminal listeners
-	c.removeCallListAndObs(this.droppedTerminal);
+		// now send to listeners
+		c.getListener().terminalConnectionDropped(this);
+	} finally {
+		// tell the call to remove any Terminal listeners
+		c.removeCallListAndObs(this.droppedTerminal);
+	}
 }
 /**
  * Return the observer-style event id.

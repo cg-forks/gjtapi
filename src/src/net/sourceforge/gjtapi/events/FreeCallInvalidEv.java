@@ -50,14 +50,18 @@ public FreeCallInvalidEv(int cause, FreeCall c) {
  * @author: Richard Deadman
  */
 public void dispatch() {
-	super.dispatch();	// send to Obsersers
-
-	// now send to listeners
+	// we don't want errors in the observers and listeners to halt our cleanup
 	FreeCall call = (FreeCall)this.getCall();
-	call.getListener().callInvalid(this);
+	try {
+		super.dispatch();	// send to Observers
 	
-	// Tell the call to clean itself up, since it is now invalid
-	call.cleanup();
+		// now send to listeners
+		call.getListener().callInvalid(this);
+	} finally {
+	
+		// Tell the call to clean itself up, since it is now invalid
+		call.cleanup();
+	}
 }
 /**
  * Return the observer ID for this event.
