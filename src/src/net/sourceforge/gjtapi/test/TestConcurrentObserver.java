@@ -160,7 +160,7 @@ class TestConcurrentObserver implements CallObserver {
             	}
             	
             	if(cons != null) {
-            	builder.append(". Connection Count: ").append(cons.length);
+            		builder.append(". Connection Count: ").append(cons.length);
             	} else {
             		builder.append(". Connection Count: 0");
             	}

@@ -66,24 +66,70 @@ import java.io.*;
  */
 public class TestConcurrentHandling {
 
+	private Provider provider;
+	private Address address;
+	private Terminal[] terminals;
+	private String toAddress;
+	
 	/**
+	 * Main entry point
 	 * @param args
 	 */
 	public static void main(String[] args) {
 	    // Report error if insufficient parameters passed in
-	    if (args.length < 3) {
-	        System.err.println("Usage: java net.sourceforge.gjtapi.test.TestConcurrentHandling Provider from to");
+	    if (args.length < 5) {
+	        System.err.println("Usage: java net.sourceforge.gjtapi.test.TestConcurrentHandling Provider from to from to");
 	        System.exit(1);
 	    }
 
-	    test(args[0], args[1], args[2]);
+	    Provider provider = createProvider(args[0]);
+	    
+	    try {
+	    	final TestConcurrentHandling handler1 = new TestConcurrentHandling(provider, args[1], args[2]);
+	    	final TestConcurrentHandling handler2 = new TestConcurrentHandling(provider, args[3], args[4]);
+
+		    // now we create two threads to handle two calls simultaneously
+		    new Thread(new Runnable() {
+
+				public void run() {
+					handler1.dial();
+					
+				}
+		    	
+		    }).start();
+		    // handle other in-line - hope it ends last
+		    handler2.dial();
+
+	    } catch (Exception ex) {
+	    	ex.printStackTrace();
+	    	System.exit(1);
+	    }
+	    
+	    
+	    try {
+	    	prompt();
+	    } catch(IOException ioe) {
+	    	// no-op - just continue
+	    }
+        System.out.println("Provider shutting down");
+        //Thread.sleep(1000);
+        try {
+        	System.out.println("Test ending. Number of calls in provider: " + provider.getCalls().length);
+        } catch(ResourceUnavailableException rue) {
+        	System.out.println("Test ending. Resources unavailable");
+        } catch (NullPointerException npe) {
+        	System.out.println("Test ending. Number of calls in provider: " + 0);
+        }
+
+        provider.shutdown();
+
 	}
 
 	/**
-	 * Performs a series of unit tests
+	 * Sets up the provider
 	 * @param args an array of command-line arguments
 	 */
-	public static void test(String providerName, String fromAddr, String toAddr) {
+	public static Provider createProvider(String providerName) {
 
 	    java.io.PrintStream out = System.out;
 
@@ -98,7 +144,7 @@ public class TestConcurrentHandling {
 	        System.exit(1);
 	    }
 
-	    // Ask it for the Emulator Provider
+	    // Ask it for the Provider
 	    Provider prov = null;
 	    try {
 	        prov = peer.getProvider(providerName);
@@ -109,39 +155,50 @@ public class TestConcurrentHandling {
 	        System.exit(1);
 	    }
 	    
-	    try {
-	        // Load the Terminals
-	        out.print("2.1: Attempting to get terminals...");
-	        Terminal[] terminals = prov.getTerminals();
-	        out.println(" success.");
-	        for(Terminal term : terminals) {
-	        	term.addCallObserver(new TestConcurrentObserver(term));
-	        }
+	    return prov;
+	}
+	
 
-	        Address addr = prov.getAddress(fromAddr);
-	        Terminal[] ts = addr.getTerminals();
-	        
+	/**
+	 * Construct an instance that is responsible for dialing a number 100 times
+	 * @param p
+	 * @param from
+	 * @param to
+	 */
+	private TestConcurrentHandling(Provider p, String from, String to) throws ResourceUnavailableException, MethodNotSupportedException, InvalidArgumentException {
+		this.provider =p;
+		
+        // Load the Terminals
+        terminals = p.getTerminals();
+        for(Terminal term : terminals) {
+        	term.addCallObserver(new TestConcurrentObserver(term));
+        }
+
+        address = p.getAddress(from);
+        terminals = address.getTerminals();
+
+        toAddress = to;
+	}
+	
+	/**
+	 * Dial and hang up a call
+	 * @param toAddr
+	 */
+	private void dial() {
+		java.io.PrintStream out = System.out;
+
+	    try {
 	        // make a series of calls to ensure the call manager disposes of them properly
 	        for(int i = 0; i < 100; i++) {
-	        	processCall(prov, addr, ts, toAddr);
+	        	processCall(provider, address, terminals, toAddress);
 	        }
-	        prompt();
-	        System.out.println("Provider shutting down");
-	        //Thread.sleep(1000);
-	        try {
-	        	System.out.println("Test ending. Number of calls in provider: " + prov.getCalls().length);
-	        } catch (NullPointerException npe) {
-	        	System.out.println("Test ending. Number of calls in provider: " + 0);
-	        }
-
-	        prov.shutdown();
 	    } catch (Exception e) {
 	        out.println(" failure: " + e);
 	        e.printStackTrace();
 	    }
 	}
 
-	private static void processCall(Provider prov, Address addr, Terminal[] ts, String toAddr) {
+	private void processCall(Provider prov, Address addr, Terminal[] ts, String toAddr) {
 		java.io.PrintStream out = System.out;
 		
         // Make the Call
