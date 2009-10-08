@@ -683,6 +683,7 @@ class ListenerManager implements TerminalConnectionListener {
      */
     synchronized void remove(Address addr) {
         Map lists = this.getCallListMap();
+        LinkedList<CallListener> itemsToRemove = new LinkedList<CallListener>();
         Iterator it = lists.keySet().iterator();
         while (it.hasNext()) {
             CallListener cl = (CallListener) it.next();
@@ -691,13 +692,22 @@ class ListenerManager implements TerminalConnectionListener {
                 if (status.remove(addr)) {
                     // the address was the last listener handle -- remove the
                     // listener, subtypes and notify
-                    this.remove(cl);
+                	
+                	// we hold it and remove it outside the loop to avoid a ConcurrentModificationException
+                	// we can't just use it.remove() since we have to do some extra logic
+                	itemsToRemove.add(cl);
                 }
             }
+        }
+        
+        // Now remove any found items
+        for(CallListener cl : itemsToRemove) {
+        	lists.remove(cl);
         }
 
         // now remove any registered observers
         lists = this.getObsMap();
+        LinkedList<CallObserver> observersToRemove = new LinkedList<CallObserver>();
         it = lists.keySet().iterator();
         while (it.hasNext()) {
             CallObserver co = (CallObserver) it.next();
@@ -706,9 +716,17 @@ class ListenerManager implements TerminalConnectionListener {
                 if (status.remove(addr)) {
                     // the address was the last listener handle -- remove the
                     // observer, subtypes and notify
-                    this.remove(co);
+                	
+                	// we hold it and remove it outside the loop to avoid a ConcurrentModificationException
+                	// we can't just use it.remove() since we have to do some extra logic
+                	observersToRemove.add(co);
                 }
             }
+        }
+
+        // Now remove any found items
+        for(CallObserver co : observersToRemove) {
+        	lists.remove(co);
         }
 
     }
@@ -785,6 +803,7 @@ class ListenerManager implements TerminalConnectionListener {
      */
     synchronized void remove(Terminal term) {
         Map lists = this.getCallListMap();
+        LinkedList<CallListener> itemsToRemove = new LinkedList<CallListener>();
         Iterator it = lists.keySet().iterator();
         while (it.hasNext()) {
             CallListener cl = (CallListener) it.next();
@@ -793,13 +812,22 @@ class ListenerManager implements TerminalConnectionListener {
                 if (status.remove(term)) {
                     // the address was the last listener handle -- remove the
                     // listener, subtypes and notify
-                    this.remove(cl);
+                	
+                	// we hold it and remove it outside the loop to avoid a ConcurrentModificationException
+                	// we can't just use it.remove() since we have to do some extra logic
+                	itemsToRemove.add(cl);
                 }
             }
+        }
+        
+        // Now remove any found items
+        for(CallListener cl : itemsToRemove) {
+        	lists.remove(cl);
         }
 
         // now remove any registered observers
         lists = this.getObsMap();
+        LinkedList<CallObserver> observersToRemove = new LinkedList<CallObserver>();
         it = lists.keySet().iterator();
         while (it.hasNext()) {
             CallObserver co = (CallObserver) it.next();
@@ -808,9 +836,17 @@ class ListenerManager implements TerminalConnectionListener {
                 if (status.remove(term)) {
                     // the address was the last listener handle -- remove the
                     // observer, subtypes and notify
-                    this.remove(co);
+                	
+                	// we hold it and remove it outside the loop to avoid a ConcurrentModificationException
+                	// we can't just use it.remove() since we have to do some extra logic
+                	observersToRemove.add(co);
                 }
             }
+        }
+
+        // Now remove any found items
+        for(CallObserver co : observersToRemove) {
+        	lists.remove(co);
         }
 
     }
