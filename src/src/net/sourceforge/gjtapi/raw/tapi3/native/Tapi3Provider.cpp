@@ -489,7 +489,10 @@ void CALLBACK callback(MethodID methodID, int callID, wstring& address, Cause ca
             jmethodID callbackID = NULL;
             for(int retry=0; callbackID == NULL && retry < 5; retry++) {
 		        callbackID = localEnv->GetMethodID(cls, "callback", "(IILjava/lang/String;I[Ljava/lang/String;)V");
-                Sleep(250);
+				// if we have to try again, delay for 250 ms
+				if(callbackID == NULL && retry < 5) {
+					Sleep(250);
+				}
             }           
             logger->debug("callback methodID: %p, retry=%d", callbackID, retry);
 
