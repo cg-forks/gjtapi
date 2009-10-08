@@ -1,0 +1,17 @@
+ProviderClass = net.sourceforge.gjtapi.raw.emulator.EmProvider
+replace = true
+Address1 = 1
+Address2 = 2
+Address3 = 3
+Address4 = 4
+Address5 = 5
+Address6 = 6
+Address7 = 11
+Address8 = 12
+Address9 = 13
+Address10 = 14
+Address11 = 15
+Address12 = 16
+display = true
+# Should we throttle RawListener events?  'f' means that the RawProvider will report everything
+throttle = f
