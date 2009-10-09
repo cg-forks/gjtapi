@@ -351,6 +351,13 @@ public Connection[] connect(Terminal origterm, Address origaddr,
 		throw rse.morph((GenericProvider)this.getProvider());
 	}
 
+	// check if the call has been disconnected during set up,
+	// such as by an asynchronous hang-up
+	if(this.getCallID() == null) {
+		// leave the call dead
+		return null;
+	}
+	
 	// change the call state - even though an event will do this
 	this.toActive(Event.CAUSE_NEW_CALL);
 	
@@ -1096,10 +1103,10 @@ public void cleanup() {
 		prov.getRaw().releaseCallId(callId);
 	
 		// remove from framework
-		prov.getCallMgr().removeCall(this);
-		
-		// ensure we don't cleanup twice
-		this.setCallID(null);
+		if(prov.getCallMgr().removeCall(this)) {
+			// ensure we don't cleanup twice
+			this.setCallID(null);
+		}
 	}
 }
 /**

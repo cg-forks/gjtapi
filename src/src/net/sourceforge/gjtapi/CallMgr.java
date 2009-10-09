@@ -372,9 +372,13 @@ void register(FreeCall call) {
  * @author: Richard Deadman
  * @param call An Invalid Call to remove
  */
-void removeCall(FreeCall call) {
-	if (call.getState() == Call.INVALID)
+boolean removeCall(FreeCall call) {
+	if (call.getState() == Call.INVALID) {
 		this.getCallSet().remove(call.getCallID());
+		return true;
+	} else {
+		return false;
+	}
 }
 /**
  * Internal setter for the CallId to call map.

@@ -105,7 +105,8 @@ public class FreeTerminal implements Terminal, PrivateData {
 	  }
 
 	  public int hashCode() {
-		  return this.getCallId().hashCode() +
+		  CallId id = this.getCallId();
+		  return (id != null) ? id.hashCode() : 0 +
 		  	this.getAddress().hashCode() +
 		  	this.getTerminal().hashCode();
 	  }
@@ -113,7 +114,12 @@ public class FreeTerminal implements Terminal, PrivateData {
 	  public boolean equals(Object o) {
 		  if (o instanceof TCHolder) {
 			  TCHolder ch = (TCHolder)o;
-			  if (ch.getCallId().equals(this.getCallId()) &&
+			  CallId myCallId = this.getCallId();
+			  CallId otherCallId = ch.getCallId();
+			  // callIds are sometimes null. FOr equality both or neither must be null
+			  if (((myCallId == null && otherCallId == null) ||
+					  ((myCallId == null && otherCallId == null) &&
+							  otherCallId.equals(myCallId))) &&
 				  ch.getAddress().equals(this.getAddress()) &&
 				  ch.getTerminal().equals(this.getTerminal()))
 			  	  return true;
