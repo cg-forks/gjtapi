@@ -1127,11 +1127,13 @@ public Connection transfer(String address) throws MethodNotSupportedException, R
 	TerminalConnection trans = this.getTransferController();
 	if (trans == null) {	// look for the first available TC
 		Connection[] cs = this.getConnections();
-		for (int i = 0; i < cs.length; i++) {
-			TerminalConnection[] tcs = cs[i].getTerminalConnections();
-			if (tcs != null && tcs.length > 0) {
-				trans = tcs[0];
-				break;
+		if (cs != null) {
+			for (int i = 0; i < cs.length; i++) {
+				TerminalConnection[] tcs = cs[i].getTerminalConnections();
+				if (tcs != null && tcs.length > 0) {
+					trans = tcs[0];
+					break;
+				}
 			}
 		}
 	}
