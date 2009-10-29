@@ -107,8 +107,9 @@ public class FreeAddress implements Address, PrivateData {
 	  public boolean equals(Object o) {
 		  if (o instanceof ConnectionHolder) {
 			  ConnectionHolder ch = (ConnectionHolder)o;
-			  if (ch.getCallId().equals(this.getCallId()) &&
-				  ch.getAddress().equals(this.getAddress()))
+			  if (ch.getCallId() != null &&
+					  ch.getCallId().equals(this.getCallId()) &&
+					  ch.getAddress().equals(this.getAddress()))
 			  	  return true;
 		  }
 		  return false;

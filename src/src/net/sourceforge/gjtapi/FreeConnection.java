@@ -132,8 +132,11 @@ public void disconnect() throws InvalidStateException, PrivilegeViolationExcepti
 		// should check if we have already been disconnected
 		if (this.getState() != Connection.DISCONNECTED)
 			try {
-				// this should block until the connection is released.
-				gp.getRaw().release(this.getAddress().getName(), call.getCallID());
+				CallId callId = call.getCallID();
+				if(callId != null) {
+					// this should block until the connection is released.
+					gp.getRaw().release(this.getAddress().getName(), callId);
+				}
 				
 				// now update the state
 				this.toDisconnected(Event.CAUSE_NORMAL);
