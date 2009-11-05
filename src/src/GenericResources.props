@@ -2,7 +2,7 @@ DefaultProvider = Emulator
 #DefaultProvider = Tapi3
 PROVIDER_Emulator = net.sourceforge.gjtapi.raw.emulator.EmProvider
 PROVIDER_Mux = net.sourceforge.gjtapi.raw.mux.MuxProvider
-PROVIDER_Inverter = net.sourceforge.gjtapi.raw.invert.InvertProvider
+PROVIDER_Inverter = net.sourceforge.gjtapi.raw.invert.InverterProvider
 PROVIDER_Emulator6 = Emulator6.props
 
 ## No longer in core -- require *.gjtapi files
