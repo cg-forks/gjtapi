@@ -112,10 +112,10 @@ class ProviderSelecion extends JDialog {
         pane.add(statusBar, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_START, GridBagConstraints.BOTH, 
                 new Insets(10, 10, 10, 10), 0, 0));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
         loadedProviders = new java.util.HashMap<String, Provider>();
-        providerSelectionChanged();
+        //providerSelectionChanged();
         setVisible(true);
     }
 
