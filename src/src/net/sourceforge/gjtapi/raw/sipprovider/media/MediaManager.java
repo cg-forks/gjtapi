@@ -63,6 +63,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
@@ -120,7 +121,8 @@ public class MediaManager implements Serializable {
     static final long serialVersionUID = 0L; // never serialized
 
     protected static Console console = Console.getConsole(MediaManager.class);
-    protected ArrayList listeners = new ArrayList();
+    protected Collection<MediaListener> listeners =
+        new java.util.ArrayList<MediaListener>();
     protected Vector avTransmitters = new Vector();
     protected AVReceiver avReceiver;
     protected SdpFactory sdpFactory;
@@ -200,13 +202,12 @@ public class MediaManager implements Serializable {
 
 
     /**
-     * Reads the audio from the given url and publishes it to all transmitters.
-     * @param url the url pointing to an audio data source
+     * Reads the audio from the given URL and publishes it to all transmitters.
+     * @param url the URL pointing to an audio data source
      * @throws MediaException
      *         Error playing the audio.
      */
-    public void play(String url) throws MediaException {
-
+    public void play(final String url) throws MediaException {
         console.logEntry();
         if (console.isDebugEnabled()) {
             console.debug("playing '" + url + "'...");
@@ -651,7 +652,6 @@ public class MediaManager implements Serializable {
             console.debug("Starting transmission.");
             transmitter.start();
             transmitters.add(transmitter);
-
         } finally {
             console.logExit();
         }
@@ -790,9 +790,9 @@ public class MediaManager implements Serializable {
     void firePlayerStarting(Player player) {
         try {
             console.logEntry();
-            MediaEvent evt = new MediaEvent(player);
-            for (int i = listeners.size() - 1; i >= 0; i--) {
-                ((MediaListener) listeners.get(i)).playerStarting(evt);
+            final MediaEvent evt = new MediaEvent(player);
+            for (MediaListener listener : listeners) {
+                listener.playerStarting(evt);
             }
         } finally {
             console.logExit();
@@ -802,8 +802,7 @@ public class MediaManager implements Serializable {
     void firePlayerStopped() {
         try {
             console.logEntry();
-            for (int i = listeners.size() - 1; i >= 0; i--) {
-                final MediaListener listener = (MediaListener) listeners.get(i);
+            for (MediaListener listener : listeners) {
                 listener.playerStopped();
             }
         } finally {
@@ -814,10 +813,9 @@ public class MediaManager implements Serializable {
     void fireNonFatalMediaError(Throwable cause) {
         try {
             console.logEntry();
-            MediaErrorEvent evt = new MediaErrorEvent(cause);
-            for (int i = listeners.size() - 1; i >= 0; i--) {
-                ((MediaListener) listeners.get(i)).nonFatalMediaErrorOccurred(
-                        evt);
+            final MediaErrorEvent evt = new MediaErrorEvent(cause);
+            for (MediaListener listener : listeners) {
+                listener.nonFatalMediaErrorOccurred(evt);
             }
         } finally {
             console.logExit();
@@ -835,16 +833,14 @@ public class MediaManager implements Serializable {
 
     InetAddress getLocalHost() throws MediaException {
         try {
-            console.logEntry();
-            String hostAddress = sipProp.getProperty(
+            final String hostAddress = sipProp.getProperty(
                     "net.java.sip.communicator.media.IP_ADDRESS");
-            InetAddress lh;
-            lh = InetAddress.getByName(hostAddress);
-            console.debug(hostAddress);
-            return lh;
+            if (console.isDebugEnabled()) {
+                console.debug(hostAddress);
+            }
+            return InetAddress.getByName(hostAddress);
         } catch (Exception ex) {
-            ex.toString();
-            return null;
+            throw new MediaException(ex.getMessage(), ex);
         }
     }
 
@@ -1084,9 +1080,8 @@ public class MediaManager implements Serializable {
             try {
                 try {
                     dataSource.connect();
-                }
-                //Thrown when operation is not supported by the OS
-                catch (NullPointerException ex) {
+                } catch (NullPointerException ex) {
+                    //Thrown when operation is not supported by the OS
                     console.error(
                             "An internal error occurred while"
                             + " trying to connec to to datasource!", ex);

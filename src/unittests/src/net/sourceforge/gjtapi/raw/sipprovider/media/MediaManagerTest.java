@@ -12,7 +12,8 @@ import net.sourceforge.gjtapi.raw.sipprovider.common.NetworkAddressManager;
 import org.junit.Test;
 
 /**
- * @author ds01191
+ * Test cases for {@link MediaManager}.
+ * @author Dirk Schnelle-Walka
  *
  */
 public class MediaManagerTest {
@@ -34,15 +35,17 @@ public class MediaManagerTest {
         InputStream in2 = MediaManagerTest.class.getResourceAsStream(
             "phone1.properties");
         props2.load(in2);
-        MediaManager recordManager = new MediaManager(props1, addressManager);
+        MediaManager recordManager = new MediaManager(props2, addressManager);
         recordManager.start();
         recordManager.record("file:out.wav");
+        String recordSdp = recordManager.generateSdpDescription();
+        recordManager.openMediaStreams(recordSdp);
         MediaManager playManager = new MediaManager(props1, addressManager);
         playManager.start();
-        String sdp = playManager.generateSdpDescription();
-        playManager.openMediaStreams(sdp);
         File file = new File("demo/gui/test.wav");
-        playManager.play(file.toURL().toString());
+        playManager.play(file.toURI().toURL().toString());
+        String playSdp = playManager.generateSdpDescription();
+        playManager.openMediaStreams(playSdp);
         Thread.sleep(3000);
     }
 

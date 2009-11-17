@@ -106,8 +106,11 @@ public class SipProvider
     /** Logger instance. */
     protected static Console console = Console.getConsole(SipProvider.class);
     // private CallId idd;
+
     /** Known sip phones. */
-    private final Collection sipPhones = new java.util.ArrayList();
+    private final Collection<SipPhone> sipPhones =
+        new java.util.ArrayList<SipPhone>();
+
     /** The address manager. */
     private NetworkAddressManager addressManager;
 
@@ -172,8 +175,7 @@ public class SipProvider
      */
     // prepare un jtapi CallId
     public CallId reserveCallId(String address) throws InvalidArgumentException {
-        SipCallId id = new SipCallId();
-        return id;
+        return new SipCallId();
     }
 
     /**
@@ -201,11 +203,13 @@ public class SipProvider
 
     {
         console.logEntry();
-        console.debug("id = " + id);
+        if (console.isDebugEnabled()) {
+            console.debug("id = " + id);
 
-        console.debug("trentative de connection  a " + address);
+            console.debug("trentative de connection  a " + address);
+        }
         // CREATION D'UN CALL (SIP)
-        SipPhone mySP = getSipPhoneByAddress(address);
+        final SipPhone mySP = getSipPhoneByAddress(address);
         mySP.createCall(id, address, term, dest);
 
         return id;
@@ -227,10 +231,10 @@ public class SipProvider
     public String[] getAddresses() throws ResourceUnavailableException {
         console.logEntry();
         String[] ret = new String[sipPhones.size()];
-        Iterator iter = sipPhones.iterator();
+        Iterator<SipPhone> iter = sipPhones.iterator();
         int i = 0;
         while (iter.hasNext()) {
-            SipPhone sp = (SipPhone) iter.next();
+            final SipPhone sp = iter.next();
             ret[i] = sp.getAddress();
             i++;
         }
@@ -252,13 +256,11 @@ public class SipProvider
     public String[] getAddresses(String terminal)
             throws InvalidArgumentException {
         console.logEntry();
-        Iterator iter = sipPhones.iterator();
+        Iterator<SipPhone> iter = sipPhones.iterator();
         int size = 0;
         while (iter.hasNext()) {
-            SipPhone sp = (SipPhone) iter.next();
+            final SipPhone sp = iter.next();
             SipManager sm = sp.getSipManager();
-            if (sm.getAddress().equals(terminal))
-                ;
             size++;
 
         }
@@ -318,10 +320,10 @@ public class SipProvider
     public TermData[] getTerminals() throws ResourceUnavailableException {
         console.logEntry();
         TermData[] ret = new TermData[sipPhones.size()];
-        Iterator iter = sipPhones.iterator();
+        Iterator<SipPhone> iter = sipPhones.iterator();
         int i = 0;
         while (iter.hasNext()) {
-            SipPhone sp = (SipPhone) iter.next();
+            SipPhone sp = iter.next();
             SipManager sm = sp.getSipManager();
             ret[i] = new TermData(sm.getAddress(), true);
             ret[i] = new TermData(sp.getAddress(), true);
@@ -345,10 +347,10 @@ public class SipProvider
      */
     public TermData[] getTerminals(String address)
             throws InvalidArgumentException {
-        Iterator iter = sipPhones.iterator();
+        Iterator<SipPhone> iter = sipPhones.iterator();
         int size = 0;
         while (iter.hasNext()) {
-            SipPhone sp = (SipPhone) iter.next();
+            SipPhone sp = iter.next();
             SipManager sm = sp.getSipManager();
             if (sm.getAddress().equals(address))
                 ;
@@ -427,7 +429,7 @@ public class SipProvider
             throws PrivilegeViolationException, ResourceUnavailableException,
             MethodNotSupportedException, RawStateException {
         console.logEntry();
-        SipPhone mySP = getSipPhoneByAddress(address);
+        final SipPhone mySP = getSipPhoneByAddress(address);
         mySP.sipHangup(call);
     }
 
@@ -478,9 +480,9 @@ public class SipProvider
 
     private SipPhone getSipPhoneByAddress(String address) {
         SipPhone ret = null;
-        Iterator iter = sipPhones.iterator();
+        Iterator<SipPhone> iter = sipPhones.iterator();
         while (iter.hasNext()) {
-            SipPhone sp = (SipPhone) iter.next();
+            SipPhone sp = iter.next();
             if (sp.getAddress().equals(address)) {
                 ret = sp;
             }

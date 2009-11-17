@@ -856,7 +856,7 @@ public class SipManager implements SipListener
             }
             try
             {
-                SipURI fromURI = (SipURI) addressFactory.createURI(
+                final SipURI fromURI = (SipURI) addressFactory.createURI(
                         currentlyUsedURI);
                 fromURI.setTransportParam(listeningPoint.getTransport());
 

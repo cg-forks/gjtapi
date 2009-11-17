@@ -47,7 +47,7 @@ import net.sourceforge.gjtapi.media.*;
  * Creation date: (2000-02-03 15:40:58)
  * @author: Richard Deadman
  */
-public class TestCallListener implements TerminalConnectionListener
+public class CallListenerTest implements TerminalConnectionListener
 {
     /**
      * callActive method comment.
@@ -359,7 +359,7 @@ public class TestCallListener implements TerminalConnectionListener
 
             // assocate a listener with the call
             out.print("3.3: Setting Listener on the call...");
-            c.addCallListener(new TestCallListener());
+            c.addCallListener(new CallListenerTest());
             //  c2.addCallListener(new TestCallListener());
             out.println(" success.");
 

@@ -432,7 +432,9 @@ public class MjSipProvider implements MediaTpi {
                     playSemaphore.acquire(1);
                     break;
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    LOGGER.warning("wait for play sem interrupted: "
+                            + ex.getMessage());
+                    return;
                 }
             } while (true);
 
@@ -464,10 +466,10 @@ public class MjSipProvider implements MediaTpi {
                 }
             }
         } catch (IllegalMonitorStateException e) {
-            e.printStackTrace();
+            LOGGER.warning(e.getMessage());
             throw new MediaResourceException(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.warning(e.getMessage());
             throw new MediaResourceException(e.getMessage());
         } finally {
             playSemaphore.release(1);
@@ -506,6 +508,7 @@ public class MjSipProvider implements MediaTpi {
                 os.close();
             }
         } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
             throw new MediaResourceException(e.getMessage());
         } finally {
             recSemaphore.release(1);
