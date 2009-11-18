@@ -123,8 +123,6 @@ public class MediaManager implements Serializable {
     protected static Console console = Console.getConsole(MediaManager.class);
     protected Collection<MediaListener> listeners =
         new java.util.ArrayList<MediaListener>();
-    protected Vector avTransmitters = new Vector();
-    protected AVReceiver avReceiver;
     protected SdpFactory sdpFactory;
     protected ProcessorUtility procUtility = new ProcessorUtility("MediaManager");
     //media devices
@@ -180,8 +178,10 @@ public class MediaManager implements Serializable {
     protected boolean isStarted = false;
     protected Properties sipProp;
     private final int audioPort;
-    protected Vector transmitters = new Vector();
-    protected Vector receivers = new Vector();
+    protected Collection<AVTransmitter> transmitters =
+        new java.util.ArrayList<AVTransmitter>();
+    protected Collection<AVReceiver> receivers =
+        new java.util.ArrayList<AVReceiver>();
     protected DataSink sink = null;
     private MediaLocator dest;
     /** Reference to the address manager. */
@@ -218,34 +218,25 @@ public class MediaManager implements Serializable {
             initProcessor(avDataSource);
         }
 
-        for (int i = avTransmitters.size() - 1; i >= 0; i--) {
+        for (AVTransmitter transmitter : transmitters) {
             try {
-                AVTransmitter transmitter =
-                    (AVTransmitter) avTransmitters.elementAt(i);
                 transmitter.play(processor);
             } catch (net.sourceforge.gjtapi.raw.sipprovider.media.
                      MediaException ex) {
                 console.debug(ex.toString());
             }
             console.logExit();
-
         }
     }
 
     public void stopPlaying() {
-
         console.logEntry();
-        for (int i = avTransmitters.size() - 1; i >= 0; i--)
-
-        {
+        for (AVTransmitter transmitter : transmitters) {
             try {
-                AVTransmitter transmitter =
-                    (AVTransmitter) avTransmitters.elementAt(i);
                 transmitter.stopPlaying();
             } catch (Exception ex) {
                 console.debug(ex.toString());
             }
-
         }
     }
 
@@ -262,20 +253,16 @@ public class MediaManager implements Serializable {
             sink.open();
             sink.start();
 
-            for (int i = receivers.size() - 1; i >= 0; i--) {
+            for (AVReceiver receiver : receivers) {
                 try {
-                    AVReceiver receiver = (AVReceiver) receivers.elementAt(i);
                     Processor pro = receiver.getProcessor();
-
                     pro.start();
                 } catch (Exception ex) {
-                    console.debug(ex.toString());
+                    console.warn(ex.toString());
                 }
-
             }
-
         } catch (Exception ex) {
-            console.debug(ex.toString());
+            console.warn(ex.toString());
         }
         console.logExit();
     }
@@ -288,11 +275,12 @@ public class MediaManager implements Serializable {
             IOException {
         DataSource dsTab[] = new DataSource[receivers.size()];
         DataSource ds = null;
-        for (int i = receivers.size() - 1; i >= 0; i--) {
-            Processor pro = ((AVReceiver) receivers.elementAt(i)).getProcessor();
-
+        int i = 0;
+        for (AVReceiver receiver : receivers) {
+            Processor pro = receiver.getProcessor();
             ds = pro.getDataOutput();
             dsTab[i] = ds;
+            ++i;
         }
 
         DataSource mergeDs = Manager.createMergingDataSource(dsTab);
@@ -384,7 +372,7 @@ public class MediaManager implements Serializable {
                 console.error("Incorrect SDP data!", ex);
                 throw new MediaException("Incorrect SDP data!", ex);
             }
-            Vector mediaDescriptions;
+            final Collection<MediaDescription> mediaDescriptions;
             try {
                 mediaDescriptions = sessionDescription.
                                     getMediaDescriptions(true);
@@ -396,14 +384,14 @@ public class MediaManager implements Serializable {
                         "Failed to extract media descriptions from provided session description!",
                         ex);
             }
-            Connection connection = sessionDescription.getConnection();
+            final Connection connection = sessionDescription.getConnection();
             if (connection == null) {
                 console.error(
                         "A connection parameter was not present in provided session description");
                 throw new MediaException(
                         "A connection parameter was not present in provided session description");
             }
-            String remoteAddress = null;
+            final String remoteAddress;
             try {
                 remoteAddress = connection.getAddress();
             } catch (SdpParseException ex) {
@@ -418,11 +406,10 @@ public class MediaManager implements Serializable {
             boolean atLeastOneTransmitterStarted = false;
             ArrayList ports = new ArrayList();
             ArrayList formatSets = new ArrayList();
-            for (int i = 0; i < mediaDescriptions.size(); i++) {
-                Media media = ((MediaDescription) mediaDescriptions.get(i)).
-                              getMedia();
+            for (MediaDescription mediaDescription : mediaDescriptions) {
+                final Media media = mediaDescription.getMedia();
                 //Media Type
-                String mediaType = null;
+                final String mediaType;
                 try {
                     mediaType = media.getMediaType();
                 } catch (SdpParseException ex) {
@@ -506,7 +493,6 @@ public class MediaManager implements Serializable {
                         "Apparently all media descriptions failed to initialise!\n" +
                         "SIP COMMUNICATOR won't be able to open a media stream!");
             } else {
-
                 startTransmitter(remoteAddress, ports, formatSets);
             }
         } finally {
@@ -560,7 +546,7 @@ public class MediaManager implements Serializable {
                     ex);
 
         }
-        Connection connection = sessionDescription.getConnection();
+        final Connection connection = sessionDescription.getConnection();
         if (connection == null) {
             console.error(
                     "A connection parameter was not present in provided session description");
@@ -624,7 +610,7 @@ public class MediaManager implements Serializable {
             SessionAddress addToStop = new SessionAddress(InetAddress.getByName(
                     remoteAddress), mediaPort);
             stopTransmitters(addToStop);
-            if (avTransmitters.size() == 0) {
+            if (transmitters.size() == 0) {
                 stopReceiver("localhost");
             }
             firePlayerStopped();
@@ -648,10 +634,9 @@ public class MediaManager implements Serializable {
             AVTransmitter transmitter = new AVTransmitter(processor, destHost,
                     ports, formatSets);
             transmitter.setMediaManagerCallback(this);
-            avTransmitters.add(transmitter);
+            transmitters.add(transmitter);
             console.debug("Starting transmission.");
             transmitter.start();
-            transmitters.add(transmitter);
         } finally {
             console.logExit();
         }
@@ -660,19 +645,17 @@ public class MediaManager implements Serializable {
     protected void stopTransmitters(SessionAddress addToStop) {
         try {
             console.logEntry();
-            for (int i = avTransmitters.size() - 1; i >= 0; i--) {
+            for (AVTransmitter transmitter : transmitters) {
                 try {
-                    AVTransmitter transmitter =
-                        (AVTransmitter) avTransmitters.elementAt(i);
                     transmitter.stop(addToStop);
                 } //Catch everything that comes out as we wouldn't want
                 //Some null pointer prevent us from closing a device and thus
                 //render it unusable
                 catch (Exception exc) {
-                    console.error("Could not close transmitter " + i, exc);
+                    console.error("Could not close transmitter " + transmitter,
+                            exc);
                 }
-                avTransmitters.removeElementAt(i);
-                transmitters.removeElementAt(i);
+                transmitters.remove(transmitter);
             }
         } finally {
             console.logExit();
@@ -682,14 +665,14 @@ public class MediaManager implements Serializable {
     protected void startReceiver(String remoteAddress, ArrayList ports) {
         try {
             console.logEntry();
-            avReceiver = new AVReceiver(new String[] {
+            final AVReceiver receiver = new AVReceiver(new String[] {
                                         remoteAddress + "/" + getAudioPort() +
                                         "/1"}, sipProp);
-            avReceiver.setMediaManager(this);
+            receiver.setMediaManager(this);
             //avReceiver.initialize();
             try {
-                avReceiver.initialize2(ports);
-                receivers.add(avReceiver);
+                receiver.initialize2(ports);
+                receivers.add(receiver);
             } catch (MediaException ex) {
                 ex.printStackTrace();
             }
@@ -699,37 +682,19 @@ public class MediaManager implements Serializable {
     }
 
     protected void stopReceiver(String localAddress) {
-        /*try
-                 {
-            console.logEntry();
-            if (avReceiver != null)
-            {
-                //on ferme la reception dans lengthcas ou il n'u a plus de transm
-                if(avTransmitters.size()==0)
-                    avReceiver.close(LocalAddress);
-                //avReceiver = null;
-                //avReceiver.
-            }
-                 }
-                 finally
-                 {
-            console.logExit();
-                 }*/
-
         try {
             console.logEntry();
-            for (int i = receivers.size() - 1; i >= 0; i--) {
+            for (AVReceiver receiver : receivers) {
                 try {
-                    AVReceiver receiver = (AVReceiver) receivers.elementAt(i);
                     receiver.close(localAddress);
+                    firePlayerStopped();
                 } //Catch everything that comes out as we wouldn't want
                 //Some null pointer prevent us from closing a device and thus
                 //render it unusable
                 catch (Exception exc) {
-                    console.error("Could not close receiver " + i, exc);
+                    console.warn("Could not close receiver " + receiver, exc);
                 }
-
-                receivers.removeElementAt(i);
+                receivers.remove(receiver);
             }
         } finally {
             console.logExit();
@@ -739,10 +704,17 @@ public class MediaManager implements Serializable {
     protected void stopReceiver() {
         try {
             console.logEntry();
-            if (avReceiver != null) {
-                avReceiver.close();
-                avReceiver = null;
-
+            for (AVReceiver receiver : receivers) {
+                try {
+                    receiver.close();
+                    firePlayerStopped();
+                } //Catch everything that comes out as we wouldn't want
+                //Some null pointer prevent us from closing a device and thus
+                //render it unusable
+                catch (Exception exc) {
+                    console.warn("Could not close receiver " + receiver, exc);
+                }
+                receivers.remove(receiver);
             }
         } finally {
             console.logExit();
@@ -756,12 +728,16 @@ public class MediaManager implements Serializable {
     public void softStopReceiver() {
         try {
             console.logEntry();
-            if (avReceiver != null) {
-                avReceiver.close();
-                this.firePlayerStopped();
-            } else {
-                console.debug(
-                        "Attempt to soft stop reception for a null avReceiver");
+            for (AVReceiver receiver : receivers) {
+                try {
+                    receiver.close();
+                    firePlayerStopped();
+                } //Catch everything that comes out as we wouldn't want
+                //Some null pointer prevent us from closing a device and thus
+                //render it unusable
+                catch (Exception exc) {
+                    console.warn("Could not close receiver " + receiver, exc);
+                }
             }
         } finally {
             console.logExit();
@@ -775,12 +751,16 @@ public class MediaManager implements Serializable {
     public void softStartReceiver() {
         try {
             console.logEntry();
-            if (avReceiver != null) {
-                avReceiver.initialize();
-            } else {
-                console.error(
-                        "acReceiver is null. Use softStartReceiver only for receivers "
-                        + "that had been stopped using softStopReceiver()");
+            for (AVReceiver receiver : receivers) {
+                try {
+                    receiver.initialize();
+                } //Catch everything that comes out as we wouldn't want
+                //Some null pointer prevent us from closing a device and thus
+                //render it unusable
+                catch (Exception exc) {
+                    console.warn("Could not close receiver " + receiver, exc);
+                }
+                receivers.remove(receiver);
             }
         } finally {
             console.logExit();

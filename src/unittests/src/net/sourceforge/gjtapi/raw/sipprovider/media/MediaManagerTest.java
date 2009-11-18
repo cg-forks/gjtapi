@@ -33,13 +33,13 @@ public class MediaManagerTest {
         addressManager.init(props1);
         Properties props2 = new Properties();
         InputStream in2 = MediaManagerTest.class.getResourceAsStream(
-            "phone1.properties");
+            "phone2.properties");
         props2.load(in2);
         MediaManager recordManager = new MediaManager(props2, addressManager);
         recordManager.start();
-        recordManager.record("file:out.wav");
         String recordSdp = recordManager.generateSdpDescription();
         recordManager.openMediaStreams(recordSdp);
+        recordManager.record("file:out.wav");
         MediaManager playManager = new MediaManager(props1, addressManager);
         playManager.start();
         File file = new File("demo/gui/test.wav");

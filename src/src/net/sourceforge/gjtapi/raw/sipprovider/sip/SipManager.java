@@ -289,16 +289,13 @@ public class SipManager implements SipListener
             initProperties();
 
 
-            this.sipFactory = SipFactory.getInstance();
-             sipFactory.setPathName("gov.nist");
-            try
-            {
+            sipFactory = SipFactory.getInstance();
+            sipFactory.setPathName("gov.nist");
+            try {
                 addressFactory = sipFactory.createAddressFactory();
                 headerFactory = sipFactory.createHeaderFactory();
                 messageFactory = sipFactory.createMessageFactory();
-            }
-            catch (PeerUnavailableException ex)
-            {
+            } catch (PeerUnavailableException ex) {
                 console.error("Could not could not create factories!", ex);
                 throw new CommunicationsException(
                 "Could not could not create factories!",
