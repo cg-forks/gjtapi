@@ -89,16 +89,18 @@ class AVTransmitter {
     protected SessionAddress sessionAddresses[] = null;
 
     protected DataSource dataOutput = null;
-    protected List ports;
+    protected List<Integer> ports;
     protected List formatSets;
     protected MediaManager mediaManCallback = null;
     private SendStream sendStream;
     /** Utility to delay until a processor state has been reached. */
     protected ProcessorUtility procUtility = new ProcessorUtility("AVTransmitter");
+    /** <code>true</code> if the transmitter has been started. */
+    private boolean started;
 
     public AVTransmitter(Processor processor,
                          String ipAddress,
-                         java.util.ArrayList ports,
+                         List<Integer> ports,
                          java.util.ArrayList formatSets) {
         try {
             console.logEntry();
@@ -126,13 +128,11 @@ class AVTransmitter {
 
     /**
      * Starts the transmission. Returns null if transmission started ok.
-     * Otherwise it returns a string with the reason why the setup failed.
      */
-    synchronized String start() throws MediaException {
+    synchronized void start(final Processor p) throws MediaException {
         try {
             console.logEntry();
-
-             configureProcessor(processor);
+            configureProcessor(p);
             // Create an RTP session to transmit the output of the
             // processor to the specified IP address and port no.
             try {
@@ -145,10 +145,18 @@ class AVTransmitter {
             }
             // Start the transmission
             processor.start();
-            return null;
+            started = true;
         } finally {
             console.logExit();
         }
+    }
+
+    /**
+     * Checks if this transmitter has been started.
+     * @return <code>true</code> if the transmitter has been started
+     */
+    public boolean isStarted() {
+        return started;
     }
 
     /**
@@ -172,7 +180,8 @@ class AVTransmitter {
                 }
             }
         } catch (javax.media.rtp.InvalidSessionAddressException ex) {
-            console.debug(ex.toString());
+            console.debug(ex.toString(), ex);
+            started = false;
         } finally {
             console.logExit();
         }
@@ -181,11 +190,10 @@ class AVTransmitter {
     protected void configureProcessor(Processor p) throws MediaException {
         processor = p;
         try {
-
             console.logEntry();
             if (processor == null) {
                 console.error("Processor is null.");
-                throw new MediaException("Processor is null.");
+                throw new MediaException("No processor to configure!");
             }
             // Wait for the processor to configure
             boolean result = true;
@@ -195,14 +203,14 @@ class AVTransmitter {
             }
             if (result == false) {
                 console.error("Couldn't configure processor");
-                throw new MediaException("Couldn't configure processor");
+                throw new MediaException("Couldn't configure processor!");
             }
             // Get the tracks from the processor
             TrackControl[] tracks = processor.getTrackControls();
             // Do we have atleast one track?
             if (tracks == null || tracks.length < 1) {
                 console.error("Couldn't find tracks in processor");
-                throw new MediaException("Couldn't find tracks in processor");
+                throw new MediaException("Couldn't find tracks in processor!");
             }
             // Set the output content descriptor to RAW_RTP
             // This will limit the supported formats reported from
@@ -421,7 +429,7 @@ class AVTransmitter {
 
     public void play(Processor p) throws MediaException {
         console.logEntry();
-        this.configureProcessor(p);
+        configureProcessor(p);
         processor.start();
         PushBufferDataSource pbds = (PushBufferDataSource) dataOutput;
         PushBufferStream pbss[] = pbds.getStreams();
@@ -437,18 +445,14 @@ class AVTransmitter {
             }
         } catch (Exception ex) {
             console.error("Session " + i +
-                          " failed to start transmitting.");
+                          " failed to start transmitting.", ex);
             throw new MediaException(
-                    "Session " + i + " failed to start transmitting.");
+                    "Session " + i + " failed to start transmitting.", ex);
         }
         console.logExit();
     }
 
-    public void stopPlaying() {
-        try {
-            sendStream.stop();
-        } catch (java.io.IOException ex) {
-            console.debug(ex.toString());
-        }
+    public void stopPlaying() throws IOException {
+        sendStream.stop();
     }
 }

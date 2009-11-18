@@ -76,6 +76,7 @@ import javax.telephony.InvalidPartyException;
 import javax.telephony.MethodNotSupportedException;
 import javax.telephony.PrivilegeViolationException;
 import javax.telephony.ResourceUnavailableException;
+import javax.telephony.media.MediaResourceException;
 
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawStateException;
@@ -226,18 +227,22 @@ public class SipPhone
     // callback du sipManager
     public void callStateChanged(CallStateEvent evt) {
         console.logEntry();
-        console.debug("new state: " + evt.getNewState() + ",old state: "
-                + evt.getOldState());
-
+        final String oldState = evt.getOldState();
+        final String newState = evt.getNewState();
+        if (console.isDebugEnabled()) {
+            console.debug("new state: " + newState + ", old state: "
+                    + oldState);
+        }
         try {
-
             net.sourceforge.gjtapi.raw.sipprovider.sip.Call call = evt
                     .getSourceCall();
             int sipId = evt.getSourceCall().getID();
             ListIdElement el = getElementIdListBySipId(sipId);
 
-            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.ALERTING) {
-                System.out.println("remote address = " + el.getAddress());
+            if (newState == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.ALERTING) {
+                if (console.isDebugEnabled()) {
+                    console.debug("remote address = " + el.getAddress());
+                }
 
                 sipProvider.sipTerminalConnectionRinging(el.getJtapiId(), el
                         .getAddress(), el.getTerminal(),
@@ -248,9 +253,9 @@ public class SipPhone
                         .getAddress(), ConnectionEvent.CAUSE_NORMAL);
 
             }
-            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.RINGING) {
-                if (evt.getOldState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DIALING) {
-                    System.out.println("remote address = " + el.getAddress());
+            if (newState == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.RINGING) {
+                if (oldState == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DIALING) {
+                    console.debug("remote address = " + el.getAddress());
 
                     sipProvider.sipTerminalConnectionCreated(el.getJtapiId(),
                             el.getAddress(), "remote",
@@ -263,7 +268,7 @@ public class SipPhone
                 }
 
             }
-            if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.CONNECTED) {
+            if (newState == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.CONNECTED) {
                 console.debug("connected");
 
                 // sipProvider.sipConnectionConnected(el.getJtapiId(),
@@ -272,14 +277,13 @@ public class SipPhone
                         .getAddress(), ConnectionEvent.CAUSE_NORMAL);
                 sipProvider.sipCallActive(el.getJtapiId(), Event.CAUSE_NORMAL);
                 try {
-                    this.mediaManager.openMediaStreams(call
-                            .getRemoteSdpDescription());
-
+                    final String sdp = call.getRemoteSdpDescription();
+                    mediaManager.openMediaStreams(sdp);
                 } catch (net.sourceforge.gjtapi.raw.sipprovider.media.MediaException ex) {
-                    console.debug(ex.toString());
+                    console.warn(ex.toString(), ex);
                 }
 
-            } else if (evt.getNewState() == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DISCONNECTED) {
+            } else if (newState == net.sourceforge.gjtapi.raw.sipprovider.sip.Call.DISCONNECTED) {
                 console.debug("disconnected");
                 // listener.connectionSuspended(el.getJtapiId(),
                 // el.getAddress(), ConnectionEvent.CAUSE_NORMAL);
@@ -483,26 +487,25 @@ public class SipPhone
     public void unregistering(RegistrationEvent evt) {
     }
 
-    public void play(String url) {
+    public void play(String url) throws MediaResourceException {
         try {
-            this.mediaManager.play(url);
-        } catch (Exception ex) {
-            console.debug(ex.toString());
+            mediaManager.play(url);
+        } catch (MediaException ex) {
+            throw new MediaResourceException(ex.getMessage());
         }
     }
 
-    public void record(String url) {
+    public void record(String url) throws MediaResourceException {
         try {
-            this.mediaManager.record(url);
+            mediaManager.record(url);
         } catch (Exception ex) {
-            console.debug(ex.toString());
+            throw new MediaResourceException(ex.getMessage());
         }
     }
 
     public void stop() {
-
-        this.mediaManager.stopPlaying();
-        this.mediaManager.stopRecording();
+        mediaManager.stopPlaying();
+        mediaManager.stopRecording();
     }
 }
 

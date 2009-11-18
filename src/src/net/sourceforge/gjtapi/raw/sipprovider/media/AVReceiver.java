@@ -62,6 +62,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.media.ControllerClosedEvent;
@@ -257,7 +258,7 @@ ControllerListener, SendStreamListener
    * @param ports ArrayList
    * @throws MediaException
    */
-  protected void initialize2(ArrayList ports) throws
+  protected void initialize2(List<Integer> ports) throws
           MediaException {
 
       console.logEntry();
@@ -265,16 +266,17 @@ ControllerListener, SendStreamListener
       mgrs = new RTPManager[sessions.length];
 
       for (int i = 0; i < sessions.length; i++) {
-
           SessionLabel session = new SessionLabel(sessions[0]);
           final int localPort = session.port;
           final String remoteAddress = session.addr;
-          final int remotePort = ((Integer)ports.get(0)).intValue();
-          console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost()
-                  + " localPort: " + localPort);
-          console.debug("IP remoteHostAVRECV: " + remoteAddress + " remotePort: "
-                  +  remotePort);
-
+          final Integer port = ports.get(0);
+          final int remotePort = port.intValue();
+          if (console.isDebugEnabled()) {
+              console.debug("IP localHostAVRECV: " + mediaManager.getLocalHost()
+                      + " localPort: " + localPort);
+              console.debug("IP remoteHostAVRECV: " + remoteAddress
+                      + " remotePort: " +  remotePort);
+          }
           InetSocketAddress dialogLocalAddr = new InetSocketAddress(
           mediaManager.getLocalHost(), localPort);
 
@@ -297,9 +299,11 @@ ControllerListener, SendStreamListener
           try {
               mgrs[i].initialize(local);
           } catch (IOException ex) {
-              ex.printStackTrace();
+              throw new MediaException("Error initializing the RTP manager!",
+                      ex);
           } catch (InvalidSessionAddressException ex) {
-              ex.printStackTrace();
+              throw new MediaException("Error initializing the RTP manager!",
+                      ex);
           }
 
           // Now get the real local ports from the manager
@@ -316,8 +320,8 @@ ControllerListener, SendStreamListener
               rtpRemoteAddress = InetAddress.getByAddress(InetAddress.
                       getLocalHost().getHostName(),
                       bogusAddress.getAddress());
-          } catch (UnknownHostException ex2) {
-              ex2.printStackTrace();
+          } catch (UnknownHostException ex) {
+              throw new MediaException(ex.getMessage(), ex);
           }
           SessionAddress sessionAddress = new SessionAddress(rtpRemoteAddress,
                   remotePort);
@@ -331,10 +335,12 @@ ControllerListener, SendStreamListener
           //add target to manager
           try {
               mgrs[i].addTarget(sessionAddress);
-          } catch (IOException ex1) {
-              ex1.printStackTrace();
-          } catch (InvalidSessionAddressException ex1) {
-              ex1.printStackTrace();
+          } catch (IOException ex) {
+              throw new MediaException(
+                      "Error adding the target to the RTP Manager!", ex);
+          } catch (InvalidSessionAddressException ex) {
+              throw new MediaException(
+                      "Error adding the target to the RTP Manager!", ex);
           }
           console.logExit();
       }
@@ -351,8 +357,7 @@ ControllerListener, SendStreamListener
      */
     protected void close(String LocalAddress)
     {
-        try
-        {
+        try {
             console.logEntry();
             // close the RTP session.
             for (int i = 0; i < mgrs.length; i++)
@@ -382,9 +387,7 @@ ControllerListener, SendStreamListener
 
                 }
             }
-        }
-        finally
-        {
+        } finally {
             console.logExit();
         }
     }

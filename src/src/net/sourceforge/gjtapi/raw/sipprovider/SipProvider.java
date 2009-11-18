@@ -565,17 +565,14 @@ public class SipProvider
             throws javax.telephony.media.MediaResourceException {
         console.logEntry();
         try {
-
-            String[] add = this.getAddresses(terminal);
+            final String[] add = this.getAddresses(terminal);
             for (int i = 0; i < add.length; i++) {
-                SipPhone sipPhone = this.getSipPhoneByAddress(add[i]);
+                final SipPhone sipPhone = this.getSipPhoneByAddress(add[i]);
                 sipPhone.play(streamIds[0]);
             }
         } catch (javax.telephony.InvalidArgumentException ex) {
             console.debug(ex.toString());
-
         }
-
     }
 
     public void record(String terminal, String streamId,
@@ -583,10 +580,9 @@ public class SipProvider
             throws javax.telephony.media.MediaResourceException {
         console.logEntry();
         try {
-
-            String[] add = this.getAddresses(terminal);
+            final String[] add = this.getAddresses(terminal);
             for (int i = 0; i < add.length; i++) {
-                SipPhone sipPhone = this.getSipPhoneByAddress(add[i]);
+                final SipPhone sipPhone = this.getSipPhoneByAddress(add[i]);
                 sipPhone.record(streamId);
             }
         } catch (javax.telephony.InvalidArgumentException ex) {

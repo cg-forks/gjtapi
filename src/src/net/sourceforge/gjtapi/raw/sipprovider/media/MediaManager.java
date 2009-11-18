@@ -65,6 +65,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
@@ -212,32 +213,36 @@ public class MediaManager implements Serializable {
         if (console.isDebugEnabled()) {
             console.debug("playing '" + url + "'...");
         }
-        MediaLocator locator = new MediaLocator(url);
-        avDataSource = createDataSource(locator);
-        if (avDataSource != null) {
-            initProcessor(avDataSource);
+        final MediaLocator locator = new MediaLocator(url);
+        try {
+            avDataSource = createDataSource(locator);
+        } catch (IOException e) {
+            throw new MediaException(e.getMessage(), e);
         }
 
         for (AVTransmitter transmitter : transmitters) {
-            try {
-                transmitter.play(processor);
-            } catch (net.sourceforge.gjtapi.raw.sipprovider.media.
-                     MediaException ex) {
-                console.debug(ex.toString());
+            if (!transmitter.isStarted()) {
+                console.debug("Starting transmission.");
+                transmitter.start(processor);
             }
-            console.logExit();
+            transmitter.play(processor);
         }
+        console.logExit();
     }
 
+    /**
+     * Stops all transmitters.
+     */
     public void stopPlaying() {
         console.logEntry();
         for (AVTransmitter transmitter : transmitters) {
             try {
                 transmitter.stopPlaying();
-            } catch (Exception ex) {
-                console.debug(ex.toString());
+            } catch (IOException ex) {
+                console.warn(ex.toString(), ex);
             }
         }
+        console.logExit();
     }
 
     public void record(String url) {
@@ -317,8 +322,11 @@ public class MediaManager implements Serializable {
      * Creates the {@link DataSource} for the given {@link MediaLocator}.
      * @param locator the medi loactor
      * @return created data source.
+     * @exception IOException
+     *            error creating the data source
      */
-    protected DataSource createDataSource(MediaLocator locator) {
+    protected DataSource createDataSource(MediaLocator locator)
+        throws IOException {
         try {
             console.logEntry();
             try {
@@ -330,19 +338,7 @@ public class MediaManager implements Serializable {
                 }
                 return Manager.createDataSource(locator);
             } catch (NoDataSourceException ex) {
-                //The failure only concerns us
-                if (console.isDebugEnabled()) {
-                    console.debug("Coud not create data source for " +
-                                  locator.toExternalForm(), ex);
-                }
-                return null;
-            } catch (IOException ex) {
-                //The failure only concens us
-                if (console.isDebugEnabled()) {
-                    console.debug("Coud not create data source for " +
-                                  locator.toExternalForm(), ex);
-                }
-                return null;
+                throw new IOException("Error creating the data source", ex);
             }
         } finally {
             console.logExit();
@@ -357,7 +353,7 @@ public class MediaManager implements Serializable {
                 console.debug("sdpData arg - " + sdpData);
             }
             checkIfStarted();
-            SessionDescription sessionDescription = null;
+            final SessionDescription sessionDescription;
             if (sdpData == null) {
                 console.error("The SDP data was null! Cannot open " +
                               "a stream withour an SDP Description!");
@@ -404,7 +400,7 @@ public class MediaManager implements Serializable {
             }
             int mediaPort = -1;
             boolean atLeastOneTransmitterStarted = false;
-            ArrayList ports = new ArrayList();
+            List<Integer> ports = new java.util.ArrayList<Integer>();
             ArrayList formatSets = new ArrayList();
             for (MediaDescription mediaDescription : mediaDescriptions) {
                 final Media media = mediaDescription.getMedia();
@@ -439,7 +435,7 @@ public class MediaManager implements Serializable {
                     continue;
                 }
                 //Find  formats
-                Vector sdpFormats = null;
+                Collection<String> sdpFormats;
                 try {
                     sdpFormats = media.getMediaFormats(true);
                 } catch (SdpParseException ex) {
@@ -484,7 +480,7 @@ public class MediaManager implements Serializable {
             }
             //startReceiver(remoteAddress);
             //open corrects ports for RTP Session
-            startReceiver(remoteAddress, ports);
+            createReceiver(remoteAddress, ports);
             if (!atLeastOneTransmitterStarted) {
                 console.error(
                         "Apparently all media descriptions failed to initialise!\n" +
@@ -493,7 +489,7 @@ public class MediaManager implements Serializable {
                         "Apparently all media descriptions failed to initialise!\n" +
                         "SIP COMMUNICATOR won't be able to open a media stream!");
             } else {
-                startTransmitter(remoteAddress, ports, formatSets);
+                createTransmitter(remoteAddress, ports, formatSets);
             }
         } finally {
             console.logExit();
@@ -626,17 +622,14 @@ public class MediaManager implements Serializable {
     }
 
 
-    protected void startTransmitter(String destHost, ArrayList ports,
+    protected void createTransmitter(String destHost, List<Integer> ports,
                                     ArrayList formatSets) throws MediaException {
         try {
             console.logEntry();
-
-            AVTransmitter transmitter = new AVTransmitter(processor, destHost,
-                    ports, formatSets);
+            final AVTransmitter transmitter =
+                new AVTransmitter(processor, destHost, ports, formatSets);
             transmitter.setMediaManagerCallback(this);
             transmitters.add(transmitter);
-            console.debug("Starting transmission.");
-            transmitter.start();
         } finally {
             console.logExit();
         }
@@ -655,27 +648,23 @@ public class MediaManager implements Serializable {
                     console.error("Could not close transmitter " + transmitter,
                             exc);
                 }
-                transmitters.remove(transmitter);
             }
+            transmitters.clear();
         } finally {
             console.logExit();
         }
     }
 
-    protected void startReceiver(String remoteAddress, ArrayList ports) {
+    protected void createReceiver(String remoteAddress,
+            List<Integer> ports) throws MediaException {
         try {
             console.logEntry();
             final AVReceiver receiver = new AVReceiver(new String[] {
                                         remoteAddress + "/" + getAudioPort() +
                                         "/1"}, sipProp);
             receiver.setMediaManager(this);
-            //avReceiver.initialize();
-            try {
-                receiver.initialize2(ports);
-                receivers.add(receiver);
-            } catch (MediaException ex) {
-                ex.printStackTrace();
-            }
+            receiver.initialize2(ports);
+            receivers.add(receiver);
         } finally {
             console.logExit();
         }
@@ -694,8 +683,8 @@ public class MediaManager implements Serializable {
                 catch (Exception exc) {
                     console.warn("Could not close receiver " + receiver, exc);
                 }
-                receivers.remove(receiver);
             }
+            receivers.clear();
         } finally {
             console.logExit();
         }
@@ -714,8 +703,8 @@ public class MediaManager implements Serializable {
                 catch (Exception exc) {
                     console.warn("Could not close receiver " + receiver, exc);
                 }
-                receivers.remove(receiver);
             }
+            receivers.clear();
         } finally {
             console.logExit();
         }
@@ -760,8 +749,8 @@ public class MediaManager implements Serializable {
                 catch (Exception exc) {
                     console.warn("Could not close receiver " + receiver, exc);
                 }
-                receivers.remove(receiver);
             }
+            receivers.clear();
         } finally {
             console.logExit();
         }
@@ -926,7 +915,7 @@ public class MediaManager implements Serializable {
 
     protected void checkIfStarted() throws MediaException {
         if (!isStarted()) {
-            console.error("The MediaManager had not been properly started! "
+            console.error("The MediaManager has not been properly started! "
                           + "Impossible to continue");
             throw new MediaException(
                     "The MediaManager had not been properly started! "
@@ -1026,16 +1015,13 @@ public class MediaManager implements Serializable {
      * @return
      * @throws MediaException
      */
-    protected ArrayList extractTransmittableJmfFormats(Vector sdpFormats) throws
-            MediaException {
+    protected Collection<String> extractTransmittableJmfFormats(
+            Collection<String> sdpFormats) throws MediaException {
         try {
             console.logEntry();
-            ArrayList jmfFormats = new ArrayList();
-            for (int i = 0; i < sdpFormats.size(); i++) {
-
-                String jmfFormat =
-                        findCorrespondingJmfFormat(sdpFormats.elementAt(i).
-                        toString());
+            Collection<String> jmfFormats = new java.util.ArrayList<String>();
+            for (String sdpFormat : sdpFormats) {
+                final String jmfFormat = findCorrespondingJmfFormat(sdpFormat);
                 if (jmfFormat != null) {
                     jmfFormats.add(jmfFormat);
                 }
