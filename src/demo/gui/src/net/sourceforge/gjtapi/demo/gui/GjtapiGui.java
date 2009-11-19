@@ -98,12 +98,17 @@ public class GjtapiGui {
 
     private JTextField txtDTMFIn;
     /** The file to be played. */
-    private JTextField txtFile;
+    private JTextField txtPlayFile;
     /** A file chooser for the file to be played. */
     private JButton butSelectFile;
     /** Plays the selected file. */
     private JButton butPlayFile;
-
+    /** The file to record to. */
+    private JTextField txtRecordFile;
+    /** Records to the specified file. */
+    private JButton butRecordFile;
+    /** Records to the speaker, i.e. play the received audio over the speaker. */
+    private JButton butSpeaker;
     private JScrollPane callsScrollPane;
     private JList lstCalls;
     private JButton butAnswer;
@@ -191,10 +196,10 @@ public class GjtapiGui {
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
                 new Insets(2, 2, 0, 10), 0, 0));
 
-        txtFile = new JTextField();
-        inputPanel.add(txtFile, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, 
+        txtPlayFile = new JTextField();
+        inputPanel.add(txtPlayFile, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, 
                 GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
-                new Insets(10, 10, 0, 10), 0, 0));
+                new Insets(2, 10, 0, 10), 0, 0));
         butSelectFile = new JButton("Select...");
         butSelectFile.setEnabled(false);
         inputPanel.add(butSelectFile, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, 
@@ -211,7 +216,7 @@ public class GjtapiGui {
                 }
                 File file = chooser.getSelectedFile();
                 try {
-                    txtFile.setText(file.getCanonicalPath());
+                    txtPlayFile.setText(file.getCanonicalPath());
                     butPlayFile.setEnabled(true);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
@@ -226,15 +231,18 @@ public class GjtapiGui {
         butPlayFile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 GenericMediaService ms = new GenericMediaService(
-                        (MediaProvider)provider);
+                        (MediaProvider) provider);
                 TerminalConnection terminalConnection =
                     getSelectedTerminalConnection();
+                if (terminalConnection == null) {
+                    return;
+                }
                 Terminal terminal = terminalConnection.getTerminal();
                 try {
                     ms.bindToTerminal(null, terminal);
-                    String fileName = txtFile.getText();
+                    String fileName = txtPlayFile.getText();
                     File file = new File(fileName);
-                    ms.play(file.toURL().toString(), 0, null, new Hashtable());
+                    ms.play(file.toURI().toURL().toString(), 0, null, new Hashtable());
                 } catch (MediaBindException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -250,6 +258,50 @@ public class GjtapiGui {
                 }
             }
         });
+        txtRecordFile = new JTextField("out.wav");
+        inputPanel.add(txtRecordFile, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 10, 0, 10), 0, 0));
+        butRecordFile = new JButton("Record");
+        butRecordFile.setEnabled(false);
+        inputPanel.add(butRecordFile, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 10), 0, 0));
+        butRecordFile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                GenericMediaService ms = new GenericMediaService(
+                        (MediaProvider) provider);
+                TerminalConnection terminalConnection =
+                    getSelectedTerminalConnection();
+                if (terminalConnection == null) {
+                    return;
+                }
+                Terminal terminal = terminalConnection.getTerminal();
+                try {
+                    ms.bindToTerminal(null, terminal);
+                    String fileName = txtRecordFile.getText();
+                    File file = new File(fileName);
+                    ms.record(file.toURI().toURL().toString(), null, new Hashtable());
+                } catch (MediaBindException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MediaConfigException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MediaResourceException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+        butSpeaker = new JButton("Speaker");
+        butSpeaker.setEnabled(false);
+        inputPanel.add(butSpeaker, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0, 
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, 
+                new Insets(2, 2, 0, 10), 0, 0));
 
         JLabel lbDTMFIn = new JLabel("Received digits");
         inputPanel.add(lbDTMFIn, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, 
@@ -638,6 +690,10 @@ public class GjtapiGui {
                 connState == Connection.INPROGRESS || 
                 connState == Connection.FAILED);
         butSelectFile.setEnabled(connState == Connection.CONNECTED);
+        if (connState != Connection.CONNECTED) {
+            butPlayFile.setEnabled(false);
+        }
+        butRecordFile.setEnabled(connState == Connection.CONNECTED);
         boolean holdEnabled = (ccTermConnState == CallControlTerminalConnection.TALKING);
         // TODO - this should be used only for swapOnHold
         // allow hold only if there is a terminalConnection in state HELD
