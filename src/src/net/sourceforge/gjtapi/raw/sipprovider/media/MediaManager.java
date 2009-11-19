@@ -76,6 +76,7 @@ import javax.media.Format;
 import javax.media.IncompatibleSourceException;
 import javax.media.Manager;
 import javax.media.MediaLocator;
+import javax.media.NoDataSinkException;
 import javax.media.NoDataSourceException;
 import javax.media.NoProcessorException;
 import javax.media.Player;
@@ -219,7 +220,7 @@ public class MediaManager implements Serializable {
         } catch (IOException e) {
             throw new MediaException(e.getMessage(), e);
         }
-
+        initProcessor(avDataSource);
         for (AVTransmitter transmitter : transmitters) {
             if (!transmitter.isStarted()) {
                 console.debug("Starting transmission.");
@@ -245,11 +246,9 @@ public class MediaManager implements Serializable {
         console.logExit();
     }
 
-    public void record(String url) {
-
+    public void record(String url) throws MediaException {
         console.logEntry();
         try {
-
             DataSource mergeDs = this.getDataSource();
             // append "file:/" to URL if it is not already there
             String fullUrl = (url.indexOf("file:") == 0) ? url : "file:/" + url;
@@ -259,15 +258,15 @@ public class MediaManager implements Serializable {
             sink.start();
 
             for (AVReceiver receiver : receivers) {
-                try {
-                    Processor pro = receiver.getProcessor();
-                    pro.start();
-                } catch (Exception ex) {
-                    console.warn(ex.toString());
-                }
+                final Processor pro = receiver.getProcessor();
+                pro.start();
             }
-        } catch (Exception ex) {
-            console.warn(ex.toString());
+        } catch (IOException ex) {
+            throw new MediaException(ex.getMessage(), ex);
+        } catch (IncompatibleSourceException ex) {
+            throw new MediaException(ex.getMessage(), ex);
+        } catch (NoDataSinkException ex) {
+            throw new MediaException(ex.getMessage(), ex);
         }
         console.logExit();
     }

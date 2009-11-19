@@ -360,49 +360,36 @@ ControllerListener, SendStreamListener
         try {
             console.logEntry();
             // close the RTP session.
-            for (int i = 0; i < mgrs.length; i++)
-            {
-                if (mgrs[i] != null)
-                {
-                    if (console.isDebugEnabled())
-                    {
+            for (int i = 0; i < mgrs.length; i++) {
+                if (mgrs[i] != null) {
+                    if (console.isDebugEnabled()) {
                         console.debug("Stopped mgr " +  (i + 1));
                     }
-                    try
-                    {
+                    try {
                         InetAddress inetAdd =  InetAddress.getByName(LocalAddress);
                         SessionAddress sessionAddress = new SessionAddress(inetAdd, mediaManager.getAudioPort());
                         mgrs[i].removeTarget(sessionAddress ,"bye");
                         mgrs[i].dispose();
                         mgrs[i] = null;
+                    } catch (java.net.UnknownHostException ex) {
+                        console.warn(ex.toString(), ex);
+                    } catch (javax.media.rtp.InvalidSessionAddressException ex) {
+                        console.warn(ex.toString(), ex);
                     }
-                    catch (java.net.UnknownHostException ex)
-                    {
-                        console.debug(ex.toString());
-                    }
-                    catch(javax.media.rtp.InvalidSessionAddressException ex)
-                    {
-                        console.debug(ex.toString());
-                    }
-
                 }
             }
         } finally {
             console.logExit();
         }
     }
-    protected void close( )
-    {
-        try
-        {
+
+    protected void close() {
+        try {
             console.logEntry();
             // close the RTP session.
-            for (int i = 0; i < mgrs.length; i++)
-            {
-                if (mgrs[i] != null)
-                {
-                    if (console.isDebugEnabled())
-                    {
+            for (int i = 0; i < mgrs.length; i++) {
+                if (mgrs[i] != null) {
+                    if (console.isDebugEnabled()) {
                         console.debug("Stopped mgr " + (i + 1));
                     }
                     mgrs[i].removeTargets("Closing session from AVReceiver");
@@ -410,8 +397,7 @@ ControllerListener, SendStreamListener
                     mgrs[i] = null;
                 }
             }
-        }
-        finally
+        } finally
         {
             console.logExit();
         }

@@ -498,7 +498,7 @@ public class SipPhone
     public void record(String url) throws MediaResourceException {
         try {
             mediaManager.record(url);
-        } catch (Exception ex) {
+        } catch (MediaException ex) {
             throw new MediaResourceException(ex.getMessage());
         }
     }
