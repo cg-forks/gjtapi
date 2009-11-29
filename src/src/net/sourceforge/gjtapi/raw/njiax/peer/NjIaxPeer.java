@@ -43,9 +43,17 @@ public class NjIaxPeer implements PeerListener {
                      String host, boolean register, int maxCalls) {
         this.provider = provider;
         this.userName = userName;
-        peer = new Peer(this, userName, password, host, register, maxCalls);
-//        peer = new Peer(this, userName, password, host, register, maxCalls,
-//                        outStream, inStream);
+//        peer = new Peer(this, userName, password, host, register, maxCalls);
+        // This is a forked version of the constructor -- See njiax-gjtapi-1.0.0.jar
+        // Renato Cassaca's note:
+        // "I had to change a lot of files in NjIax source so I copied _all_ njiax files no gjtapi/src/njiax.
+        // That means that gjtapi has a fork of njiax. I think that it makes sense because I tried to contact
+        // several time njiax developers and I didn't get any feedback. They had some "solutions" that I didn't
+        // like so much, like create a new thread each time 160 bytes of audio have to be sent to Asterisk....
+        // To work around this unwanted feature I added a PoolExecutor. The problem is that it's only available
+        // in Java6...."
+        peer = new Peer(this, userName, password, host, register, maxCalls,
+                        outStream, inStream);
     }
 
     public void setCallId(NjIaxCallId id) {
