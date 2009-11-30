@@ -59,7 +59,6 @@ package net.sourceforge.gjtapi.raw.sipprovider.common;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -105,7 +104,7 @@ public class Console
     // ---------------------------------------------------------- Implmentation
     private void initialize()
     {
-        Category root = Category.getRoot();
+    	Logger root = Logger.getRootLogger();
         Enumeration appenders = root.getAllAppenders();
         if (appenders == null || !appenders.hasMoreElements()) {
             // No config, set some defaults ( consistent with
