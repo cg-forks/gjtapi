@@ -231,4 +231,11 @@ public class Tapi3NativeImpl implements Tapi3Native {
      */
     public native long tapi3LineDevSpecific(int callID, String address, byte[] data);
 
+	public native int tapi3BlindTransfer(int callID, String numberToDial);
+
+	public native int tapi3ConsultationStart(int callID, String controllerNumber, String numberToDial);
+
+	public native int tapi3AssistedTransferFinish(int callID);
+
+	public native int tapi3ConferenceFinish(int callID);
 }

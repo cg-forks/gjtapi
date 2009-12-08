@@ -27,22 +27,37 @@ sendLineDeviceSpecific function you have to put '04 03 02 01' in the java byte a
 
 setupTransfer, transfer, setupConference, conference:
 -----------------------------------------------------
-a lot of tsps require transfer (and conference, too) to work properly to use setupTransfer 
+A lot of tsps require transfer (and conference, too) to work properly to use setupTransfer 
 (setupConference accordingly) for the consultation call. GJTapi has another idea how to
 transfer and conference works. That's why this party is 'hacky' again.
-For this function to be called you have to have another call first. Then call 
-'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "setupTransferCall");'
-This tells the provider that the next call shall be setupTransfer(..). That means you have to
-call something like 'provider.createCall().connect(terminal, address, destAddress);'. A
-consultation call is created and you can transfer now by callig
-'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "transferCall");'
-and next
-'firstCall.transfer(secondCall);'
+For this function to be called you have to have another call first. Then call sendPrivateData()
+to it, passing in a PrivateTransferConferenceInfo object.
 
-for conference:
-'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "setupConferenceCall");'
-'provider.createCall().connect(terminal, address, destAddress);'
-'smthing.getRaw().sendPrivateData(firstCall.getCallID(), null, null, "conferenceCall");'
-'firstCall.conference(secondCall);'
+	// Set up consultation call for transfer
+	CallControlCall consult = (CallControlCall)prov.createCall();
+	PrivateData consultPrivate = (PrivateData)consult;
+	PrivateTransferConferenceInfo ccInfo = PrivateTransferConferenceInfo.createTransferInfo((Tapi3CallID)((FreeCall)ccc).getCallID(), addr.getName(), ts[0].getName());
+	consultPrivate.sendPrivateData(ccInfo);
+	consult.connect(terminal, addr, finalDest);
+	
+	// transfer the call
+	ccc.setTransferController(termConn);
+	ccc.transfer(consult);
+
+For conference, you change the factory method to "PrivateTransferConferenceInfo.createConferenceInfo()"
+and then call "ccc.conference(consult);"
+
+If a transfer or conference fails, you can clear it using:
+
+	ccInfo.setPrimaryCallId(null);
+	consultPrivate.sendPrivateData(ccInfo);
+
+If, after settting up a consultation call, you want to change between transfer and conference:
+
+	ccInfo.setTransferFlag(true);
+
+This method scales to multiple calls at one time and simplifies the calling structure, since you only have to
+make one call into "sendPrivateData()" against the consultation call (or primary call) before following
+normal JTAPI usage.
 
 

@@ -113,6 +113,38 @@ public interface Tapi3Native {
     public int tapi3Join(int callID1, int callID2, String address, String terminal, int mode);
     
     /**
+     * Blindly transfer a call to another line.
+     * @param callID
+     * @param numberToDial
+     * @return 1 or a negative error code
+     */
+    public int tapi3BlindTransfer(int callID, String numberToDial);
+
+   /**
+    * Start setting up a consultation call for transfer or conference
+    * @param callID
+    * @param numberToDial
+    * @return the consultation call id or -1 for error
+    */
+   public int tapi3ConsultationStart(int callID, String controllerNumber, String numberToDial);
+
+   /**
+    * Complete an assisted transfer.
+    * @param callID
+    * @param numberToDial
+    * @return 1 or a negative error code
+    */
+   public int tapi3AssistedTransferFinish(int callID);
+
+   /**
+    * Complete a conference call.
+    * @param callID
+    * @param numberToDial
+    * @return 1 or a negative error code
+    */
+   public int tapi3ConferenceFinish(int callID);
+
+   /**
      * Take a call off hold 
      * @param callID The identifier for the call that we want to take off hold
      * @return Error code (0=success) 

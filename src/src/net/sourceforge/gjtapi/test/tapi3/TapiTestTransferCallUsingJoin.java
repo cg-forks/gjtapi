@@ -1,4 +1,4 @@
-package net.sourceforge.gjtapi.test;
+package net.sourceforge.gjtapi.test.tapi3;
 
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
@@ -32,14 +32,19 @@ package net.sourceforge.gjtapi.test;
 */
 import java.io.*;
 import javax.telephony.callcontrol.CallControlCall;
+import javax.telephony.privatedata.PrivateData;
 import javax.telephony.*;
+
+import net.sourceforge.gjtapi.FreeCall;
+import net.sourceforge.gjtapi.raw.tapi3.PrivateTransferConferenceInfo;
+import net.sourceforge.gjtapi.raw.tapi3.Tapi3CallID;
 /**
  * Simple test script for transfering a call.
  * This tests consult, conference, transfer and TransferControllers, as well as hold and release
  * Creation date: (2000-02-03 15:40:58)
  * @author: Richard Deadman
  */
-public class TestTransferCall {
+public class TapiTestTransferCallUsingJoin {
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -135,8 +140,8 @@ public static void transfer(String providerName, String fromAddr, String toAddr,
 		out.print("6.1 and 4.1: Attempting to get connection address and address name...");
 		for (int i = 0; i < cons.length; i++) {
 			// find the remote connection
-			if (cons[i].getAddress().getName().equals(toAddr)) {
-				out.println("success (including remote address match)");
+			if (cons[i].getAddress().getName().equals(fromAddr)) {
+				out.println("success (including local address match)");
 				Connection conn = cons[i];
 				
 				out.print("6.2: Attempting to get TerminalConnections for remote address...");
@@ -150,20 +155,22 @@ public static void transfer(String providerName, String fromAddr, String toAddr,
 					// wait to continue
 					prompt();
 					
-					// answer first found terminal
-					out.print("7.1: Attempting to answer call on first TerminalConnection...");
-					termConn.answer();
-					System.out.println(" success");
-
 					if (c instanceof CallControlCall) {
 						CallControlCall ccc = (CallControlCall)c;
+												
+						// Create a consultation call
+						CallControlCall consult = (CallControlCall)prov.createCall();
+						PrivateData consultPrivate = (PrivateData)consult;
+						PrivateTransferConferenceInfo ccInfo = PrivateTransferConferenceInfo.createTransferInfo((Tapi3CallID)((FreeCall)ccc).getCallID(), addr.getName(), ts[0].getName());
+						consultPrivate.sendPrivateData(ccInfo);
+						consult.connect(ts[0], addr, finalDest);
 						
 						// transfer the call
 						prompt();
 						
 						out.print("3.5 and 3.7: Attempting to transfer the call...");
 						ccc.setTransferController(termConn);
-						ccc.transfer(finalDest);
+						ccc.transfer(consult);
 						out.println(" success");
 
 						// now disconnect the call

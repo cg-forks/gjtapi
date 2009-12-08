@@ -205,22 +205,17 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     private Map termAddrMap = new HashMap();
     /**
+     * Mapping of terminal string to termData
+     */
+    private Map termTermDataMap = new HashMap();
+    /**
      * flag for callControl (transfer, conference)
      */
-    private int tapiCallControlMode = 0;
     private int TAPICALLCONTROLMODE_NONE = 0;
     private int TAPICALLCONTROLMODE_SETUPTRANSFER = 1;
     private int TAPICALLCONTROLMODE_TRANSFER = 2;
     private int TAPICALLCONTROLMODE_SETUPCONFERENCE = 3;
     private int TAPICALLCONTROLMODE_CONFERENCE = 4;
-    /**
-     * callID for callControl (transfer, conference)
-     */
-    private Tapi3CallID ccCallID = null;
-    /**
-     * Mapping of terminal string to termData
-     */
-    private Map termTermDataMap = new HashMap();
     /**
      * The list of TelephonyListeners
      */
@@ -231,6 +226,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     private final ArrayList digitListenerList = new ArrayList();
 
+    /**
+     * Map used to store information to allow transfers and conferences
+     */
+    private HashMap<CcInfoKey, PrivateTransferConferenceInfo> callControlInfoMap = new HashMap<CcInfoKey, PrivateTransferConferenceInfo>();
+    
     private static interface DigitListener {
         public void receivedDigit(String terminal, char ch);
     }
@@ -706,32 +706,26 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.debug("createCall(" + id + ", " + address + ", " + term + ", " + dest + ")");
         if(id instanceof Tapi3CallID) {
             Tapi3CallID tapi3CallID = (Tapi3CallID)id;
+            PrivateTransferConferenceInfo ccInfo = this.getCallControlInfoMap().get(new CcInfoKey(address, term));
             int retCode;
-            if((tapiCallControlMode == TAPICALLCONTROLMODE_SETUPCONFERENCE ||
-                tapiCallControlMode == TAPICALLCONTROLMODE_SETUPTRANSFER) && ccCallID != null)
+            	// Detect if we are setting up a consultation call
+            if(ccInfo != null)
             {
-              retCode = tapi3Native.tapi3CreateCall(tapi3CallID.getCallID(), address, dest, tapiCallControlMode);
-              try
-              {
-                Thread.sleep(200);
-              }
-              catch (InterruptedException e)
-              {
-                _resetCallControlInfo();
-                e.printStackTrace();
-              }
-              tapi3Native.tapi3Join(ccCallID.getCallID(), tapi3CallID.getCallID(), address, term, tapiCallControlMode);
+            	// the return code is the new callId
+            	retCode = tapi3Native.tapi3ConsultationStart(ccInfo.getPrimaryCallId().getCallID(), address, dest);
+            	if(retCode >= 0) {
+            		ccInfo.setConsultCallId(retCode);
+            	}
             }
             else
               retCode = tapi3Native.tapi3CreateCall(tapi3CallID.getCallID(), address, dest, TAPICALLCONTROLMODE_NONE);
-            _resetCallControlInfo();
+
             logger.debug("tapi3CreateCall() returned: " + Integer.toHexString(retCode));
             if(retCode < 0) {
                 throw new InvalidPartyException(InvalidPartyException.UNKNOWN_PARTY, "Error code: " + Integer.toHexString(retCode));
             }
             return id;
         } else {
-            _resetCallControlInfo();
             throw new MethodNotSupportedException("Not a Tapi3CallID: " + id);
         }
     }
@@ -797,63 +791,32 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      */
     public CallId join(CallId call1, CallId call2, String address, String terminal) throws RawStateException, InvalidArgumentException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException {
         logger.debug("join(" + call1 + ", " + call2 + ", " + address + ", " + terminal + ")");
-        if(tapiCallControlMode != TAPICALLCONTROLMODE_CONFERENCE && tapiCallControlMode != TAPICALLCONTROLMODE_TRANSFER)
+        PrivateTransferConferenceInfo ccInfo = this.getCallControlInfoMap().get(new CcInfoKey(address, terminal));
+        if(ccInfo == null)
         {
-            _resetCallControlInfo();
-            throw new InvalidArgumentException("No or wrong callControlMode set. Call sendPrivateData(null, null, null, mode) first!");
+            throw new InvalidArgumentException("No or wrong callControlMode set. Call sendPrivateData(call, address, terminal, mode) first!");
         }
-        if((call1 instanceof Tapi3CallID) && (call2 instanceof Tapi3CallID)) {
-            Tapi3CallID tapi3CallID1 = (Tapi3CallID)call1;
-            Tapi3CallID tapi3CallID2 = (Tapi3CallID)call2;
+        if((call1 instanceof Tapi3CallID) && (ccInfo.getConsultCallId() > 0)) {
             int errCode;
-            int callID1;
-            int callID2;
-            if(tapi3CallID1.getCallID() < tapi3CallID2.getCallID())
-            {
-              callID1 = tapi3CallID1.getCallID();
-              callID2 = tapi3CallID2.getCallID();
+            if(ccInfo.isTransfer()) {
+            	errCode = tapi3Native.tapi3AssistedTransferFinish(ccInfo.getConsultCallId());
+            } else {
+            	errCode = tapi3Native.tapi3ConferenceFinish(ccInfo.getConsultCallId());
             }
-            else
-            {
-              callID1 = tapi3CallID2.getCallID();
-              callID2 = tapi3CallID1.getCallID();
-            }
-            errCode = tapi3Native.tapi3Join(callID1, callID2, address, terminal, tapiCallControlMode);
-            _resetCallControlInfo();
             if(errCode == 0) {
                 logger.debug("tapi3Join() succeeded.");
-                return new Tapi3CallID(tapi3CallID2.getCallID());
+                // clean out call control entries
+                clearCallControlInfo(ccInfo);
+
+                return new Tapi3CallID(ccInfo.getConsultCallId());
             } else {
                 logger.error("Cannot join (errorCode=" + Integer.toHexString(errCode) + ")");
                 throw new RawStateException(call1, TerminalConnection.UNKNOWN);
             }
         } else {
            logger.warn("Not a Tapi3CallID: " + call1 + ", " + call2);
-           _resetCallControlInfo();
            throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
         }
-        /*int mode = 0;
-        if(call2 == null &! getTerminals(address)[0].equals(terminal))
-        {
-          mode = 1;
-          call2 = new Tapi3CallID(-1);
-        }
-        logger.debug("join(" + call1 + ", " + call2 + ", " + address + ", " + terminal + ")");
-        if((call1 instanceof Tapi3CallID) && (call2 instanceof Tapi3CallID)) {
-            Tapi3CallID tapi3CallID1 = (Tapi3CallID)call1;
-            Tapi3CallID tapi3CallID2 = (Tapi3CallID)call2;
-            int errCode = tapi3Native.tapi3Join(tapi3CallID1.getCallID(), tapi3CallID2.getCallID(), address, terminal, mode);
-            if(errCode == 0) {
-                logger.debug("tapi3Join() succeeded.");
-                return new Tapi3CallID(tapi3CallID1.getCallID());
-            } else {
-                logger.error("Cannot join (errorCode=" + Integer.toHexString(errCode) + ")");
-                throw new RawStateException(call1, TerminalConnection.UNKNOWN);
-            }
-        } else {
-            logger.warn("Not a Tapi3CallID: " + call1 + ", " + call2);
-           throw new InvalidArgumentException("Not a Tapi3CallID: " + call1 + ", " + call2);
-        }*/
     }
 
     /* (non-Javadoc)
@@ -967,37 +930,38 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
 			int result = tapi3Native.tapi3Dial(((Tapi3CallID)call).getCallID(), dialCommand.getNumberToDial());
 			return new Integer(result);
 		}
-    else if (data instanceof byte[] && address != null)
-		{
-			long result;
-      if(call == null)
-        result = tapi3Native.tapi3LineDevSpecific(-1, address, (byte[])data);
-      else if(call instanceof Tapi3CallID)
-        result = tapi3Native.tapi3LineDevSpecific(((Tapi3CallID)call).getCallID(), address, (byte[])data);
-      else
-        return null;
-      return new Long(result);
+		// The Join commands are for blind transfer, assisted transfer and conference
+		else if ((call instanceof Tapi3CallID) && (data instanceof PrivateJoinCommand)) {
+			return new Integer(((PrivateJoinCommand)data).perform(tapi3Native, (Tapi3CallID)call));
 		}
-    else if(address == null && terminal == null)
-    {
-      if(call != null && call instanceof Tapi3CallID)
-        ccCallID = (Tapi3CallID)call;
-      if(data.toString().equals("setupTransferCall"))
-        tapiCallControlMode = TAPICALLCONTROLMODE_SETUPTRANSFER;
-      else if(data.toString().equals("transferCall"))
-        tapiCallControlMode = TAPICALLCONTROLMODE_TRANSFER;
-      else if(data.toString().equals("setupConferenceCall"))
-        tapiCallControlMode = TAPICALLCONTROLMODE_SETUPCONFERENCE;
-      else if(data.toString().equals("conferenceCall"))
-        tapiCallControlMode = TAPICALLCONTROLMODE_CONFERENCE;
-      else
-      {
-        ccCallID = null;
-        tapiCallControlMode = TAPICALLCONTROLMODE_NONE;
-        return "callControl error";
-      }
-      return "callControl success";
-    }
+	    else if (data instanceof byte[] && address != null)
+			{
+				long result;
+	      if(call == null)
+	        result = tapi3Native.tapi3LineDevSpecific(-1, address, (byte[])data);
+	      else if(call instanceof Tapi3CallID)
+	        result = tapi3Native.tapi3LineDevSpecific(((Tapi3CallID)call).getCallID(), address, (byte[])data);
+	      else
+	        return null;
+	      return new Long(result);
+			}
+	    else if(address == null && terminal == null)
+	    {
+	      if(data instanceof PrivateTransferConferenceInfo) {
+	    	  // store it against both calls
+	    	  PrivateTransferConferenceInfo info = (PrivateTransferConferenceInfo)data;
+	    	  CcInfoKey key = new CcInfoKey(info.getConsultAddress(), info.getConsultTerminal());
+	    	  if(info.getPrimaryCallId() != null) {
+	    		  // store the mapping so that the next create Call is a consultation call
+		    	  this.getCallControlInfoMap().put(key, info);
+		    	  }
+	    	  else {
+	    		  // we need to clear out the consultation mapping
+	    		  this.getCallControlInfoMap().remove(key);
+	    	  }
+	     	 return "callControl success";
+	      }
+	    }
 		return null;
 	}
 	/* (non-Javadoc)
@@ -1136,9 +1100,54 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     /**
      * for callcontrol (transfer, conference)
      */
-    private void _resetCallControlInfo()
+    private void clearCallControlInfo(PrivateTransferConferenceInfo ccInfo)
     {
-      tapiCallControlMode = TAPICALLCONTROLMODE_NONE;
-      ccCallID = null;
+      this.getCallControlInfoMap().remove(new CcInfoKey(ccInfo.getConsultAddress(), ccInfo.getConsultTerminal()));
     }
+
+    /**
+     * Accessor for the map of call ids to transfer/conference instructions
+     * @return
+     */
+	private HashMap<CcInfoKey, PrivateTransferConferenceInfo> getCallControlInfoMap() {
+		return callControlInfoMap;
+	}
+	
+	protected class CcInfoKey {
+		private String address;
+		private String terminal;
+		
+		/**
+		 * Constructor
+		 * @param address
+		 * @param terminal
+		 */
+		private CcInfoKey(String address, String terminal) {
+			this.address = address;
+			this.terminal = terminal;
+		}
+		
+		// Overridden methods
+		@Override
+		public boolean equals(Object other) {
+			if (other instanceof CcInfoKey) {
+				CcInfoKey otherKey = (CcInfoKey)other;
+				if(otherKey.address.equals(this.address) &&
+						otherKey.terminal.equals(this.terminal)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode() {
+			return this.address.hashCode() + this.terminal.hashCode();
+		}
+		
+		@Override
+		public String toString() {
+			return "Key for address " + this.address + " and terminal " + terminal;
+		}
+	}
 }

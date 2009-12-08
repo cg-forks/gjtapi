@@ -1,4 +1,4 @@
-package net.sourceforge.gjtapi.test;
+package net.sourceforge.gjtapi.test.tapi3;
 
 /*
 	Copyright (c) 2002 8x8 Inc. (www.8x8.com) 
@@ -31,15 +31,17 @@ package net.sourceforge.gjtapi.test;
 	of the copyright holder.
 */
 import java.io.*;
-import javax.telephony.callcontrol.CallControlCall;
+import javax.telephony.privatedata.PrivateData;
 import javax.telephony.*;
+
+import net.sourceforge.gjtapi.raw.tapi3.PrivateBlindTransferCommand;
 /**
  * Simple test script for transfering a call.
  * This tests consult, conference, transfer and TransferControllers, as well as hold and release
  * Creation date: (2000-02-03 15:40:58)
  * @author: Richard Deadman
  */
-public class TestTransferCall {
+public class Tapi3TestTransferCall {
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -81,6 +83,7 @@ public static void transfer(String providerName, String fromAddr, String toAddr,
 	java.io.PrintStream out = System.out;
 
 	// Get a JTAPI Peer
+	System.out.println(System.getProperty("java.library.path"));
 	JtapiPeer peer = null;
 	try {
 		peer = JtapiPeerFactory.getJtapiPeer("net.sourceforge.gjtapi.GenericJtapiPeer");
@@ -124,68 +127,19 @@ public static void transfer(String providerName, String fromAddr, String toAddr,
 		// Notify progress
 		System.out.println("Call initiated...");
 
-		// answer args[1]
-		out.print("3.2: Attempting to get call connections...");
-		Connection cons[] = c.getConnections();
-		out.println(" success.");
-
 		// force a wait
 		prompt();
 		
-		out.print("6.1 and 4.1: Attempting to get connection address and address name...");
-		for (int i = 0; i < cons.length; i++) {
-			// find the remote connection
-			if (cons[i].getAddress().getName().equals(toAddr)) {
-				out.println("success (including remote address match)");
-				Connection conn = cons[i];
-				
-				out.print("6.2: Attempting to get TerminalConnections for remote address...");
-				// See if it has any terminal connections
-				TerminalConnection[] tc = conn.getTerminalConnections();
-				
-				if (tc != null && tc.length > 0) {
-					out.println(" success");
-					TerminalConnection termConn = tc[0];
+		// Do tapi3 blind transfer using private data
+		out.print("X.x: Attempting to blind transfer the call...");
+		PrivateData privateDataCall = (PrivateData)c;
+		privateDataCall.sendPrivateData(new PrivateBlindTransferCommand(finalDest));
+		out.println(" success.");
 
-					// wait to continue
-					prompt();
-					
-					// answer first found terminal
-					out.print("7.1: Attempting to answer call on first TerminalConnection...");
-					termConn.answer();
-					System.out.println(" success");
+		prompt();
 
-					if (c instanceof CallControlCall) {
-						CallControlCall ccc = (CallControlCall)c;
-						
-						// transfer the call
-						prompt();
-						
-						out.print("3.5 and 3.7: Attempting to transfer the call...");
-						ccc.setTransferController(termConn);
-						ccc.transfer(finalDest);
-						out.println(" success");
-
-						// now disconnect the call
-						// Wait for input
-						prompt();
-
-						// answer args[1]
-						out.print("3.6: Attempting to disconnect the call...");
-						ccc.drop();
-						out.println(" success.");
-
-
-					} else {
-						out.println("Call Control functions not supported: 3.5 and 3.6");
-					}
-					
-				} else {
-					out.println(" failed to find any TerminalConnections");
-				}
-			}
-		}
-
+		prov.shutdown();
+		
 	} catch (Exception e) {
 		out.println(" failure: " + e);
 		e.printStackTrace();
