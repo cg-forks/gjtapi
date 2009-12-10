@@ -170,60 +170,15 @@ void MSTapi3::ShutdownTapi() {
 // Sets up and makes a call
 /////////////////////////////////////////////////////////////////
 HRESULT MSTapi3::MakeTheCall(int callID, wstring& address, wstring& destination, int mode) {
-	ITAddress* pITAddress = getITAddress(address);
-	if(pITAddress == NULL) {
-		logger->error("Address not found: %S", address.c_str());
-		return -1;
+	HRESULT hr = createCall(callID, address, destination);
+	if(hr != S_OK) {
+		return hr;
 	}
-
-    // find out which media types this address supports
-    long lMediaTypes = 0;
-    if ( AddressSupportsMediaType(pITAddress, TAPIMEDIATYPE_AUDIO) ) {
-        lMediaTypes |= TAPIMEDIATYPE_AUDIO; // we will use audio
-    }
-
-    if ( AddressSupportsMediaType(pITAddress, TAPIMEDIATYPE_VIDEO) ) {
-        lMediaTypes |= TAPIMEDIATYPE_VIDEO; // we will use video
-    }
-
-	logger->debug("MakeTheCall(%d, %S, %S)", callID, address.c_str(), destination.c_str());
 
 	ITBasicCallControl* pCallControl = getCallControl(callID);
-	if(pCallControl != NULL) {
-		logger->warn("Call not null. Releasing old call...");
-		removeCallControl(callID);
-	} else {
-		logger->debug("Ok: empty entry found for callID=%d.", callID);
-	}
-	
-    // Create the call.
-    HRESULT hr = pITAddress->CreateCall(const_cast<unsigned short*>(destination.c_str()),
-                                LINEADDRESSTYPE_PHONENUMBER, lMediaTypes, &pCallControl);
-    if (FAILED(hr)) {
-        logger->error("Could not create a call to %S on %S.", destination, address);
-        return hr;
-    }
-	calls[callID] = pCallControl;
-	logger->debug("Call successfully created.");
-
-    // Select our terminals on the call; if any of the selections fail, we proceed without that terminal.
-    hr = SelectTerminalsOnCall(pITAddress, pCallControl);
-	if(FAILED(hr)) {
-		logger->warn("SelectTerminalsOnCall() failed: hr=%08X. Trying to make the call without a terminal.", hr);
-	}
-
-    ITCallInfo* pCallInfo;
-	hr = pCallControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo );
-    if(FAILED(hr)) {
-		logger->error("Getting callInfo failed. hr=%08X. Cannot set CIS_CALLEDIDNUMBER", hr);
-    } else {
-		BSTR bstrDestination = SysAllocString(destination.c_str());
-		hr = pCallInfo->put_CallInfoString(CIS_CALLEDIDNUMBER, bstrDestination);
-		if(FAILED(hr)) {
-			logger->error("Cannot set CIS_CALLEDIDNUMBER. hr=%08X", hr);
-		}
-		pCallInfo->Release();
-		SysFreeString(bstrDestination);
+	if(pCallControl == NULL) {
+		logger->warn("Call is null. Something went wrong...");
+		return -1;
 	}
 
 	if(mode == TAPICALLCONTROLMODE_NONE)
@@ -528,6 +483,128 @@ HRESULT MSTapi3::JoinCalls(int callID1, int callID2, wstring& address, wstring& 
 		}
 	}
     return hr;*/
+}
+
+/////////////////////////////////////////////////////////////////////
+// Transfer the call to another number
+// This is a blind transfer, without a consultation call.
+/////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::BlindTransfer(int callID, wstring& destination) {
+	logger->debug("Blind Transfer(%d, %S)", callID, destination.c_str());
+
+  // get a handle on the call control
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl == NULL) {
+    logger->warn("Error: Call is null.");
+		return S_FALSE;
+	} else {
+		logger->debug("Ok: empty entry found for callID=%d.", callID);
+	}
+
+  // Now perform the blind transfer
+  HRESULT hr = pCallControl->BlindTransfer(const_cast<unsigned short*>(destination.c_str()));
+
+  // test for success. Don't remove callcontrol on failure -- we didn't create it.
+  if (FAILED(hr)) {
+    logger->error("Could not blind transfer the call to %S.", destination.c_str());
+    return hr;
+  } else {
+	  logger->info("Successfully blind transfered to %S.", destination.c_str());
+	}
+
+  return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////
+// Start transfering the call to another number
+// This is an assisted transfer, with a consultation call.
+/////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::ConsultationStart(int callID, wstring& address, wstring& destination) {
+	logger->debug("Assisted Transfer Start(%d, %S)", callID, destination.c_str());
+
+  // get a handle on the call control
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl == NULL) {
+		logger->warn("Error: Call is null.");
+		return -1;
+	} else {
+		logger->debug("Ok: empty entry found for callID=%d.", callID);
+	}
+
+	// create a new transfer call id
+	int consultCallID = reserveCall(address);
+	// create but don't place the call
+	HRESULT hr = createCall(consultCallID, address, destination);
+	if (FAILED(hr)) {
+		logger->error("Could not create consultation call from %S to %S.", address.c_str(), destination.c_str());
+		return -1;
+	} else {
+		logger->info("Successfully created consultation call from %S to %S.", address.c_str(), destination.c_str());
+	}
+	ITBasicCallControl* pConsultationCallControl = getCallControl(consultCallID);
+	if(pCallControl == NULL) {
+		logger->warn("Error: Consultation call is null.");
+		return -1;
+	}
+
+	// Now initialize the transfer - synchronously
+	hr = pCallControl->Transfer(pConsultationCallControl, VARIANT_TRUE);
+	// test for success. Remove callcontrol on failure -- we created it.
+	if (FAILED(hr)) {
+		logger->error("Could not start transfer to %S: hr=%08X.", destination.c_str(), hr);
+		ReleaseTheCall(consultCallID);
+		return -1;
+	} else {
+		logger->info("Successfully dialed consultation call for transfer to %S.", destination.c_str());
+	}
+
+  return consultCallID;
+}
+
+/////////////////////////////////////////////////////////////////////
+// Finish Transferring the call to another number
+// This is an assisted transfer, with a consultation call.
+/////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::AssistedTransferFinish(int callID) {
+	logger->debug("Assisted Transfer Finish(%d, %S)", callID);
+	  // get a handle on the call control
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl == NULL) {
+		logger->warn("Error: Call is null.");
+		return S_FALSE;
+	}
+
+	// Now perform the transfer finish
+	HRESULT hr = pCallControl->Finish(FM_ASTRANSFER);
+	if(FAILED(hr))
+		logger->error("Finish transfer failed: hr=%08X.", hr);
+	else
+		logger->debug("Finish transfer succeeded.");
+
+	return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////
+// Finish Conferencing the call to another number
+// This is an assisted conference, with a consultation call.
+/////////////////////////////////////////////////////////////////////
+HRESULT MSTapi3::ConferenceFinish(int callID) {
+	logger->debug("Assisted Conference Finish(%d, %S)", callID);
+	  // get a handle on the call control
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl == NULL) {
+		logger->warn("Error: Call is null.");
+		return S_FALSE;
+	}
+
+	// Now perform the transfer finish
+	HRESULT hr = pCallControl->Finish(FM_ASCONFERENCE);
+	if(FAILED(hr))
+		logger->error("Finish transfer failed: hr=%08X.", hr);
+	else
+		logger->debug("Finish transfer succeeded.");
+
+	return S_OK;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1240,4 +1317,67 @@ HRESULT MSTapi3::getAddressName(ITAddress* pITAddress, wstring& strAddress) {
         }
     }
 	return hr;
+}
+
+/**
+ * Utility function for creating a call
+ **/
+HRESULT MSTapi3::createCall(int callID, wstring& address, wstring& destination) {
+	ITAddress* pITAddress = getITAddress(address);
+	if(pITAddress == NULL) {
+		logger->error("Address not found: %S", address.c_str());
+		return -1;
+	}
+
+    // find out which media types this address supports
+    long lMediaTypes = 0;
+    if ( AddressSupportsMediaType(pITAddress, TAPIMEDIATYPE_AUDIO) ) {
+        lMediaTypes |= TAPIMEDIATYPE_AUDIO; // we will use audio
+    }
+
+    if ( AddressSupportsMediaType(pITAddress, TAPIMEDIATYPE_VIDEO) ) {
+        lMediaTypes |= TAPIMEDIATYPE_VIDEO; // we will use video
+    }
+
+	logger->debug("createCall(%d, %S, %S)", callID, address.c_str(), destination.c_str());
+
+	ITBasicCallControl* pCallControl = getCallControl(callID);
+	if(pCallControl != NULL) {
+		logger->warn("Call not null. Releasing old call...");
+		removeCallControl(callID);
+	} else {
+		logger->debug("Ok: empty entry found for callID=%d.", callID);
+	}
+	
+    // Create the call.
+    HRESULT hr = pITAddress->CreateCall(const_cast<unsigned short*>(destination.c_str()),
+                                LINEADDRESSTYPE_PHONENUMBER, lMediaTypes, &pCallControl);
+    if (FAILED(hr)) {
+        logger->error("Could not create a call to %S on %S.", destination, address);
+        return hr;
+    }
+	calls[callID] = pCallControl;
+	logger->debug("Call successfully created.");
+
+    // Select our terminals on the call; if any of the selections fail, we proceed without that terminal.
+    hr = SelectTerminalsOnCall(pITAddress, pCallControl);
+	if(FAILED(hr)) {
+		logger->warn("SelectTerminalsOnCall() failed: hr=%08X. Trying to make the call without a terminal.", hr);
+	}
+
+    ITCallInfo* pCallInfo;
+	hr = pCallControl->QueryInterface( IID_ITCallInfo, (void**)&pCallInfo );
+    if(FAILED(hr)) {
+		logger->error("Getting callInfo failed. hr=%08X. Cannot set CIS_CALLEDIDNUMBER", hr);
+    } else {
+		BSTR bstrDestination = SysAllocString(destination.c_str());
+		hr = pCallInfo->put_CallInfoString(CIS_CALLEDIDNUMBER, bstrDestination);
+		if(FAILED(hr)) {
+			logger->error("Cannot set CIS_CALLEDIDNUMBER. hr=%08X", hr);
+		}
+		pCallInfo->Release();
+		SysFreeString(bstrDestination);
+	}
+
+	return S_OK;
 }

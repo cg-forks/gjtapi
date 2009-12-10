@@ -392,6 +392,118 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 	}
 }
 
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3BlindTransfer
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3BlindTransfer(
+					JNIEnv* pEnv, jobject oObj, jint callID, jstring jNumberToDial) {
+	try{
+		logger->debug("BlindTransfer() called for callID=%d", callID);
+		jboolean isCopyDestination;
+		const unsigned short* wsDestination = pEnv->GetStringChars(jNumberToDial, &isCopyDestination);
+		wstring destination = wsDestination;
+		if(JNI_TRUE == isCopyDestination) {
+			pEnv->ReleaseStringChars(jNumberToDial, wsDestination);
+		}
+
+		logger->debug("Blind Transfer with callID=%d to %S", callID, destination.c_str());
+    HRESULT hr = g_msTapi3->BlindTransfer(callID, destination);
+		if(SUCCEEDED(hr)) {
+			logger->debug("BlindTransfer() done for callID=%d to %S", callID, destination.c_str());
+		} else {
+			logger->error("BlindTransfer() failed for callID=%d to %S", callID, destination.c_str());
+		}
+		return hr;
+	} catch(...){
+		logger->fatal("BlindTransfer() failed.");
+		return E_FAIL;
+	}
+}
+
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3AssistedTransferStart
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3ConsultationStart(
+					JNIEnv* pEnv, jobject oObj, jint callID, jstring jAddress, jstring jNumberToDial) {
+	try{
+		logger->debug("ConsultationStart() called for callID=%d", callID);
+		jboolean isCopyAddress;
+		const unsigned short* wsAddress = pEnv->GetStringChars(jAddress, &isCopyAddress);
+		wstring address = wsAddress;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jAddress, wsAddress);
+		}
+
+		jboolean isCopyDestination;
+		const unsigned short* wsDestination = pEnv->GetStringChars(jNumberToDial, &isCopyDestination);
+		wstring destination = wsDestination;
+		if(JNI_TRUE == isCopyDestination) {
+			pEnv->ReleaseStringChars(jNumberToDial, wsDestination);
+		}
+
+		logger->debug("Starting consultation call with callID=%d from %S to %S", callID, address.c_str(), destination.c_str());
+		HRESULT hr = g_msTapi3->ConsultationStart(callID, address, destination);
+		if(SUCCEEDED(hr)) {
+			logger->debug("ConsultationStart() done for callID=%d from %S to %S", callID, address.c_str(), destination.c_str());
+		} else {
+			logger->error("ConsultationStart() failed for callID=%d from %S to %S", callID, address.c_str(), destination.c_str());
+		}
+		return hr;	// this will be the callId of the consultation call
+	} catch(...){
+		logger->fatal("ConsultationStart() failed.");
+		return -1;
+	}
+}
+
+					/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3AssistedTransferFinish
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3AssistedTransferFinish(
+					JNIEnv* pEnv, jobject oObj, jint callID) {
+	try{
+		logger->debug("AssistedTransferFinish() called for callID=%d", callID);
+
+		HRESULT hr = g_msTapi3->AssistedTransferFinish(callID);
+		if(SUCCEEDED(hr)) {
+			logger->debug("AssistedTransferFinish() done for callID=%d", callID);
+		} else {
+			logger->error("AssistedTransferFinish() failed for callID=%d", callID);
+		}
+		return hr;
+	} catch(...){
+		logger->fatal("AssistedTransferFinish() failed.");
+		return E_FAIL;
+	}
+}
+
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi3ConferenceFinish
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3ConferenceFinish(
+					JNIEnv* pEnv, jobject oObj, jint callID) {
+	try{
+		logger->debug("ConferenceFinish() called for callID=%d", callID);
+
+		HRESULT hr = g_msTapi3->ConferenceFinish(callID);
+		if(SUCCEEDED(hr)) {
+			logger->debug("ConferenceFinish() done for callID=%d", callID);
+		} else {
+			logger->error("ConferenceFinish() failed for callID=%d", callID);
+		}
+		return hr;
+	} catch(...){
+		logger->fatal("ConferenceFinish() failed.");
+		return E_FAIL;
+	}
+}
 
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl

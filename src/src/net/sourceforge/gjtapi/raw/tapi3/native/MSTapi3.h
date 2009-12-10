@@ -83,6 +83,10 @@ public:
 	HRESULT HoldTheCall(int callID);
 	HRESULT UnHoldTheCall(int callID);
 	HRESULT JoinCalls(int callID1, int callID2, wstring& address, wstring& terminal, int mode);
+	HRESULT BlindTransfer(int callID, wstring& destination);
+	HRESULT ConsultationStart(int callID, wstring& address, wstring& destination);
+	HRESULT AssistedTransferFinish(int callID);
+	HRESULT ConferenceFinish(int callID);
 	HRESULT SendDigits(wstring terminal, wstring digits);
 	void ReleaseTheCall(int callID);
 	long SendLineDevSpecific(int callID, wstring& address, BYTE* bytes, DWORD bytesSize);
@@ -121,6 +125,8 @@ private:
 	int getOrCreateCallID(ITBasicCallControl* pCallControl);
 
 	ITAddress* getITAddress(wstring& address);
+
+	HRESULT createCall(int callID, wstring& address, wstring& destination);
 };
 
 #endif
