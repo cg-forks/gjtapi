@@ -66,6 +66,7 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.PrintStreamLogger;
  * An implementation of a Jtapi provider which uses Microsoft TAPI 3.0
  * @author Serban Iordache
  */
+@SuppressWarnings("serial")
 public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     private static Logger logger; // = new ConsoleLogger(); // new NullLogger();
 
@@ -203,28 +204,24 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     /**
      * Mapping of addresses to terminals (for the termHack)
      */
-    private Map termAddrMap = new HashMap();
+    private Map<String, ArrayList<String>> termAddrMap = new HashMap<String, ArrayList<String>>();
     /**
      * Mapping of terminal string to termData
      */
-    private Map termTermDataMap = new HashMap();
+    private Map<String, TermData> termTermDataMap = new HashMap<String, TermData>();
     /**
      * flag for callControl (transfer, conference)
      */
     private int TAPICALLCONTROLMODE_NONE = 0;
-    private int TAPICALLCONTROLMODE_SETUPTRANSFER = 1;
-    private int TAPICALLCONTROLMODE_TRANSFER = 2;
-    private int TAPICALLCONTROLMODE_SETUPCONFERENCE = 3;
-    private int TAPICALLCONTROLMODE_CONFERENCE = 4;
     /**
      * The list of TelephonyListeners
      */
-    private final ArrayList listenerList = new ArrayList();
+    private final ArrayList<TelephonyListener> listenerList = new ArrayList<TelephonyListener>();
 
     /**
      * The list of DigitListeners 
      */
-    private final ArrayList digitListenerList = new ArrayList();
+    private final ArrayList<DigitListener> digitListenerList = new ArrayList<DigitListener>();
 
     /**
      * Map used to store information to allow transfers and conferences
@@ -487,8 +484,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         termHack = true;
         int nGramVal = 3;
         double threshold = 0.75;
-        ArrayList termArr = new ArrayList();
-        ArrayList conTermArr = new ArrayList();
+        ArrayList<String> termArr = new ArrayList<String>();
+        ArrayList<TermData> conTermArr = new ArrayList<TermData>();
         for(int i = 0; i < addresses.length; i++)
         {
           double bestFit = 0;
@@ -511,10 +508,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
             termArr.add(addresses[i]);
             TermData tmpTermData = new TermData(addresses[i], false);
             conTermArr.add(tmpTermData);
-            termAddrMap.put(addresses[i], new ArrayList());
+            termAddrMap.put(addresses[i], new ArrayList<String>());
             termTermDataMap.put(addresses[i], tmpTermData);
           }
-          ((List)termAddrMap.get(termArr.get(bestFitIndex[1]))).add(addresses[i]);
+          termAddrMap.get(termArr.get(bestFitIndex[1])).add(addresses[i]);
 
         }
         terminals = (TermData[]) conTermArr.toArray(new TermData[conTermArr.size()]);
@@ -560,7 +557,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     public void shutdown() {
         logger.debug("Shutting down...");
         int retCode = tapi3Native.tapi3Shutdown();
-        ((Tapi3NativeImpl)tapi3Native).releaseInstance();
+        Tapi3NativeImpl.releaseInstance();
         /*logger = null;
         tapi3Native = null;*/
         logger.debug("Shut down: retCode=" + retCode);
@@ -614,8 +611,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.debug("getAddresses(" + terminal + ")");
         if(termHack)
         {
-          ArrayList arr = (ArrayList)termAddrMap.get(terminal);
-          String[] adr = (String[]) arr.toArray(new String[arr.size()]);
+          ArrayList<String> arr = termAddrMap.get(terminal);
+          String[] adr = arr.toArray(new String[arr.size()]);
           return adr;
         }
         else for(int i=0; i<terminals.length; i++) {
@@ -1049,7 +1046,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     private ArrayList _nGramSegmentation(String pStr, int n)
     {
 
-      ArrayList arr = new ArrayList();
+      ArrayList<String> arr = new ArrayList<String>();
       if(n > pStr.length())
         arr.add(pStr);
       else
