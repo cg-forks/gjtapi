@@ -110,11 +110,9 @@ import net.sourceforge.gjtapi.raw.sipprovider.common.Console;
  * @author Emil Ivov (http://www.emcho.com)
  * @version 1.1
  */
-class AVReceiver    implements ReceiveStreamListener, SessionListener,
-ControllerListener, SendStreamListener
-{
+class AVReceiver implements ReceiveStreamListener, SessionListener,
+    ControllerListener, SendStreamListener {
     private static Console console = Console.getConsole(AVReceiver.class);
-    //private DataSource dataSource = null;
     private net.sourceforge.gjtapi.raw.sipprovider.media.MediaManager mediaManager;
     private String sessions[] = null;
     private RTPManager mgrs[] = null;
@@ -347,8 +345,7 @@ ControllerListener, SendStreamListener
   }
 
 
-    public boolean isDone()
-    {
+    public boolean isDone() {
         return false;
     }
 
@@ -674,15 +671,11 @@ ControllerListener, SendStreamListener
     }
 
 
-    protected void configureProcessor(Processor p) throws MediaException
-    {
+    protected void configureProcessor(Processor p) throws MediaException {
         processor = p;
-        try
-        {
-
+        try {
             console.logEntry();
-            if (processor == null)
-            {
+            if (processor == null) {
                 console.error("Processor is null.");
                 throw new MediaException("Processor is null.");
             }
@@ -690,29 +683,26 @@ ControllerListener, SendStreamListener
 //            processor.addControllerListener(new StateListener());
             boolean result = procUtility.waitForState(processor, 
                     Processor.Configured);
-            if (result == false)
-            {
+            if (result == false) {
                 console.error("Couldn't configure processor");
                 throw new MediaException("Couldn't configure processor");
             }
             // Get the tracks from the processor
             TrackControl[] tracks = processor.getTrackControls();
 
-            console.debug("-----"+ tracks[0].getFormat());
+            if (console.isDebugEnabled()) {
+                console.debug("-----" + tracks[0].getFormat());
+            }
             int t = tracks[0].getSupportedFormats().length;
             if (console.isDebugEnabled()) {
-                for(int i=0;i<t;i++)
-                {
+                for(int i = 0; i < t; i++) {
                     console.debug("supported format: "
                             + tracks[0].getSupportedFormats()[i]);
                 }
             }
 
-
-
-            // Do we have atleast one track?
-            if (tracks == null || tracks.length < 1)
-            {
+            // Do we have at least one track?
+            if (tracks == null || tracks.length < 1) {
                 console.error("Couldn't find tracks in processor");
                 throw new MediaException("Couldn't find tracks in processor");
             }
@@ -722,7 +712,7 @@ ControllerListener, SendStreamListener
             //   ContentDescriptor cd = new ContentDescriptor(ContentDescriptor.RAW_RTP);
             //kk
 
-          FileTypeDescriptor fd = new FileTypeDescriptor(FileTypeDescriptor.BASIC_AUDIO);
+            FileTypeDescriptor fd = new FileTypeDescriptor(FileTypeDescriptor.BASIC_AUDIO);
 
             processor.setContentDescriptor(fd);
 
@@ -731,9 +721,7 @@ ControllerListener, SendStreamListener
             // processor.setContentDescriptor(new AudioFileFormat(AudioFileFormat.Type.WAVE));
 
 
-        }
-        finally
-        {
+        } finally {
             console.logExit();
         }
     }
@@ -801,5 +789,4 @@ ControllerListener, SendStreamListener
             }
         }
     }
-
-} // end of AVReceive2
+}

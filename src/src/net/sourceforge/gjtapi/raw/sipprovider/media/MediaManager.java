@@ -128,8 +128,7 @@ public class MediaManager implements Serializable {
     protected SdpFactory sdpFactory;
     protected ProcessorUtility procUtility = new ProcessorUtility("MediaManager");
     //media devices
-    protected CaptureDeviceInfo audioDevice = null;
-    protected CaptureDeviceInfo videoDevice = null;
+    protected CaptureDeviceInfo audioDevice;
     //Sdp Codes of all formats supported for
     //transmission by the selected datasource
 
@@ -175,8 +174,12 @@ public class MediaManager implements Serializable {
     protected Map sessions = new Hashtable();
     protected RTPManager rtpManager;
     private final String mediaSource;
-    protected DataSource avDataSource = null;
-    protected Processor processor = null;
+    /** The data source. */
+    protected DataSource source;
+    /** The processor to use for sending the data. */
+    protected Processor sndProcessor;
+    /** The processor to use for receiving the data. */
+    protected Processor rcvProcessor;
     protected boolean isStarted = false;
     protected Properties sipProp;
     private final int audioPort;
@@ -184,7 +187,9 @@ public class MediaManager implements Serializable {
         new java.util.ArrayList<AVTransmitter>();
     protected Collection<AVReceiver> receivers =
         new java.util.ArrayList<AVReceiver>();
-    protected DataSink sink = null;
+    /** The data sink. */
+    protected DataSink sink;
+    /** The data sink. */
     private MediaLocator dest;
     /** Reference to the address manager. */
     private final NetworkAddressManager addressManager;
@@ -216,17 +221,17 @@ public class MediaManager implements Serializable {
         }
         final MediaLocator locator = new MediaLocator(url);
         try {
-            avDataSource = createDataSource(locator);
+            source = createDataSource(locator);
         } catch (IOException e) {
             throw new MediaException(e.getMessage(), e);
         }
-        initProcessor(avDataSource);
+        initSndProcessor(source);
         for (AVTransmitter transmitter : transmitters) {
             if (!transmitter.isStarted()) {
                 console.debug("Starting transmission.");
-                transmitter.start(processor);
+                transmitter.start(sndProcessor);
             }
-            transmitter.play(processor);
+            transmitter.play(sndProcessor);
         }
         console.logExit();
     }
@@ -249,21 +254,20 @@ public class MediaManager implements Serializable {
     public void record(String url) throws MediaException {
         console.logEntry();
         try {
-            DataSource mergeDs = this.getDataSource();
+//            DataSource mergeDs = this.getDataSource();
             // append "file:/" to URL if it is not already there
             String fullUrl = (url.indexOf("file:") == 0) ? url : "file:/" + url;
             dest = new MediaLocator(fullUrl);
-            sink = Manager.createDataSink(mergeDs, dest);
+            final DataSource ds = createDataSource(dest);
+            initRcvProcessor(ds);
+            sink = Manager.createDataSink(ds, dest);
             sink.open();
             sink.start();
-
             for (AVReceiver receiver : receivers) {
                 final Processor pro = receiver.getProcessor();
                 pro.start();
             }
         } catch (IOException ex) {
-            throw new MediaException(ex.getMessage(), ex);
-        } catch (IncompatibleSourceException ex) {
             throw new MediaException(ex.getMessage(), ex);
         } catch (NoDataSinkException ex) {
             throw new MediaException(ex.getMessage(), ex);
@@ -480,6 +484,7 @@ public class MediaManager implements Serializable {
             //startReceiver(remoteAddress);
             //open corrects ports for RTP Session
             createReceiver(remoteAddress, ports);
+            softStartReceiver();
             if (!atLeastOneTransmitterStarted) {
                 console.error(
                         "Apparently all media descriptions failed to initialise!\n" +
@@ -498,12 +503,23 @@ public class MediaManager implements Serializable {
     protected void closeProcessor() {
         try {
             console.logEntry();
-            if (processor != null) {
-                processor.stop();
-                processor.close();
+            if (sndProcessor != null) {
+                sndProcessor.stop();
+                sndProcessor.close();
+                sndProcessor = null;
             }
-            if (avDataSource != null) {
-                avDataSource.disconnect();
+            if (source != null) {
+                source.disconnect();
+                source = null;
+            }
+            if (rcvProcessor != null) {
+                rcvProcessor.stop();
+                rcvProcessor.close();
+                rcvProcessor = null;
+            }
+            if (sink != null) {
+                sink.close();
+                sink = null;
             }
         } finally {
             console.logExit();
@@ -626,7 +642,7 @@ public class MediaManager implements Serializable {
         try {
             console.logEntry();
             final AVTransmitter transmitter =
-                new AVTransmitter(processor, destHost, ports, formatSets);
+                new AVTransmitter(sndProcessor, destHost, ports, formatSets);
             transmitter.setMediaManagerCallback(this);
             transmitters.add(transmitter);
         } finally {
@@ -749,7 +765,6 @@ public class MediaManager implements Serializable {
                     console.warn("Could not close receiver " + receiver, exc);
                 }
             }
-            receivers.clear();
         } finally {
             console.logExit();
         }
@@ -896,8 +911,8 @@ public class MediaManager implements Serializable {
         try {
             console.logEntry();
             try {
-                if (avDataSource != null) {
-                    avDataSource.disconnect();
+                if (source != null) {
+                    source.disconnect();
                 }
             } catch (Exception exc) {
                 console.error("Failed to disconnect data source:" +
@@ -1039,12 +1054,12 @@ public class MediaManager implements Serializable {
     //let's see what can it do
 
 
-    protected void initProcessor(DataSource dataSource) throws MediaException {
+    protected void initSndProcessor(DataSource ds) throws MediaException {
         try {
             console.logEntry();
             try {
                 try {
-                    dataSource.connect();
+                    ds.connect();
                 } catch (NullPointerException ex) {
                     //Thrown when operation is not supported by the OS
                     console.error(
@@ -1054,10 +1069,10 @@ public class MediaManager implements Serializable {
                             "An internal error occurred while"
                             + " trying to connec to to datasource!", ex);
                 }
-                processor = Manager.createProcessor(dataSource);
-                processor.configure();
+                sndProcessor = Manager.createProcessor(ds);
+                sndProcessor.configure();
                 boolean success =
-                    procUtility.waitForState(processor, Processor.Configured);
+                    procUtility.waitForState(sndProcessor, Processor.Configured);
                 if (!success) {
                     throw new MediaException(
                             "Media manager could not create a processor\n"
@@ -1080,9 +1095,9 @@ public class MediaManager implements Serializable {
                 throw new MediaException("Media manager could not connect "
                                          + "to the specified data source", ex);
             }
-            processor.setContentDescriptor(new ContentDescriptor(
+            sndProcessor.setContentDescriptor(new ContentDescriptor(
                     ContentDescriptor.RAW_RTP));
-            TrackControl[] trackControls = processor.getTrackControls();
+            TrackControl[] trackControls = sndProcessor.getTrackControls();
 
             if (console.isDebugEnabled()) {
                 console.debug("We will be able to transmit in:");
@@ -1109,7 +1124,78 @@ public class MediaManager implements Serializable {
         } finally {
             console.logExit();
         }
+    }
 
+    protected void initRcvProcessor(DataSource ds) throws MediaException {
+        try {
+            console.logEntry();
+            try {
+                try {
+                    ds.connect();
+                } catch (NullPointerException ex) {
+                    //Thrown when operation is not supported by the OS
+                    console.error(
+                            "An internal error occurred while"
+                            + " trying to connec to to datasource!", ex);
+                    throw new MediaException(
+                            "An internal error occurred while"
+                            + " trying to connec to to datasource!", ex);
+                }
+                rcvProcessor = Manager.createProcessor(ds);
+                rcvProcessor.configure();
+                boolean success =
+                    procUtility.waitForState(rcvProcessor, Processor.Configured);
+                if (!success) {
+                    throw new MediaException(
+                            "Media manager could not create a processor\n"
+                            + "for the specified data source");
+                }
+            } catch (NoProcessorException ex) {
+                console.error(
+                        "Media manager could not create a processor\n"
+                        + "for the specified data source",
+                        ex
+                        );
+                throw new MediaException(
+                        "Media manager could not create a processor\n"
+                        + "for the specified data source", ex);
+            } catch (IOException ex) {
+                console.error(
+                        "Media manager could not connect "
+                        + "to the specified data source",
+                        ex);
+                throw new MediaException("Media manager could not connect "
+                                         + "to the specified data source", ex);
+            }
+            rcvProcessor.setContentDescriptor(new ContentDescriptor(
+                    ContentDescriptor.RAW_RTP));
+            TrackControl[] trackControls = sndProcessor.getTrackControls();
+
+            if (console.isDebugEnabled()) {
+                console.debug("We will be able to receive in:");
+            }
+            for (int i = 0; i < trackControls.length; i++) {
+                Format[] formats = trackControls[i].getSupportedFormats();
+                for (int j = 0; j < formats.length; j++) {
+                    Format format = formats[j];
+                    String encoding = format.getEncoding();
+                    if (format instanceof AudioFormat) {
+                        String sdp = findCorrespondingSdpFormat(encoding);
+                        if (sdp != null &&
+                            !transmittableAudioFormats.contains(sdp)) {
+                            if (console.isDebugEnabled()) {
+                                console.debug("Audio[" + (j + 1) + "]=" +
+                                              encoding + "; sdp=" + sdp);
+                            }
+//                            transmittableAudioFormats.add(sdp);
+                        }
+                    }
+
+                }
+            }
+        } finally {
+            console.logExit();
+        }
     }
 
     /**

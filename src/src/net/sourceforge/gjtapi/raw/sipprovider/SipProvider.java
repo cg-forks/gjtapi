@@ -384,6 +384,9 @@ public class SipProvider
     public void initializeResources(Map props, ResourceFinder finder)
         throws ProviderUnavailableException {
         String sipPhones = (String) props.get("gjtapi.sip.sip_phone");
+        if (sipPhones == null) {
+            throw new ProviderUnavailableException("No phones defined!");
+        }
         String[] phones = sipPhones.split(",");
         for (String phone : phones) {
             try {
