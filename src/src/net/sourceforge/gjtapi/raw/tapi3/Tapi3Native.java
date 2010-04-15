@@ -145,6 +145,22 @@ public interface Tapi3Native {
    public int tapi3ConferenceFinish(int callID);
 
    /**
+    * Used of TSPs that have a broken transfer and conference under TAPI3
+    * @param callID
+    * @param controllerNumber
+    * @param numberToDial
+    * @return
+    */
+   public int tapi2ConsultationStart(String controllerNumber, String numberToDial);
+   /**
+    * Tell the system to complete the transfer or conference
+    * @param address
+    * @param transfer If true, perform a transfer, otherwise conference in the call
+    * @return
+    */
+   public int tapi2TransferFinish(String address, boolean transfer);
+   
+   /**
      * Take a call off hold 
      * @param callID The identifier for the call that we want to take off hold
      * @return Error code (0=success) 

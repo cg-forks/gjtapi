@@ -15,13 +15,13 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
-			UseOfMFC="0"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\j2sdk1.4.2_05\include,C:\j2sdk1.4.2_05\include\win32"
+				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\richard\My Documents\work\Moov\tapi3\native\include&quot;;C:\j2sdk1.4.2_05\include;C:\j2sdk1.4.2_05\include\win32"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;TAPI3PROVIDER_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -40,10 +40,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/verbose:lib /FORCE:MULTIPLE"
 				AdditionalDependencies="tapi32.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\Debug/Tapi3Provider.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/Tapi3Provider.pdb"
 				ImportLibrary=".\Debug/Tapi3Provider.lib"
@@ -83,13 +85,14 @@
 			IntermediateDirectory=".\Release"
 			ConfigurationType="2"
 			UseOfMFC="0"
+			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\j2sdk1.4.2_05\include,C:\j2sdk1.4.2_05\include\win32"
+				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\richard\My Documents\work\Moov\tapi3\native\include&quot;;C:\j2sdk1.4.2_05\include;C:\j2sdk1.4.2_05\include\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;TAPI3PROVIDER_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -112,6 +115,8 @@
 				OutputFile=".\Release/Tapi3Provider.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				IgnoreDefaultLibraryNames=""
+				AddModuleNamesToAssembly=""
 				ProgramDatabaseFile=".\Release/Tapi3Provider.pdb"
 				ImportLibrary=".\Release/Tapi3Provider.lib"
 				TargetMachine="1"/>
@@ -152,6 +157,9 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
+				RelativePath=".\CTapiConnection.cpp">
+			</File>
+			<File
 				RelativePath="Logger.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -172,6 +180,9 @@
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TAPI3PROVIDER_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\MSTapi2.cpp">
 			</File>
 			<File
 				RelativePath="MSTapi3.cpp">
@@ -293,6 +304,9 @@
 				RelativePath="Logger.h">
 			</File>
 			<File
+				RelativePath=".\MSTapi2.h">
+			</File>
+			<File
 				RelativePath="MSTapi3.h">
 			</File>
 			<File
@@ -303,6 +317,9 @@
 			</File>
 			<File
 				RelativePath="StdAfx.h">
+			</File>
+			<File
+				RelativePath=".\Tapi2Utils.h">
 			</File>
 			<File
 				RelativePath="TAPI3EventNotification.h">

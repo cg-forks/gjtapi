@@ -33,12 +33,14 @@
 #include "stdafx.h"
 #include "net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl.h"
 #include "MSTapi3.h"
+#include "MSTapi2.h"
 #include "TAPI3EventNotification.h"
 #include "Logger.h"
 
 Logger* logger = new Logger("Tapi3Provider");
 HINSTANCE g_hinstDLL;
 MSTapi3* g_msTapi3 = NULL;
+MSTapi2* g_msTapi2 = NULL;
 
 JavaVM* g_javaVM = NULL;
 jobject g_thisObj = NULL;
@@ -53,6 +55,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
 			g_hinstDLL = (HINSTANCE)hModule;
 			CoInitializeEx(NULL, COINIT_MULTITHREADED);
 			g_msTapi3 = new MSTapi3();
+			g_msTapi2 = new MSTapi2();
 		}
 	} catch(...) {
 		logger->fatal("DLL_PROCESS_ATTACH failed");
@@ -65,6 +68,8 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
 			if(g_msTapi3 != NULL) {
 				g_msTapi3->ShutdownTapi();
 				g_msTapi3 = NULL;
+				delete g_msTapi2;
+				g_msTapi2 = NULL;	// garbage collector will clean up
 			}
 			CoUninitialize();
 			logger->debug("DllMain: DLL_PROCESS_DETACH");
@@ -123,6 +128,9 @@ JNIEXPORT jobjectArray JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3Native
 		}
 
 		jobjectArray objAddresses = NULL;	// String array of address names
+
+		// test initialization of TAPI 2
+		g_msTapi2->InitializeTapi2();
 
 		HRESULT hr = g_msTapi3->InitializeTapi(callback);
 		if(SUCCEEDED(hr)) {
@@ -424,7 +432,7 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 
 /*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
- * Method:    tapi3AssistedTransferStart
+ * Method:    tapi3ConsultationStartStart
  * Signature: (ILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi3ConsultationStart(
@@ -459,7 +467,76 @@ JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tap
 	}
 }
 
-					/*
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi2ConsultationStartStart
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi2ConsultationStart(
+					JNIEnv* pEnv, jobject oObj, jstring jAddress, jstring jNumberToDial) {
+	try{
+		logger->debug("TAPI2 ConsultationStart() called for address=%s", jAddress);
+		jboolean isCopyAddress;
+		const unsigned short* wsAddress = pEnv->GetStringChars(jAddress, &isCopyAddress);
+		wstring address = wsAddress;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jAddress, wsAddress);
+		}
+
+		jboolean isCopyDestination;
+		const unsigned short* wsDestination = pEnv->GetStringChars(jNumberToDial, &isCopyDestination);
+		wstring destination = wsDestination;
+		if(JNI_TRUE == isCopyDestination) {
+			pEnv->ReleaseStringChars(jNumberToDial, wsDestination);
+		}
+
+		logger->debug("Starting consultation call from %S to %S", address.c_str(), destination.c_str());
+		HRESULT hr = g_msTapi2->ConsultationStart(address, destination);
+		if(SUCCEEDED(hr)) {
+			logger->debug("Tapi2 ConsultationStart() done from %S to %S", address.c_str(), destination.c_str());
+		} else {
+			logger->error("Tapi2 ConsultationStart() failed from %S to %S", address.c_str(), destination.c_str());
+		}
+		return hr;	// this will be the callId of the consultation call
+	} catch(...){
+		logger->fatal("Tapi2 ConsultationStart() failed.");
+		return -1;
+	}
+}
+
+/*
+ * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
+ * Method:    tapi2ConsultationStartStart
+ * Signature: (ILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3NativeImpl_tapi2TransferFinish(
+	JNIEnv* pEnv, jobject oObj, jstring jAddress, jboolean jTransferFlag) {
+	try{
+		logger->debug("TAPI2 Transfer finish called for address=%s", jAddress);
+		jboolean isCopyAddress;
+		const unsigned short* wsAddress = pEnv->GetStringChars(jAddress, &isCopyAddress);
+		wstring address = wsAddress;
+		if(JNI_TRUE == isCopyAddress) {
+			pEnv->ReleaseStringChars(jAddress, wsAddress);
+		}
+
+		//jTransferFlag.
+
+		logger->debug("Starting consultation finish from %S", address.c_str());
+		HRESULT hr = g_msTapi2->ConsultationFinish(address, (jTransferFlag != 0));
+		if(SUCCEEDED(hr)) {
+			logger->debug("Tapi2 ConsultationFinish() done from %S", address.c_str());
+		} else {
+			logger->error("Tapi2 ConsultationFinish() failed from %S", address.c_str());
+		}
+		return hr;	// this will be the callId of the consultation call
+	} catch(...){
+		logger->fatal("Tapi2 TransferFisish() failed.");
+		return -1;
+	}
+}
+
+/*
  * Class:     net_sourceforge_gjtapi_raw_tapi3_Tapi3Provider
  * Method:    tapi3AssistedTransferFinish
  * Signature: (ILjava/lang/String;)I

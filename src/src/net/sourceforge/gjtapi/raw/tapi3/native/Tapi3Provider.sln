@@ -6,13 +6,25 @@ EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
+		Debug Unicode = Debug Unicode
+		DLL Debug = DLL Debug
+		DLL Release = DLL Release
 		Release = Release
+		Release Unicode = Release Unicode
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Debug.ActiveCfg = Debug|Win32
 		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Debug.Build.0 = Debug|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Debug Unicode.ActiveCfg = Debug|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Debug Unicode.Build.0 = Debug|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.DLL Debug.ActiveCfg = Debug|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.DLL Debug.Build.0 = Debug|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.DLL Release.ActiveCfg = Release|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.DLL Release.Build.0 = Release|Win32
 		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Release.ActiveCfg = Release|Win32
 		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Release.Build.0 = Release|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Release Unicode.ActiveCfg = Release|Win32
+		{FB379304-7D5B-473B-B7BF-C0CA70260AFB}.Release Unicode.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2005 Serban Iordache 
+	Copyright (c) 2009 Richard Deadman, Deadman Consulting, http://www.deadman.ca 
 	
 	All rights reserved. 
 	
@@ -28,39 +28,36 @@
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
-// stdafx.h : include file for standard system include files,
-//  or project specific include files that are used frequently, but
-//      are changed infrequently
-//
+#ifndef __MSTAPI2_H__
+#define __MSTAPI2_H__
 
-#if !defined(AFX_STDAFX_H__63B853F5_23ED_42D2_A881_597BEB94562C__INCLUDED_)
-#define AFX_STDAFX_H__63B853F5_23ED_42D2_A881_597BEB94562C__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#pragma warning( disable : 4786 )
-
-// Insert your headers here
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#define _WIN32_DCOM
-
-#include <windows.h>
-
-// TODO: reference additional headers your program requires here
-
-#define TAPI_CURRENT_VERSION 0x00030001
-//#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
- //#include <afxwin.h>         // MFC core and standard components
-//#include <afx.h>
-//#include <afxext.h>         // MFC extensions
-//#include <afxmt.h>
- //#include <afxcmn.h>			// MFC support for Windows Common Controls
+#include "Logger.h"
+#include "TAPI3EventNotification.h"
 #include <tapi.h>
-//#include "Atapi.h"
+#include "Tapi2Utils.h"
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+class MSTapi2 {
+	//friend class TAPI3EventNotification;
+private:
+	Logger* logger;
 
-#endif // !defined(AFX_STDAFX_H__63B853F5_23ED_42D2_A881_597BEB94562C__INCLUDED_)
+
+
+public:
+    // constructor
+    MSTapi2();
+
+    // destructor
+    ~MSTapi2();
+
+	HRESULT InitializeTapi2();
+
+	HRESULT ConsultationStart(wstring& address, wstring& destination);
+	HRESULT ConsultationFinish(wstring& address, bool transferFlag);
+
+private:
+};
+
+
+
+#endif
