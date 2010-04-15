@@ -422,6 +422,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                     listener.terminalConnectionRinging(tapi3CallID, address, terminal, eventCause);
                     break;
                 case METHOD_TERMINAL_CONNECTION_TALKING:
+                	listener.connectionConnected(tapi3CallID, address, eventCause);	// in con_connected not sent
                     listener.terminalConnectionTalking(tapi3CallID, address, terminal, eventCause);
                     break;
                 case METHOD_TERMINAL_PRIVATE_DATA:
