@@ -6,6 +6,7 @@ tapi3.impl.class = net.sourceforge.gjtapi.raw.tapi3.Tapi3NativeImpl
 # tapi3.log.out = console
 # tapi3.log.class = net.sourceforge.gjtapi.raw.tapi3.logging.NullLogger
 tapi3.log.class = net.sourceforge.gjtapi.test.tapi3.Tapi3Logger
+# nativeLibraryPath = c:\\lib\\Tapi3Provider.dll
 
 # tapi3.native.log.out = C:\\tapi3dll.log
 tapi3.native.log.out = ${user.dir}\\tapi3dll.log

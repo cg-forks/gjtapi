@@ -39,6 +39,7 @@ import net.sourceforge.gjtapi.raw.tapi3.logging.Logger;
  * @author Serban Iordache
  */
 public class Tapi3NativeImpl implements Tapi3Native {
+	private static final String DEFAULT_LIBRARY_NAME = "Tapi3Provider";
 	private static Logger logger;
     
     /**
@@ -58,17 +59,21 @@ public class Tapi3NativeImpl implements Tapi3Native {
 
     /**
      * Return the Tapi3NativeImpl singleton
+     * @param fullNativeLibraryPath The full path for the DLL library to load - if null or empty use default
      * @return The one and only instance of this class
      */
-    public static final Tapi3Native getInstance() {
+    public static final Tapi3Native getInstance(String fullNativeLibraryPath) {
       if(instance == null)
       {
         logger = Tapi3Provider.getLogger();
         instance = new Tapi3NativeImpl();
-        try
+    	try
         {
-          //System.loadLibrary("Tapi3Provider");
-          System.loadLibrary("Tapi3Provider"); //./src/net/sourceforge/gjtapi/raw/tapi3/native/Debug/Tapi3Provider");
+        	if(fullNativeLibraryPath != null && fullNativeLibraryPath.length() > 0) {
+	        	System.load(fullNativeLibraryPath);
+        	} else {
+	        	System.loadLibrary(DEFAULT_LIBRARY_NAME);
+        	}
         }
         catch (Throwable t)
         {
