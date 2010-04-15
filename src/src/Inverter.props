@@ -1,7 +1,0 @@
-PeerClassName = net.sourceforge.gjtapi.GenericJtapiPeer
-ProviderString = Emulator
-
-# should the freeing of media on a terminal cause the underlying MediaService to be released.
-# JTAPI forces a disconnect on MediaService.release(). Maybe we should just let it be garbage
-# collected since GJTAPI handles release itself.
-mediaFreeRelease = f
