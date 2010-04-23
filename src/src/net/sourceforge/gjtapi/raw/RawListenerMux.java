@@ -41,7 +41,7 @@ import java.util.*;
  * @author: Richard Deadman
  */
 public class RawListenerMux implements TelephonyListener {
-	private Set listeners = new HashSet();
+	private Set<TelephonyListener> listeners = new HashSet<TelephonyListener>();
 /**
  * Add to the set of Raw Listeners I broadcast to.
  * Creation date: (2000-04-26 16:01:55)
@@ -55,222 +55,222 @@ public void addListener(TelephonyListener l) {
  * addressPrivateData method comment.
  */
 public void addressPrivateData(String address, Serializable data, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).addressPrivateData(address, data, cause);
+		it.next().addressPrivateData(address, data, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void callActive(CallId id, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).callActive(id, cause);
+		it.next().callActive(id, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void callInvalid(CallId id, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).callInvalid(id, cause);
+		it.next().callInvalid(id, cause);
 	}
 }
 /**
  * callOverloadCeased method comment.
  */
 public void callOverloadCeased(java.lang.String address) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).callOverloadCeased(address);
+		it.next().callOverloadCeased(address);
 	}
 }
 /**
  * callOverloadEncountered method comment.
  */
 public void callOverloadEncountered(java.lang.String address) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).callOverloadEncountered(address);
+		it.next().callOverloadEncountered(address);
 	}
 }
 /**
  * callPrivateData method comment.
  */
 public void callPrivateData(CallId call, Serializable data, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).callPrivateData(call, data, cause);
+		it.next().callPrivateData(call, data, cause);
 	}
 }
 /**
  * connectionAddressAnalyse method comment.
  */
 public void connectionAddressAnalyse(net.sourceforge.gjtapi.CallId id, java.lang.String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionAddressAnalyse(id, address, cause);
+		it.next().connectionAddressAnalyse(id, address, cause);
 	}
 }
 /**
  * connectionAddressCollect method comment.
  */
 public void connectionAddressCollect(net.sourceforge.gjtapi.CallId id, java.lang.String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionAddressCollect(id, address, cause);
+		it.next().connectionAddressCollect(id, address, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void connectionAlerting(CallId id, String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionAlerting(id, address, cause);
+		it.next().connectionAlerting(id, address, cause);
 	}
 }
 /**
  * connectionAuthorizeCallAttempt method comment.
  */
 public void connectionAuthorizeCallAttempt(net.sourceforge.gjtapi.CallId id, java.lang.String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionAuthorizeCallAttempt(id, address, cause);
+		it.next().connectionAuthorizeCallAttempt(id, address, cause);
 	}
 }
 /**
  * connectionCallDelivery method comment.
  */
 public void connectionCallDelivery(net.sourceforge.gjtapi.CallId id, java.lang.String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionCallDelivery(id, address, cause);
+		it.next().connectionCallDelivery(id, address, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void connectionConnected(CallId id, String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionConnected(id, address, cause);
+		it.next().connectionConnected(id, address, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void connectionDisconnected(CallId id, String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionDisconnected(id, address, cause);
+		it.next().connectionDisconnected(id, address, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void connectionFailed(CallId id, String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionFailed(id, address, cause);
+		it.next().connectionFailed(id, address, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void connectionInProgress(CallId id, String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionInProgress(id, address, cause);
+		it.next().connectionInProgress(id, address, cause);
 	}
 }
 /**
  * connectionSuspended method comment.
  */
 public void connectionSuspended(net.sourceforge.gjtapi.CallId id, java.lang.String address, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).connectionSuspended(id, address, cause);
+		it.next().connectionSuspended(id, address, cause);
 	}
 }
 /**
  * Internal accessor for the real listeners.
  */
-private Set getListeners() {
+private Set<TelephonyListener> getListeners() {
 	return this.listeners;
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaPlayPause(String terminal, int index, int offset, javax.telephony.media.Symbol trigger) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaPlayPause(terminal, index, offset, trigger);
+		it.next().mediaPlayPause(terminal, index, offset, trigger);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaPlayResume(String terminal, javax.telephony.media.Symbol trigger) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaPlayResume(terminal, trigger);
+		it.next().mediaPlayResume(terminal, trigger);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaRecorderPause(String terminal, int duration, javax.telephony.media.Symbol trigger) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaRecorderPause(terminal, duration, trigger);
+		it.next().mediaRecorderPause(terminal, duration, trigger);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaRecorderResume(String terminal, javax.telephony.media.Symbol trigger) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaRecorderResume(terminal, trigger);
+		it.next().mediaRecorderResume(terminal, trigger);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaSignalDetectorDetected(String terminal, javax.telephony.media.Symbol[] sigs) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaSignalDetectorDetected(terminal, sigs);
+		it.next().mediaSignalDetectorDetected(terminal, sigs);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaSignalDetectorOverflow(String terminal, javax.telephony.media.Symbol[] sigs) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaSignalDetectorOverflow(terminal, sigs);
+		it.next().mediaSignalDetectorOverflow(terminal, sigs);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void mediaSignalDetectorPatternMatched(String terminal, javax.telephony.media.Symbol[] sigs, int index) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).mediaSignalDetectorPatternMatched(terminal, sigs, index);
+		it.next().mediaSignalDetectorPatternMatched(terminal, sigs, index);
 	}
 }
 /**
  * providerPrivateData method comment.
  */
 public void providerPrivateData(Serializable data, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).providerPrivateData(data, cause);
+		it.next().providerPrivateData(data, cause);
 	}
 }
 /**
@@ -286,54 +286,54 @@ public void removeListener(TelephonyListener l) {
  * Broadcast off to all listeners.
  */
 public void terminalConnectionCreated(CallId id, String address, String terminal, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalConnectionCreated(id, address, terminal, cause);
+		it.next().terminalConnectionCreated(id, address, terminal, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void terminalConnectionDropped(CallId id, String address, String terminal, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalConnectionDropped(id, address, terminal, cause);
+		it.next().terminalConnectionDropped(id, address, terminal, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void terminalConnectionHeld(CallId id, String address, String terminal, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalConnectionHeld(id, address, terminal, cause);
+		it.next().terminalConnectionHeld(id, address, terminal, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void terminalConnectionRinging(CallId id, String address, String terminal, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalConnectionRinging(id, address, terminal, cause);
+		it.next().terminalConnectionRinging(id, address, terminal, cause);
 	}
 }
 /**
  * Broadcast off to all listeners.
  */
 public void terminalConnectionTalking(CallId id, String address, String terminal, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalConnectionTalking(id, address, terminal, cause);
+		it.next().terminalConnectionTalking(id, address, terminal, cause);
 	}
 }
 /**
  * terminalPrivateData method comment.
  */
 public void terminalPrivateData(String terminal, Serializable data, int cause) {
-	Iterator it = this.getListeners().iterator();
+	Iterator<TelephonyListener> it = this.getListeners().iterator();
 	while (it.hasNext()) {
-		((TelephonyListener)it.next()).terminalPrivateData(terminal, data, cause);
+		it.next().terminalPrivateData(terminal, data, cause);
 	}
 }
 }

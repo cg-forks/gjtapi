@@ -52,8 +52,8 @@ public class FreeAddress implements Address, PrivateData {
 	  }
   };
 
-  private Set terminals = null;		// holds the TermData of the terminals
-  private Vector connections = new Vector(2);	// holds weak references to the Connection
+  private Set<TermData> terminals = null;		// holds the TermData of the terminals
+  private Vector<ConnectionHolder> connections = new Vector<ConnectionHolder>(2);	// holds weak references to the Connection
 
   private transient Vector<CallListener> callListeners
       = new Vector<CallListener>();
@@ -142,11 +142,12 @@ FreeAddress(String num, Provider prov, boolean local){
 	this.setName(num);
 	this.setLocal(local);
 }    
-  public synchronized void addAddressListener(AddressListener l) {
+  @SuppressWarnings("unchecked")
+public synchronized void addAddressListener(AddressListener l) {
 	if (l == null)
 		return;
 
-	Vector v = addressListeners == null ? new Vector(2) : (Vector) addressListeners.clone();
+	Vector<AddressListener> v = addressListeners == null ? new Vector<AddressListener>(2) : (Vector<AddressListener>) addressListeners.clone();
 	// protect the Address from garbage collection
 	this.protect();
 
@@ -269,7 +270,7 @@ public void addObserver(AddressObserver observer) throws javax.telephony.Resourc
 	Call [] ret = null;
 	Connection [] cons = this.getConnections();
 	if (cons != null){
-	  Vector v = new Vector(cons.length);
+	  Vector<Call> v = new Vector<Call>(cons.length);
 	  for (int i=0; i< cons.length; i++){
 		Call ca = cons[i].getCall();
 		if (ca != null){
@@ -311,7 +312,7 @@ public Connection[] getConnections() {
             if (ret.length == 0) {
                 return null;
             }
-            Iterator it = connections.iterator();
+            Iterator<ConnectionHolder> it = connections.iterator();
             int i = 0;
             while (it.hasNext()) {
                 ret[i] = ((ConnectionHolder) it.next()).getConnection();
@@ -329,11 +330,11 @@ public Connection[] getConnections() {
  */
 FreeConnection getLazyConnection(FreeCall call) {
 	// look for existing one
-	Vector v = this.connections;
+	Vector<ConnectionHolder> v = this.connections;
 	ConnectionHolder testHolder = new ConnectionHolder(call.getCallID(), this.getName());
 	if (v.contains(testHolder)) {
 		// it's in there... find it
-		Iterator it = v.iterator();
+		Iterator<ConnectionHolder> it = v.iterator();
 		while (it.hasNext()) {
 			ConnectionHolder ch = (ConnectionHolder)it.next();
 			if (ch.equals(testHolder))
@@ -368,7 +369,7 @@ public Terminal[] getTerminals() {
 		synchronized (this) {
 			// now double check
 			if (this.terminals == null) {
-				this.terminals = new HashSet(1);
+				this.terminals = new HashSet<TermData>(1);
 				try {
 					TermData[] terms = ((GenericProvider) this.getProvider()).getRaw().getTerminals(this.getName());
 					if (terms != null) {
@@ -380,14 +381,14 @@ public Terminal[] getTerminals() {
 			}
 		}
 	}
-		// transforn collection of Terminal names to array of terminals
+		// transform collection of Terminal names to array of terminals
 	synchronized (terminals) {
 		Terminal[] ret = null;
 		if (this.terminals.isEmpty())
 			return null;
 
 		ret = new Terminal[terminals.size()];
-		Iterator it = terminals.iterator();
+		Iterator<TermData> it = terminals.iterator();
 		int i = 0;
 		while (it.hasNext()) {
 			TermData termData = (TermData)it.next();
@@ -433,9 +434,10 @@ private void protect() {
 	* If this is the last listener or observer, allow the Address to be garbage collected if the domain
 	* support its.
 	**/
+@SuppressWarnings("unchecked")
 public synchronized void removeAddressListener(AddressListener l) {
 	if (addressListeners != null && addressListeners.contains(l)) {
-		Vector v = (Vector) addressListeners.clone();
+		Vector<AddressListener> v = (Vector<AddressListener>) addressListeners.clone();
 		v.removeElement(l);
 		addressListeners = v;
 		fireAddressListenerEnded(l);
@@ -444,9 +446,10 @@ public synchronized void removeAddressListener(AddressListener l) {
 		this.unProtect();
 	}
 }
-  public synchronized void removeCallListener(CallListener l) {
+  @SuppressWarnings("unchecked")
+public synchronized void removeCallListener(CallListener l) {
 	if (callListeners.contains(l)) {
-	  Vector v = (Vector) callListeners.clone();
+		Vector<CallListener> v = (Vector<CallListener>) callListeners.clone();
 	  v.removeElement(l);
 	  callListeners = v;
 	  this.stopEvents();
@@ -465,7 +468,7 @@ public synchronized void removeAddressListener(AddressListener l) {
    * domain management is used.
    **/
 public void removeObserver(AddressObserver observer) {
-	if (observers.removeObserver((Observer) observer)) {
+	if (observers.removeObserver(observer)) {
 		sendAddrObservationEndedEv(observer);
 		// check if we no longer need protection
 		this.unProtect();
@@ -482,7 +485,7 @@ public void send(FreeAddressEvent ev) {
 	this.sendToObservers(ev);
 
 	// send to listeners
-	Iterator it = this.addressListeners.iterator();
+	Iterator<AddressListener> it = this.addressListeners.iterator();
 	while (it.hasNext()) {
 		AddressListener al = (AddressListener)it.next();
 		if (ev.getID() == AddressEvent.ADDRESS_EVENT_TRANSMISSION_ENDED)
@@ -546,12 +549,12 @@ public void setPrivateData(java.lang.Object data) {
  * @param termNames An array or weak pointers (names) of associated Terminals.
  */
 void setTerminalData(TermData[] termData) {
-	Set terms = this.terminals;
+	Set<TermData> terms = this.terminals;
 	if (terms == null) {
 		synchronized (this) {
 			// now double check
 			if ((terms = this.terminals) == null) {
-				terms = this.terminals = new HashSet();
+				terms = this.terminals = new HashSet<TermData>();
 			}
 		}
 	}

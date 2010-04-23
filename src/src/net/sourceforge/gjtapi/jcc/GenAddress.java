@@ -162,6 +162,7 @@ public String toString() {
 	 * address.
 	 * @see javax.jcat.JcatAddress#getConnections()
 	 */
+	@SuppressWarnings("unchecked")
 	public Set getConnections() {
 		// Get the array or GJTAPI connections
 		Connection[] conns = this.getFrameAddr().getConnections();
@@ -201,6 +202,7 @@ public String toString() {
 	 * and deregistered dynamically with an Address.
 	 * @see javax.jcat.JcatAddress#getTerminals()
 	 */
+	@SuppressWarnings("unchecked")
 	public Set getTerminals() {
 		// Get the array or GJTAPI connections
 		Terminal[] terms = this.getFrameAddr().getTerminals();

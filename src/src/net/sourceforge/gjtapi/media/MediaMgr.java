@@ -32,38 +32,40 @@ package net.sourceforge.gjtapi.media;
 */
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Map.Entry;
+
 import javax.telephony.media.*;
+
 /**
  * Manager of MediaServices -- mapping services to MediaTerminals and to bound service names.
  * Creation date: (2000-03-29 11:24:54)
  * @author: Richard Deadman
  */
 public class MediaMgr {
-	private Dictionary activeServices = new Hashtable();	// terminalName -> WeakReference(MediaServiceHolder)
-	private Hashtable waitingServices = new Hashtable();	// MediaService -> serviceName
-		// The following is a time-bound set of Call-tagged MediaGroups waiting to be passed to
+	private Dictionary<String, WeakReference<MediaServiceHolder>> activeServices = new Hashtable<String, WeakReference<MediaServiceHolder>>();	// terminalName -> WeakReference(MediaServiceHolder)
+	private Hashtable<MediaService, String> waitingServices = new Hashtable<MediaService, String>();	// MediaService -> serviceName
+		// The following is a time-bound set of Call-tagged GenericMediaGroups waiting to be passed to
 		// a MediaService.
-	private Dictionary waitingMediaGroups = new Hashtable();	// serviceName -> Set(MediaGroups)
+	private Dictionary<String, Set<GenericMediaGroup>> waitingGenericMediaGroups = new Hashtable<String, Set<GenericMediaGroup>>();	// serviceName -> Set(GenericMediaGroups)
 /**
- * Assign a MediaService to a MediaGroup that is waiting for a Media Service with a certain serviceName
+ * Assign a MediaService to a GenericMediaGroup that is waiting for a Media Service with a certain serviceName
  * Creation date: (2000-03-30 10:26:35)
  * @author: Richard Deadman
  * @param serviceName The name of the service (MediaService) that is now available to take a Media Group
  * @return true if the MediaService was assigned to a Media Group.
  */
-private boolean assignWaitingMediaGroup(String serviceName, MediaService ms) {
-	Dictionary dict = this.getWaitingMediaGroups();
+private boolean assignWaitingGenericMediaGroup(String serviceName, MediaService ms) {
+	Dictionary<String, Set<GenericMediaGroup>> dict = this.getWaitingGenericMediaGroups();
 
 	synchronized (dict) {
 		// find the set of already waiting media groups
-		Object o = dict.get(serviceName);
-		if (o != null && o instanceof Set) {
-			Set groups = (Set)o;
+		Set<GenericMediaGroup> groups = dict.get(serviceName);
+		if (groups != null) {
 			if (!groups.isEmpty()) {
-				Iterator it = groups.iterator();
-				GenericMediaGroup mg = (GenericMediaGroup)it.next();
+				Iterator<GenericMediaGroup> it = groups.iterator();
+				GenericMediaGroup mg = it.next();
 
-				// assign my service to the MediaGroup
+				// assign my service to the GenericMediaGroup
 				mg.setMediaService(ms);
 
 				// notify the method waiting on this assignment
@@ -86,7 +88,7 @@ private boolean assignWaitingMediaGroup(String serviceName, MediaService ms) {
  * @param msh The pseudo media service which is allocated to the terminal.
  */
 public void bind(String term, MediaServiceHolder msh) {
-	this.getActiveServices().put(term, new WeakReference(msh));
+	this.getActiveServices().put(term, new WeakReference<MediaServiceHolder>(msh));
 }
 /**
  * Find the first MediaService that is registered for a service name.
@@ -96,7 +98,7 @@ public void bind(String term, MediaServiceHolder msh) {
  * @param serviceName The serviceName the service is currently in limbo waiting to serve.
  */
 public MediaService findForService(String serviceName) {
-	Map.Entry entry = this.privateFindForName(serviceName);
+	Entry<MediaService, String> entry = this.privateFindForName(serviceName);
 	if (entry != null)
 		return (MediaService)entry.getKey();
 	return null;
@@ -110,7 +112,7 @@ public MediaService findForService(String serviceName) {
  * @param term The name of a terminal we want to find the MediaService for
  */
 public MediaServiceHolder findForTerminal(String term) {
-	WeakReference ref = (WeakReference)this.getActiveServices().get(term);
+	WeakReference<MediaServiceHolder> ref = this.getActiveServices().get(term);
 	if (ref != null)
 		return (MediaServiceHolder)ref.get();
 	else
@@ -122,32 +124,32 @@ public MediaServiceHolder findForTerminal(String term) {
  * @author: Richard Deadman
  * @return A Dictionary of terminal name to MediaService mappings.
  */
-private java.util.Dictionary getActiveServices() {
+private Dictionary<String, WeakReference<MediaServiceHolder>> getActiveServices() {
 	return this.activeServices;
 }
 /**
- * Internal accessor for MediaGroups waiting to have a MediaService made available for them.
+ * Internal accessor for GenericMediaGroups waiting to have a MediaService made available for them.
  * When a MediaService releases a call to another MediaService by name (MediaService.releaseToService()),
- * there may not be an available MediaService for that call yet.  In that case, the call's MediaGroup
+ * there may not be an available MediaService for that call yet.  In that case, the call's GenericMediaGroup
  * can be temporarily placed in a waiting area, with a timer set to remove it if a MediaService does not
  * appear in x milliseconds.
  * Creation date: (2000-03-08 12:45:35)
  * @author: Richard Deadman
- * @return A Hashtable of serviceName to sets of waiting MediaGroups
+ * @return A Hashtable of serviceName to sets of waiting GenericMediaGroups
  */
-private Dictionary getWaitingMediaGroups() {
-	return this.waitingMediaGroups;
+private Dictionary<String, Set<GenericMediaGroup>> getWaitingGenericMediaGroups() {
+	return this.waitingGenericMediaGroups;
 }
 /**
  * Internal accessor for MediaServices bound to a name.
  * When a call is delivered to a service name (possibly by another MediaService), the MediaMgr looks up
- * a MediaService bound to that name so that the call's MediaGroup can be assigned to the MediaService
+ * a MediaService bound to that name so that the call's GenericMediaGroup can be assigned to the MediaService
  * and the MediaService may restart from it held state.
  * Creation date: (2000-03-08 12:45:35)
  * @author: Richard Deadman
  * @return A Hashtable of MediaService to serviceName entries
  */
-private Hashtable getWaitingServices() {
+private Hashtable<MediaService, String> getWaitingServices() {
 	return this.waitingServices;
 }
 /**
@@ -158,35 +160,32 @@ private Hashtable getWaitingServices() {
  * @return A Map.Entry for the first found entry, or null
  * @param serviceName The serviceName the service is currently in limbo waiting to serve.
  */
-private Map.Entry privateFindForName(String serviceName) {
-	Set entries = this.getWaitingServices().entrySet();
-	Iterator it = entries.iterator();
+private Entry<MediaService, String> privateFindForName(String serviceName) {
+	Set<Entry<MediaService, String>> entries = this.getWaitingServices().entrySet();
+	Iterator<Entry<MediaService, String>> it = entries.iterator();
 	while (it.hasNext()) {
-		Map.Entry ent = (Map.Entry)it.next();
+		Entry<MediaService, String> ent = it.next();
 		if (ent.getValue().equals(serviceName))
 			return ent;
 	}
 	return null;
 }
 /**
- * This puts a MediaGroup into the waiting queue.
+ * This puts a GenericMediaGroup into the waiting queue.
  * Creation date: (2000-03-30 10:26:35)
  * @author: Richard Deadman
  * @param serviceName The name of the service (MediaService) the media group is waiting for.
  * @param group The Media Group temporarily waiting
  */
-private void putWaitingMediaGroup(String serviceName, GenericMediaGroup group) {
-	Dictionary dict = this.getWaitingMediaGroups();
+private void putWaitingGenericMediaGroup(String serviceName, GenericMediaGroup group) {
+	Dictionary<String, Set<GenericMediaGroup>> dict = this.getWaitingGenericMediaGroups();
 
 	synchronized (dict) {
 		// find the set of already waiting media groups
-		Object o = dict.get(serviceName);
-		Set groups = null;
+		Set<GenericMediaGroup> groups = dict.get(serviceName);
 		boolean newSet = false;
-		if (o != null && o instanceof Set) {
-			groups = (Set)o;
-		} else {
-			groups = new HashSet();
+		if (groups == null) {
+			groups = new HashSet<GenericMediaGroup>();
 			newSet = true;
 		}
 
@@ -207,8 +206,8 @@ private void putWaitingMediaGroup(String serviceName, GenericMediaGroup group) {
  * @param ms The media service which is registered.
  */
 public void register(String serviceName, MediaService ms) {
-	// first see if we can assign it to a waiting MediaGroup
-	if (!assignWaitingMediaGroup(serviceName, ms))
+	// first see if we can assign it to a waiting GenericMediaGroup
+	if (!assignWaitingGenericMediaGroup(serviceName, ms))
 		this.getWaitingServices().put(ms, serviceName);
 }
 /**
@@ -222,20 +221,19 @@ public boolean release(String term) {
 	return (this.getActiveServices().remove(term) != null);
 }
 /**
- * This removes a MediaGroup from the waiting queue.
+ * This removes a GenericMediaGroup from the waiting queue.
  * Creation date: (2000-03-30 10:26:35)
  * @author: Richard Deadman
  * @param serviceName The name of the service (MediaService) the media group was waiting for.
  * @param group The Media Group to remove
  */
-private void removeWaitingMediaGroup(String serviceName, GenericMediaGroup group) {
-	Dictionary dict = this.getWaitingMediaGroups();
+private void removeWaitingGenericMediaGroup(String serviceName, GenericMediaGroup group) {
+	Dictionary<String, Set<GenericMediaGroup>> dict = this.getWaitingGenericMediaGroups();
 
 	synchronized (dict) {
 		// find the set of already waiting media groups
-		Object o = dict.get(serviceName);
-		if (o != null && o instanceof Set) {
-			Set groups = (Set)o;
+		Set<GenericMediaGroup> groups = dict.get(serviceName);
+		if (groups != null) {
 			groups.remove(group);
 		}
 	}
@@ -258,7 +256,7 @@ public String toString() {
  * @return The unregistered MediaService, or null if none found.
  */
 public MediaService unRegister(String serviceName) {
-	Map.Entry entry = this.privateFindForName(serviceName);
+	Entry<MediaService, String> entry = this.privateFindForName(serviceName);
 	if (entry != null) {
 		MediaService ms = (MediaService)entry.getKey();
 		this.getWaitingServices().remove(ms);
@@ -267,18 +265,18 @@ public MediaService unRegister(String serviceName) {
 	return null;
 }
 /**
- * Register a MediaGroup to wait "timeout" milliseconds for a MediaService to be registered for
+ * Register a GenericMediaGroup to wait "timeout" milliseconds for a MediaService to be registered for
  * a serviceName.
  * Creation date: (2000-03-30 10:10:48)
  * @author: Richard Deadman
  * @return The MediaService that is available to take over processing of the call
- * @param group net.sourceforge.gjtapi.media.GenericMediaGroup
+ * @param group net.sourceforge.gjtapi.media.GenericGenericMediaGroup
  * @param serviceName The service name the MediaService is registered under
  * @param timeout The number of milliseconds to wait for a MediaService to take over.
  */
 public MediaService waitForMediaService(GenericMediaGroup group, String serviceName, int timeout)
 	throws NoServiceReadyException {
-	this.putWaitingMediaGroup(serviceName, group);
+	this.putWaitingGenericMediaGroup(serviceName, group);
 	synchronized (group) {
 		try {
 			group.wait(timeout);
@@ -289,7 +287,7 @@ public MediaService waitForMediaService(GenericMediaGroup group, String serviceN
 	// See if we were allocated a MediaService
 	MediaService ms = group.getMediaService();
 	if (ms == null) {
-		this.removeWaitingMediaGroup(serviceName, group);
+		this.removeWaitingGenericMediaGroup(serviceName, group);
 		throw new NoServiceReadyException("timed out");
 	}
 	return ms;

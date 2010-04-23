@@ -32,7 +32,6 @@ package net.sourceforge.gjtapi.media;
 */
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.EventListener;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -106,7 +105,7 @@ public class GenericMediaService implements MediaService, MediaServiceListener, 
 	private MediaMgr mgr = null;
 	/** Vector of MediaListeners (MediaServiceListener, 
 			ResourceListener (PlayerListener, RecorderListener, SignalDetectorListener)) */
-	protected static Vector theListeners = new Vector();
+	protected static Vector<MediaListener> theListeners = new Vector<MediaListener>();
 	private GenericMediaGroup mediaGroup = null;
 /**
  * Create an unbound MediaService,
@@ -459,6 +458,7 @@ private GenericMediaGroup checkGroup() throws NotBoundException {
  *
  * If the key set is null, create a snapshot
  */
+@SuppressWarnings("unchecked")
 private Dictionary extract(Dictionary dict, Symbol[] keys) {
 	// take snapshot if keys null
 	if (keys == null) {
@@ -536,7 +536,7 @@ public ConfigSpec getConfiguration() throws NotBoundException {
  * @author: Richard Deadman
  * @return An iterator over MediaListeners attached to me.
  */
-public Iterator getListeners() {
+public Iterator<MediaListener> getListeners() {
 	return GenericMediaService.theListeners.iterator();
 }
 /**
@@ -572,6 +572,7 @@ private MediaMgr getMgr() {
 	 * by the MediaService implementation, that key is removed from the Dictionary.
 	 * @return Dictionary of values bound to the given keys
 	 */
+	@SuppressWarnings("unchecked")
 	public Dictionary getParameters(Symbol[] keys) { 
 		return this.extract(this.checkGroup().getParameters(), keys);
 	}
@@ -616,6 +617,7 @@ public String getTerminalName() {
  * @return A Dictionary of application-shared information.
  * @exception NotBoundException if not currently bound to a MediaGroup
  */
+@SuppressWarnings("unchecked")
 public Dictionary getUserDictionary() throws NotBoundException {
 	this.checkGroup();
 	return this.getMediaGroup().getDictionary();
@@ -637,6 +639,7 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	 *
 	 * @throws NotBoundException if not currently bound to a MediaGroup
 	 */
+	@SuppressWarnings("unchecked")
 	public Dictionary getUserValues(Symbol[] keys) throws NotBoundException {
 		return this.extract(this.checkGroup().getDictionary(), keys);
 	}
@@ -654,10 +657,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	return (this.mediaGroup != null);
 	}
 	public void onDisconnected(MediaEvent event) {
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof MediaServiceListener) {
 		try {
 		    ((MediaServiceListener)listener).onDisconnected(event);
@@ -668,10 +671,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see SignalDetectorListener#onOverflow(SignalDetectorEvent) */ 
 	public void onOverflow(SignalDetectorEvent signaldetectorevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof SignalDetectorListener) {
 		try {
 		    ((SignalDetectorListener)listener).onOverflow(signaldetectorevent0);
@@ -682,10 +685,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see SignalDetectorListener#onPatternMatched(SignalDetectorEvent) */ 
 	public void onPatternMatched(SignalDetectorEvent signaldetectorevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof SignalDetectorListener) {
 		try {
 		    ((SignalDetectorListener)listener).onPatternMatched(signaldetectorevent0);
@@ -696,10 +699,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see PlayerListener#onPause(PlayerEvent) */ 
 	public void onPause(PlayerEvent playerevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof PlayerListener) {
 		try {
 		    ((PlayerListener)listener).onPause(playerevent0);
@@ -710,10 +713,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see RecorderListener#onPause(RecorderEvent) */ 
 	public void onPause(RecorderEvent recorderevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof RecorderListener) {
 		try {
 		    ((RecorderListener)listener).onPause(recorderevent0);
@@ -724,10 +727,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see PlayerListener#onResume(PlayerEvent) */ 
 	public void onResume(PlayerEvent playerevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof PlayerListener) {
 		try {
 		    ((PlayerListener)listener).onResume(playerevent0);
@@ -738,10 +741,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see RecorderListener#onResume(RecorderEvent) */ 
 	public void onResume(RecorderEvent recorderevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof RecorderListener) {
 		try {
 		    ((RecorderListener)listener).onResume(recorderevent0);
@@ -752,10 +755,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see SignalDetectorListener#onSignalDetected(SignalDetectorEvent) */ 
 	public void onSignalDetected(SignalDetectorEvent signaldetectorevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof SignalDetectorListener) {
 		try {
 		    ((SignalDetectorListener)listener).onSignalDetected(signaldetectorevent0);
@@ -766,10 +769,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see PlayerListener#onSpeedChange(PlayerEvent) */ 
 	public void onSpeedChange(PlayerEvent playerevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof PlayerListener) {
 		try {
 		    ((PlayerListener)listener).onSpeedChange(playerevent0);
@@ -780,10 +783,10 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	/* @see PlayerListener#onVolumeChange(PlayerEvent) */ 
 	public void onVolumeChange(PlayerEvent playerevent0) 
 	{
-	EventListener listener; 
-	Iterator iter = theListeners.iterator();
+	MediaListener listener; 
+	Iterator<MediaListener> iter = theListeners.iterator();
 	while(iter.hasNext()) {
-	    listener = (EventListener)iter.next();
+	    listener = iter.next();
 	    if(listener instanceof PlayerListener) {
 		try {
 		    ((PlayerListener)listener).onVolumeChange(playerevent0);
@@ -797,6 +800,7 @@ public Dictionary getUserDictionary() throws NotBoundException {
 
 
 	/* @see Player#play(String, int, RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public PlayerEvent play(String[] streamId, int offset, RTC[] rtcs, Dictionary optArgs)
 	throws MediaResourceException 
 	{
@@ -809,6 +813,7 @@ public Dictionary getUserDictionary() throws NotBoundException {
 
 
 	/* @see Player#play(String, int, RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public PlayerEvent play(String streamId, int offset, RTC[] rtcs, Dictionary optArgs)
 	throws MediaResourceException 
 	{
@@ -816,6 +821,7 @@ public Dictionary getUserDictionary() throws NotBoundException {
 	    return player.play(streamId, offset, rtcs, optArgs);
 	}
 	/* @see Recorder#record(String, RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public RecorderEvent record(String string0, RTC[] rtc1, Dictionary dictionary2)
 	throws MediaResourceException 
 	{
@@ -841,7 +847,7 @@ public void release() {
 	if (disconnect) {
 		// store the Connection
 		TerminalConnection[] tcs = this.getTerminal().getTerminalConnections();
-		if ((tcs != null) || (tcs.length >0))
+		if ((tcs != null) && (tcs.length >0))
 			conn = tcs[0].getConnection();
 	}
 	
@@ -920,6 +926,7 @@ synchronized private GenericMediaGroup releaseGroup() {
 	 theListeners.remove(listener);
 	}
 	/* @see SignalDetector#retrieveSignals(int, Symbol[], RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public SignalDetectorEvent retrieveSignals(int int0, Symbol[] symbol1, RTC[] rtc2, Dictionary dictionary3)
 	throws MediaResourceException 
 	{
@@ -927,6 +934,7 @@ synchronized private GenericMediaGroup releaseGroup() {
 	retrieveSignals(int0, symbol1, rtc2, dictionary3);
 	}
 	/* @see SignalGenerator#sendSignals(Symbol[], RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public SignalGeneratorEvent sendSignals(Symbol[] symbol0, RTC[] rtc1, Dictionary dictionary2)
 	throws MediaResourceException 
 	{
@@ -934,6 +942,7 @@ synchronized private GenericMediaGroup releaseGroup() {
 	sendSignals(symbol0, rtc1, dictionary2);
 	}
 	/* @see SignalGenerator#sendSignals(String, RTC[], Dictionary) */ 
+	@SuppressWarnings("unchecked")
 	public SignalGeneratorEvent sendSignals(String string0, RTC[] rtc1, Dictionary dictionary2)
 	throws MediaResourceException 
 	{
@@ -952,6 +961,7 @@ private void setMediaGroup(GenericMediaGroup newMediaGroup) {
 /*
  * Set the value of various parameters to the given values.
  */
+@SuppressWarnings("unchecked")
 public void setParameters(Dictionary params) throws NotBoundException {
 	this.checkGroup().setParameters(params);
 }
@@ -964,6 +974,7 @@ public void setParameters(Dictionary params) throws NotBoundException {
  * @param newDict A Dictionary whose contents is copied into the MediaGroup.
  * @exception NotBoundException if not currently bound to a MediaGroup
  */
+@SuppressWarnings("unchecked")
 public void setUserDictionary(Dictionary newDict) throws NotBoundException {
 	this.checkGroup().setDictionary(newDict);
 }
@@ -976,6 +987,7 @@ public void setUserDictionary(Dictionary newDict) throws NotBoundException {
  * @param dict a Dictionary whose contents is merged into the UserDictionary.
  * @throws NotBoundException if not currently bound to a MediaGroup
  */
+@SuppressWarnings("unchecked")
 public void setUserValues(Dictionary newDict) throws NotBoundException {
 	this.checkGroup();
 	Dictionary dict = this.getMediaGroup().getDictionary();

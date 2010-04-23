@@ -78,17 +78,14 @@ public static SymbolHolder[] create(Symbol[] syms) {
  * @param dict An dictionary of serializable SymbolHolders.
  * @return The Symbol Dictionary reconstituted.
  */
-public static Dictionary create(Dictionary dict) {
+public static Dictionary<SymbolHolder, SymbolHolder> create(Dictionary<Symbol, Symbol> dict) {
 	if (dict == null)
 		return null;
-	Dictionary holders = new Hashtable();
-	Enumeration e = dict.keys();
+	Dictionary<SymbolHolder, SymbolHolder> holders = new Hashtable<SymbolHolder, SymbolHolder>();
+	Enumeration<Symbol> e = dict.keys();
 	while (e.hasMoreElements()) {
-		Object key = e.nextElement();
-		Object newKey = (key instanceof Symbol) ? new SymbolHolder((Symbol)key) : key;
-		Object val = dict.get(key);
-		Object newVal = (val instanceof Symbol) ? new SymbolHolder((Symbol)val) : val;
-		holders.put(newKey, newVal);
+		Symbol key = e.nextElement();
+		holders.put(new SymbolHolder(key), new SymbolHolder(dict.get(key)));
 	}
 	return holders;
 }
@@ -115,17 +112,14 @@ public static Symbol[] decode(SymbolHolder[] holders) {
  * @param dict An dictionary of serializable SymbolHolders.
  * @return The Symbol Dictionary reconstituted.
  */
-public static Dictionary decode(Dictionary holders) {
+public static Dictionary<Symbol, Symbol> decode(Dictionary<SymbolHolder, SymbolHolder> holders) {
 	if (holders == null)
 		return null;
-	Dictionary dict = new Hashtable();
-	Enumeration e = holders.keys();
+	Dictionary<Symbol, Symbol> dict = new Hashtable<Symbol, Symbol>();
+	Enumeration<SymbolHolder> e = holders.keys();
 	while (e.hasMoreElements()) {
-		Object key = e.nextElement();
-		Object newKey = (key instanceof SymbolHolder) ? ((SymbolHolder)key).getSymbol() : key;
-		Object val = holders.get(key);
-		Object newVal = (val instanceof SymbolHolder) ? ((SymbolHolder)val).getSymbol() : val;
-		dict.put(newKey, newVal);
+		SymbolHolder key = e.nextElement();
+		dict.put(key.getSymbol(), holders.get(key).getSymbol());
 	}
 	return dict;
 }

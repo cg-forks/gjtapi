@@ -169,11 +169,11 @@ public String toString() {
 	 * Get all the JcatAddresses on a Terminal
 	 * @see javax.jcat.JcatTerminal#getAddresses()
 	 */
-	public Set getAddresses() {
+	public Set<GenAddress> getAddresses() {
 		Address[] addresses = this.getFrameTerm().getAddresses();
 		if (addresses == null)
 			return null;
-		Set results = new HashSet();
+		Set<GenAddress> results = new HashSet<GenAddress>();
 		int len = addresses.length;
 		for (int i = 0; i < len; i++) {
 			results.add(new GenAddress(this.provider, (FreeAddress)addresses[i]));
@@ -200,11 +200,11 @@ public String toString() {
 	 * wrapper for a GJTAPI FreeTerminalConnection.
 	 * @see javax.jcat.JcatTerminal#getTerminalConnections()
 	 */
-	public Set getTerminalConnections() {
+	public Set<GenTerminalConnection> getTerminalConnections() {
 		TerminalConnection[] tcs = this.getFrameTerm().getTerminalConnections();
 		if (tcs == null)
 			return null;
-		Set results = new HashSet();
+		Set<GenTerminalConnection> results = new HashSet<GenTerminalConnection>();
 		int len = tcs.length;
 		for (int i = 0; i < len; i++) {
 			results.add(new GenTerminalConnection(this.provider, (FreeTerminalConnection)tcs[i]));

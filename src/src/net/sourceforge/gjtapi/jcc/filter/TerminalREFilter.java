@@ -84,6 +84,7 @@ public boolean equals(Object obj) {
 /**
  * getEventDisposition method comment.
  */
+@SuppressWarnings("unchecked")
 public int getEventDisposition(JccEvent e) {
 	if (e instanceof JcatCallEvent) {
 		JcatConnection[] conns = (JcatConnection[])((JcatCallEvent)e).getCall().getConnections();

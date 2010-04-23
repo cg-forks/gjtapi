@@ -115,7 +115,7 @@ public class Call
     private SipCallId callId = new SipCallId();
     
     //Event Management
-    Collection listeners = new java.util.ArrayList();
+    private Collection<CallListener> listeners = new java.util.ArrayList<CallListener>();
     public String getState()
     {
         return callState;
@@ -277,9 +277,9 @@ public class Call
     {
         CallStateEvent evt = new CallStateEvent(this);
         evt.setOldState(oldStatus);
-        Iterator iterator = listeners.iterator();
+        Iterator<CallListener> iterator = listeners.iterator();
         while (iterator.hasNext()) {
-            CallListener current = (CallListener) iterator.next();
+            CallListener current = iterator.next();
             current.callStateChanged(evt);
         }
     }

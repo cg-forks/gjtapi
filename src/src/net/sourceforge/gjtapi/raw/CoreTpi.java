@@ -30,6 +30,8 @@ package net.sourceforge.gjtapi.raw;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Map;
+
 import javax.telephony.InvalidArgumentException;
 import javax.telephony.InvalidPartyException;
 import javax.telephony.MethodNotSupportedException;
@@ -102,7 +104,8 @@ java.util.Properties getCapabilities();
  * @author: Richard Deadman
  * @param props The name value properties map
  */
-void initialize(java.util.Map props)
+@SuppressWarnings("unchecked")
+void initialize(Map props)
     throws ProviderUnavailableException;
 /**
  * Tell the provider that it may release a call id for future use.  This is necessary to ensure that

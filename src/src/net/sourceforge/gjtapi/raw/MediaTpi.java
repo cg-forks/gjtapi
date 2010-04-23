@@ -58,6 +58,7 @@ public interface MediaTpi extends BasicJtapiTpi {
   * @param resourceArgs Optional values and parameters for configuring the resource.
   * @return true if the resource is allocated
   **/
+@SuppressWarnings("unchecked")
 boolean allocateMedia(String terminal, int type, Dictionary resourceArgs);
 /**
   * Free a media resource from a terminal
@@ -87,7 +88,8 @@ boolean isMediaTerminal(String terminal);
 	  *
 	  * @exception MediaResourceException A wrapper for a PlayerEvent that describes what went wrong.
 	  **/
-	 void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException; 
+	 @SuppressWarnings("unchecked")
+	void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException; 
 /**
   * Recording an audio streams named by the streamId (may be urls). This method is synchronous.
   * The method returns once recording has stopped.
@@ -99,6 +101,7 @@ boolean isMediaTerminal(String terminal);
   *
   * @exception MediaResourceException A wrapper for a RecorderEvent that describes what went wrong.
   **/
+@SuppressWarnings("unchecked")
 void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException;
 /**
   * Receive DTMF tones from a terminal
@@ -112,6 +115,7 @@ void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs) th
   *
   * @exception MediaResourceException A wrapper for a SignalDetectorEvent that describes what went wrong.
   **/
+@SuppressWarnings("unchecked")
 RawSigDetectEvent retrieveSignals(String terminal,
 	int num,
 	Symbol[] patterns,
@@ -127,6 +131,7 @@ RawSigDetectEvent retrieveSignals(String terminal,
   *
   * @exception MediaResourceException A wrapper for a SignalGeneratorEvent that describes what went wrong.
   **/
+@SuppressWarnings("unchecked")
 void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException;
 /**
  * Stop any media resources attached to a terminal.

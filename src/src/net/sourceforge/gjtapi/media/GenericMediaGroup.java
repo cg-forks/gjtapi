@@ -69,8 +69,10 @@ import net.sourceforge.gjtapi.TelephonyProvider;
 class GenericMediaGroup implements Player, Recorder, SignalDetector, SignalGenerator {
 	private GenericProvider prov = null;
 	private javax.telephony.media.ConfigSpec configSpec = null;
-	private final Set resourceSet = new HashSet();
+	private final Set<ResourceSpec> resourceSet = new HashSet<ResourceSpec>();
+	@SuppressWarnings("unchecked")
 	private Dictionary dictionary = null;
+	@SuppressWarnings("unchecked")
 	private Dictionary parameters = null;
 	private javax.telephony.Terminal terminal = null;
 	/** 
@@ -112,11 +114,12 @@ public GenericMediaGroup(ConfigSpec spec, Terminal terminal, MediaService ms) th
  * @author: Richard Deadman
  * @param rs The set of new Resources to allocate
  */
+@SuppressWarnings("unchecked")
 public void allocate(ResourceSpec[] rs) throws MediaConfigException {
 	if (rs == null)
 		return;
 	int newRes = 0;
-	Set resSet = this.getResources();
+	Set<ResourceSpec> resSet = this.getResources();
 	for (int i = 0; i < rs.length; i++) {
 	    Class cl = rs[i].getResourceClass();
 	    if (Player.class.isAssignableFrom(cl))
@@ -156,7 +159,7 @@ public void finalize() {
  * Tell the signal detector to flush all signals so far collected
  */
 public SignalDetectorEvent flushBuffer() throws javax.telephony.media.MediaResourceException {
-	Dictionary dict = new Hashtable();
+	Dictionary<Symbol, Integer> dict = new Hashtable<Symbol, Integer>();
 	dict.put(SignalDetectorConstants.p_Duration, new Integer(0));
 	return this.retrieveSignals(Integer.MAX_VALUE, null, null, dict);
 }
@@ -207,6 +210,7 @@ public javax.telephony.media.ConfigSpec getConfigSpec() {
  * @author: Richard Deadman
  * @return The key-value collection.
  */
+@SuppressWarnings("unchecked")
 public Dictionary getDictionary() {
 	if (this.dictionary == null)
 		this.dictionary = new Hashtable();
@@ -227,6 +231,7 @@ public javax.telephony.media.MediaService getMediaService() {
  * @author: Richard Deadman
  * @return The key-value collection.
  */
+@SuppressWarnings("unchecked")
 public Dictionary getParameters() {
 	if (this.parameters == null)
 		this.parameters = new Hashtable();
@@ -247,7 +252,7 @@ private net.sourceforge.gjtapi.GenericProvider getProv() {
  * @author: Richard Deadman
  * @return java.util.Set
  */
-private Set getResources() {
+private Set<ResourceSpec> getResources() {
 	return this.resourceSet;
 }
 /**
@@ -284,6 +289,7 @@ String getTerminalName() {
 /**
  * play method comment.
  */
+@SuppressWarnings("unchecked")
 public PlayerEvent play(String[] streamIDs, int offset, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
 	int len = streamIDs.length;
 	// test for no stream ids
@@ -324,6 +330,7 @@ public PlayerEvent play(String[] streamIDs, int offset, RTC[] rtc, Dictionary op
 /**
  * play method comment.
  */
+@SuppressWarnings("unchecked")
 public PlayerEvent play(String streamID, int offset, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
 	String[] strs = {streamID};
 	return this.play(strs, offset, rtc, optargs);
@@ -331,6 +338,7 @@ public PlayerEvent play(String streamID, int offset, RTC[] rtc, Dictionary optar
 /**
  * record method comment.
  */
+@SuppressWarnings("unchecked")
 public RecorderEvent record(String streamID, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
 	try {
 		this.getProv().getRaw().record(this.getTerminalName(), streamID, rtc, optargs);
@@ -351,7 +359,8 @@ public RecorderEvent record(String streamID, RTC[] rtc, Dictionary optargs) thro
     /**
      * {@inheritDoc}
      */
-    public SignalDetectorEvent retrieveSignals(int numSignals,
+    @SuppressWarnings("unchecked")
+	public SignalDetectorEvent retrieveSignals(int numSignals,
             Symbol[] patterns, RTC[] rtc, Dictionary optargs)
             throws MediaResourceException {
         GenericProvider provider = getProv();
@@ -377,6 +386,7 @@ public RecorderEvent record(String streamID, RTC[] rtc, Dictionary optargs) thro
     /**
  * sendSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public SignalGeneratorEvent sendSignals(Symbol[] signals, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
 	try {
 		this.getProv().getRaw().sendSignals(this.getTerminalName(), signals, rtc, optargs);
@@ -396,6 +406,7 @@ public SignalGeneratorEvent sendSignals(Symbol[] signals, RTC[] rtc, Dictionary 
 /**
  * sendSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public SignalGeneratorEvent sendSignals(String signals, RTC[] rtc, Dictionary optargs) throws MediaResourceException {
 	Symbol[] syms = SymbolConvertor.convert(signals);
 	return this.sendSignals(syms, rtc, optargs);
@@ -417,7 +428,8 @@ protected void setConfigSpec(javax.telephony.media.ConfigSpec newConfigSpec) {
  * @author: Richard Deadman
  * @param newDictionary The replacement set of values
  */
-public void setDictionary(java.util.Dictionary newDictionary) {
+@SuppressWarnings("unchecked")
+public void setDictionary(Dictionary newDictionary) {
 	if (newDictionary == null)
 		dictionary = new Hashtable();
 	else
@@ -439,6 +451,7 @@ void setMediaService(javax.telephony.media.MediaService newMediaService) {
  * @author: Richard Deadman
  * @param newDictionary The replacement set of values
  */
+@SuppressWarnings("unchecked")
 public void setParameters(Dictionary newParams) {
 	Dictionary oldParams = this.getDictionary();
 	

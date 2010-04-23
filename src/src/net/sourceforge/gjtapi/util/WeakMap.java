@@ -38,14 +38,11 @@ import java.lang.ref.WeakReference;
  * Creation date: (2000-06-15 12:16:14)
  * @author: Richard Deadman
  */
-public class WeakMap extends Cache {
+public class WeakMap<K, V> extends Cache<K, V> {
 /**
  * If the value is not a WeakReference, wrap it in one.
  */
-protected Reference wrap(Object value) {
-	if (value instanceof WeakReference)
-		return (Reference)value;
-	else
-		return new WeakReference(value);
+protected Reference<V> wrap(V value) {
+	return new WeakReference<V>(value);
 }
 }

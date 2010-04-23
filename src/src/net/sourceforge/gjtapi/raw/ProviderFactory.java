@@ -30,6 +30,7 @@ package net.sourceforge.gjtapi.raw;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Dictionary;
 import java.util.Map;
 import java.util.Properties;
 
@@ -108,7 +109,8 @@ public void addListener(TelephonyListener ro) {
 /**
  * allocateMedia method comment.
  */
-public boolean allocateMedia(String terminal, int type, java.util.Dictionary resourceArgs) {
+@SuppressWarnings("unchecked")
+public boolean allocateMedia(String terminal, int type, Dictionary resourceArgs) {
 	if (this.media != null)
 		return this.media.allocateMedia(terminal, type, resourceArgs);
 	else
@@ -321,6 +323,7 @@ public void hold(CallId call, String address, String terminal) throws MethodNotS
 /**
  * {@inheritDoc}
  */
+@SuppressWarnings("unchecked")
 public void initialize(Map props)
     throws ProviderUnavailableException {
 	this.core.initialize(props);
@@ -329,7 +332,7 @@ public void initialize(Map props)
 /**
  * {@inheritDoc}
  */
-public void initializeResources(Map props, ResourceFinder resourceFinder) {
+public void initializeResources(Properties props, ResourceFinder resourceFinder) {
     if (core instanceof ResourceConfigurable) {
         final ResourceConfigurable configurable =
             (ResourceConfigurable) core;
@@ -359,6 +362,7 @@ public CallId join(CallId call1, CallId call2, String address, String terminal) 
 /**
  * play method comment.
  */
+@SuppressWarnings("unchecked")
 public void play(String terminal, java.lang.String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
     if (this.media != null) {
         this.media.play(terminal, streamIds, offset, rtcs, optArgs);
@@ -367,6 +371,7 @@ public void play(String terminal, java.lang.String[] streamIds, int offset, java
 /**
  * record method comment.
  */
+@SuppressWarnings("unchecked")
 public void record(String terminal, String streamId, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	if (this.media != null)
 		this.media.record(terminal, streamId, rtcs, optArgs);
@@ -416,6 +421,7 @@ public CallId reserveCallId(String address) throws InvalidArgumentException {
 /**
  * retrieveSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public RawSigDetectEvent retrieveSignals(String terminal, int num, javax.telephony.media.Symbol[] patterns, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	if (this.media != null) {
 		return this.media.retrieveSignals(terminal, num, patterns, rtcs, optArgs);
@@ -434,6 +440,7 @@ public Object sendPrivateData(CallId call, String address, String terminal, Obje
 /**
  * sendSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public void sendSignals(String terminal, javax.telephony.media.Symbol[] syms, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	if (this.media != null) {
 		this.media.sendSignals(terminal, syms, rtcs, optArgs);

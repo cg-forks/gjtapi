@@ -37,10 +37,12 @@ import java.util.Vector;
 import javax.telephony.events.Ev;
 /**
  * stupid class to re-implement JTAPI's idea of observer/observable
- * made abstract to get correct types returned and correct methods called
+ * made abstract to get correct types returned and correct methods called.
+ * 
+ * Handles ProviderObserver, AddressObserver,...
  */
 abstract class ObservableHelper {
-	private Vector obs = new Vector(2);
+	private Vector<Object> obs = new Vector<Object>(2);
 
 	void addObserver(Object o) {
 		obs.addElement(o);

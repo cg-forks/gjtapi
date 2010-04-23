@@ -50,7 +50,7 @@ public class FreeConnection implements Connection, PrivateData {
 	private String address;
 	private int state = UNKNOWN;
 	/** Map of map of Terminal name -> TerminalConnection */
-	private HashMap terminalConnections = new HashMap(); 
+	private HashMap<String, TerminalConnection> terminalConnections = new HashMap<String, TerminalConnection>(); 
 
 /**
  * Create a connection between a call and an address pointer
@@ -256,16 +256,16 @@ public Object getPrivateData() {
  *
  * @return An array or TerminalConnections or null if none exist.
  **/
-public javax.telephony.TerminalConnection[] getTerminalConnections() {
+public TerminalConnection[] getTerminalConnections() {
 	TerminalConnection[] ret = null;
 	synchronized (this.terminalConnections) {
 		int size = this.terminalConnections.size();
 		if (size > 0) {
 			ret = new TerminalConnection[size];
 			int i = 0;
-			Iterator it = this.terminalConnections.values().iterator();
+			Iterator<TerminalConnection> it = this.terminalConnections.values().iterator();
 			while (it.hasNext()) {
-				ret[i] = (TerminalConnection)it.next();
+				ret[i] = it.next();
 				i++;
 			}
 		}
@@ -410,12 +410,13 @@ void toConnected(int cause) {
  * @author: Richard Deadman
  * @return The removed Address from the call.
  */
+@SuppressWarnings("unchecked")
 FreeAddress toDisconnected(int cause) {
 
 	int oldState = this.getState();
 	if (oldState != Connection.UNKNOWN && oldState != Connection.DISCONNECTED) {
 		// Tell all terminal connections still attached to disconnect
-		Iterator it = ((HashMap)this.terminalConnections.clone()).values().iterator();
+		Iterator<TerminalConnection> it = ((HashMap<String, TerminalConnection>)this.terminalConnections.clone()).values().iterator();
 		while (it.hasNext()) {
 			((FreeTerminalConnection)it.next()).toDropped(cause);
 		}

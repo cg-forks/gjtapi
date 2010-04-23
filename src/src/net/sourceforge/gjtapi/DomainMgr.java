@@ -55,25 +55,26 @@ class DomainMgr {
     private GenericProvider provider = null;
     private TelephonyProvider raw = null;	// shortcut tp provider->getRaw()
     /** map address names to Address for quick lookup */
-    private Map localAddresses = null;
+    private Map<String, FreeAddress> localAddresses = null;
     /** String -> WeakReference(Address) map */
-    private Map remoteAddresses = null;
+    private Map<String, FreeAddress> remoteAddresses = null;
     /**
      * note if our static Address and Terminal arrays are null because they are too large
      * If these are non-null, we are collecting dynamic Addresses and Terminals
      * and mapping them here to their names as WeakReferences
      */
-    private Map terminals = null;
+    private Map<String, FreeTerminal> terminals = null;
     /** String -> WeakReference(Terminal) map */
-    private Map remoteTerminals = null;
+    private Map<String, FreeTerminal> remoteTerminals = null;
     /** The set of known terminals that can handle media */
-    private HashSet mediaTerminals = new HashSet();
+    private HashSet<String> mediaTerminals = new HashSet<String>();
     /**
      * The set of Terminals or Addresses with listeners attached -- 
      * these are strongly held to avoid garbage collection if we are using 
      * SoftMaps.
      */
-    private HashSet observed = null;
+    @SuppressWarnings("unchecked")
+	private HashSet observed = null;
 
 /**
  * Constructor that determines which kind of maps to keep and how to resolve Address and Terminal requests.
@@ -89,15 +90,15 @@ DomainMgr(GenericProvider gp, boolean isDynamic) {
 	this.setProvider(gp);
 	this.setDynamic(isDynamic);
 	if (isDynamic) {
-		this.setLocalAddresses(Collections.synchronizedMap(new SoftMap()));
-		this.setTerminalSet(Collections.synchronizedMap(new SoftMap()));
+		this.setLocalAddresses(Collections.synchronizedMap(new SoftMap<String, FreeAddress>()));
+		this.setTerminalSet(Collections.synchronizedMap(new SoftMap<String, FreeTerminal>()));
 		this.setObserved();	// allow protection of Addresses and Terminals
 	} else {
-		this.setLocalAddresses(Collections.synchronizedMap(new HashMap()));
-		this.setTerminalSet(Collections.synchronizedMap(new HashMap()));
+		this.setLocalAddresses(Collections.synchronizedMap(new HashMap<String, FreeAddress>()));
+		this.setTerminalSet(Collections.synchronizedMap(new HashMap<String, FreeTerminal>()));
 	}
-	this.setRemoteAddresses(Collections.synchronizedMap(new SoftMap()));
-	this.setRemoteTerminals(Collections.synchronizedMap(new SoftMap()));
+	this.setRemoteAddresses(Collections.synchronizedMap(new SoftMap<String, FreeAddress>()));
+	this.setRemoteTerminals(Collections.synchronizedMap(new SoftMap<String, FreeTerminal>()));
 }
 /**
  * Factory to create a (local) Address
@@ -189,12 +190,12 @@ Address[] getAddresses() throws ResourceUnavailableException {
         throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
     }
 
-    Map addr = this.getLocalAddresses();
+    Map<String, FreeAddress> addr = this.getLocalAddresses();
     // test if it's null
     if (addr == null) {
         return null;
     }
-    return (Address[])addr.values().toArray(new Address[0]);
+    return addr.values().toArray(new Address[0]);
 }
 /**
  * Find a FreeAddress that is associated with a number, or null if none exists in the current cache.
@@ -477,7 +478,7 @@ FreeAddress getLocalAddress(String number) {
  * @author: Richard Deadman
  * @return A map of Address names to Addresses
  */
-private java.util.Map getLocalAddresses() {
+private Map<String, FreeAddress> getLocalAddresses() {
 	return localAddresses;
 }
 /**
@@ -487,7 +488,7 @@ private java.util.Map getLocalAddresses() {
  * @author: Richard Deadman
  * @return A strong or soft map of terminal names to Terminals.
  */
-private java.util.Map getLocalTerminals() {
+private Map<String, FreeTerminal> getLocalTerminals() {
 	return terminals;
 }
 /**
@@ -496,7 +497,7 @@ private java.util.Map getLocalTerminals() {
  * @author: Richard Deadman
  * @return A set of MediaTerminal names.
  */
-private Set getMediaTerminals() {
+private Set<String> getMediaTerminals() {
 	return mediaTerminals;
 }
 /**
@@ -525,7 +526,7 @@ private TelephonyProvider getRaw() {
  * @author: Richard Deadman
  * @return The Map that allows remote Addresses to be searched by name.
  */
-private Map getRemoteAddresses() {
+private Map<String, FreeAddress> getRemoteAddresses() {
 	return this.remoteAddresses;
 }
 /**
@@ -536,7 +537,7 @@ private Map getRemoteAddresses() {
  * @author: Richard Deadman
  * @return The Map that allows remote Terminals to be searched by name.
  */
-private Map getRemoteTerminals() {
+private Map<String, FreeTerminal> getRemoteTerminals() {
 	return this.remoteTerminals;
 }
 /**
@@ -547,12 +548,12 @@ Terminal[] getTerminals() throws ResourceUnavailableException {
 	throw new ResourceUnavailableException(ResourceUnavailableException.UNKNOWN);
   }
 
-  Map terms = this.getLocalTerminals();
+  Map<String, FreeTerminal> terms = this.getLocalTerminals();
   // test if it's null
   if (terms == null)
   	return null;
 
-  return (Terminal[])terms.values().toArray(new Terminal[0]);
+  return terms.values().toArray(new Terminal[0]);
 }
 /**
  * Note if our Address set is dynamic.  This is either indicated by a property or during
@@ -602,7 +603,7 @@ void loadAddresses() {
 		// our address set is too large
 		if (!this.isDynamicAddr()) {
 			this.setDynamicAddr(true);
-			this.setLocalAddresses(Collections.synchronizedMap(new SoftMap()));
+			this.setLocalAddresses(Collections.synchronizedMap(new SoftMap<String, FreeAddress>()));
 			this.setObserved();		// allow protection from gc
 		}
 	}
@@ -631,7 +632,7 @@ void loadTerminals() {
 		// our Terminal set is too large
 		if (!this.isDynamicTerm()) {
 			this.setDynamicTerm(true);
-			this.setTerminalSet(Collections.synchronizedMap(new SoftMap()));
+			this.setTerminalSet(Collections.synchronizedMap(new SoftMap<String, FreeTerminal>()));
 			this.setObserved();	// lazily create the observation gc protector
 		}
 	}
@@ -644,8 +645,9 @@ void loadTerminals() {
  * @author: Richard Deadman
  * @return A set of MediaTerminal names.
  */
-Iterator mediaTerminals() {
-	return ((Set)mediaTerminals.clone()).iterator();
+@SuppressWarnings("unchecked")
+Iterator<String> mediaTerminals() {
+	return ((Set<String>)mediaTerminals.clone()).iterator();
 }
 /**
  * This is called by a Terminal or Address that has been observed or Listened to so that it will be protected from
@@ -654,6 +656,7 @@ Iterator mediaTerminals() {
  * @author: Richard Deadman
  * @param call The object to protect from potential cache clearing.
  */
+@SuppressWarnings("unchecked")
 void protect(Object termOrAddr) {
 	// check that we are using a WeakMap
 	HashSet obs = this.observed;
@@ -729,12 +732,12 @@ private void setDynamicTerm(boolean newDynamicTerm) {
 	dynamicTerm = newDynamicTerm;
 }
 /**
- * Insert the method's description here.
+ * Set the holder for local addresses
  * Creation date: (2000-06-19 11:08:05)
  * @author: Richard Deadman
  * @param newLocalAddresses java.util.Map
  */
-private void setLocalAddresses(java.util.Map newLocalAddresses) {
+private void setLocalAddresses(Map<String, FreeAddress> newLocalAddresses) {
 	localAddresses = newLocalAddresses;
 }
 /**
@@ -743,6 +746,7 @@ private void setLocalAddresses(java.util.Map newLocalAddresses) {
  * Creation date: (2000-06-23 11:44:43)
  * @author: Richard Deadman
  */
+@SuppressWarnings("unchecked")
 private synchronized void setObserved() {
 	if (this.observed == null)
 		this.observed = new HashSet();
@@ -771,7 +775,7 @@ private void setRaw(TelephonyProvider newRaw) {
  * @author: Richard Deadman
  * @param newRemoteAddresses A map to store names to Addresses.
  */
-private void setRemoteAddresses(java.util.Map newRemoteAddresses) {
+private void setRemoteAddresses(Map<String, FreeAddress> newRemoteAddresses) {
 	remoteAddresses = newRemoteAddresses;
 }
 /**
@@ -780,7 +784,7 @@ private void setRemoteAddresses(java.util.Map newRemoteAddresses) {
  * @author: Richard Deadman
  * @param newRemoteTerminals A map to store names to Terminals.
  */
-private void setRemoteTerminals(java.util.Map newRemoteTerminals) {
+private void setRemoteTerminals(Map<String, FreeTerminal> newRemoteTerminals) {
 	remoteTerminals = newRemoteTerminals;
 }
 /**
@@ -790,7 +794,7 @@ private void setRemoteTerminals(java.util.Map newRemoteTerminals) {
  * @author: Richard Deadman
  * @param newTerminalSet A map to hold terminal names to Terminals.
  */
-private void setTerminalSet(Map newTerminalSet) {
+private void setTerminalSet(Map<String, FreeTerminal> newTerminalSet) {
 	this.terminals = newTerminalSet;
 }
 /**
@@ -800,6 +804,7 @@ private void setTerminalSet(Map newTerminalSet) {
  * @author: Richard Deadman
  * @param call The object to allow for potential cache clearing.
  */
+@SuppressWarnings("unchecked")
 void unProtect(Object termOrAddr) {
 	// check that we are using a WeakMap
 	HashSet obs = this.observed;

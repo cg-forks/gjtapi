@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.media.IncompatibleSourceException;
 import javax.telephony.InvalidArgumentException;
@@ -381,7 +382,7 @@ public class SipProvider
      * {@inheritDoc}
      * 
      */
-    public void initializeResources(Map props, ResourceFinder finder)
+    public void initializeResources(Properties props, ResourceFinder finder)
         throws ProviderUnavailableException {
         String sipPhones = (String) props.get("gjtapi.sip.sip_phone");
         if (sipPhones == null) {

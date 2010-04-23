@@ -686,8 +686,9 @@ public String toString() {
 	 * exist for a TerminalConnection.
 	 * @see javax.jcat.JcatConnection#getTerminalConnections()
 	 */
+	@SuppressWarnings("unchecked")
 	public Set getTerminalConnections() {
-		Set results = new HashSet();
+		Set<GenTerminalConnection> results = new HashSet<GenTerminalConnection>();
 		TerminalConnection[] tcs = this.getFrameConn().getTerminalConnections();
 		// now create the wrappers and add to the set
 		if (tcs != null) {

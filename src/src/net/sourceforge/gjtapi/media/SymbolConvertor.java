@@ -30,6 +30,8 @@ package net.sourceforge.gjtapi.media;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Vector;
+
 import javax.telephony.media.*;
 /**
  * Static utility class for converting Symbols to and from Strings.
@@ -104,7 +106,7 @@ public static String convert(Symbol[] syms, String placeholder) {
  * @param signals java.lang.String
  */
 public static Symbol[] convert(String signals) {
-	java.util.Vector v = new java.util.Vector();
+	Vector<Symbol> v = new Vector<Symbol>();
 	int size = signals.length();
 	Symbol s;
 	for (int i = 0; i < size; i++) {

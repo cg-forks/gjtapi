@@ -217,7 +217,7 @@ private void setCcCause(int newCcCause) {
 public static CCCallEv[] toCcEvents(FreeCallEvent[] evs) {
 	if (evs == null || evs.length == 0)
 		return null;
-	Set set = new HashSet();
+	Set<CCCallEv> set = new HashSet<CCCallEv>();
 	int size = evs.length;
 	for (int i = 0; i < size; i++) {
 		FreeCallEvent ev = evs[i];
@@ -252,6 +252,6 @@ public static CCCallEv[] toCcEvents(FreeCallEvent[] evs) {
 			}
 		}
 	}
-	return (CCCallEv[])set.toArray(new CCCallEv[0]);
+	return set.toArray(new CCCallEv[0]);
 }
 }

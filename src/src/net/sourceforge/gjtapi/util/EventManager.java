@@ -29,7 +29,7 @@ public EventManager(EventHandler eh, ExceptionHandler exh) {
  * @author: Richard Deadman
  * @param o The object to add
  */
-public void put(Object o) {
+public void put(EventHandler o) {
 	super.put(o);
 }
 }

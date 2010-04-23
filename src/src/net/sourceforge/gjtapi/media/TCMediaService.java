@@ -60,6 +60,7 @@ import java.util.*;
  * Creation date: (2000-05-09 15:53:37)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 class TCMediaService implements MediaServiceHolder {
 
 	/**
@@ -224,7 +225,7 @@ class TCMediaService implements MediaServiceHolder {
 	private MediaMgr mgr = null;
 	private GenericProvider prov = null;
 	private FreeMediaTerminalConnection termConn = null;
-	private Vector listeners = new Vector(1);	// a single listener, set in the constructor
+	private Vector<MediaListener> listeners = new Vector<MediaListener>(1);	// a single listener, set in the constructor
 	private PlayThread playerThread = null;
 	private RecordThread recorderThread = null;
 	private Thread garbageCollector = null;
@@ -296,6 +297,7 @@ private void allocate() {
  * @param dict The resource parameters to pass down
  * @param force Force the allocation even if the RawProvider doesn't require null dictionary allocations.  This is useful to reset a resources dictionary to null.
  */
+@SuppressWarnings("unchecked")
 private void allocate(java.util.Dictionary dict, boolean force) {
 		// ask raw provider to allocate new resources, if necessary
 	GenericProvider prov = this.getProv();
@@ -356,7 +358,7 @@ private Thread getGarbageCollector() {
 /**
  * getListeners method comment.
  */
-public java.util.Iterator getListeners() {
+public Iterator<MediaListener> getListeners() {
 	return this.listeners.iterator();
 }
 /**
@@ -569,7 +571,7 @@ private void setAllocateState(int newAllocateState) {
 public synchronized void setDtmfDetection(boolean enable) throws InvalidStateException, ResourceUnavailableException {
 	if (enable) {
 			// turn on signal detection
-		Dictionary dict = new Hashtable();
+		Dictionary<Symbol, Symbol> dict = new Hashtable<Symbol, Symbol>();
 		dict.put(SignalDetectorConstants.p_EnabledEvents, SignalDetectorConstants.ev_RetrieveSignals);
 			// reallocate in order to force change in dictionary
 		this.allocate(dict, true);

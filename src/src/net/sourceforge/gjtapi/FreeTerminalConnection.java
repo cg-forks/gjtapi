@@ -336,7 +336,7 @@ protected Terminal toDropped(int cause) {
 			if (lms != null) {
 				prov.getDispatchPool().put(new net.sourceforge.gjtapi.util.EventHandler() {
 					public void process(Object o) {	// ignore o -- will be null
-						Iterator it = lms.getListeners();
+						Iterator<MediaListener> it = lms.getListeners();
 						GenericMediaEvent me = new GenericMediaEvent(MediaEvent.ev_Disconnected, lms.getMediaService());
 						while (it.hasNext()) {
 							Object l = it.next();

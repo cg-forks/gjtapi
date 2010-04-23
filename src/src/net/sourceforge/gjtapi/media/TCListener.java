@@ -71,6 +71,7 @@ public void onPatternMatched(javax.telephony.media.SignalDetectorEvent event) {}
  * Forward off to the TC MediaService for delegation to the TerminalConnection's observers
  */
 public void onSignalDetected(javax.telephony.media.SignalDetectorEvent event) {
+	@SuppressWarnings("deprecation")
 	class DtmfEv extends BaseMediaEv implements javax.telephony.media.events.MediaTermConnDtmfEv {
 		private char dtmf;
 		DtmfEv(FreeMediaTerminalConnection tc, char c) {

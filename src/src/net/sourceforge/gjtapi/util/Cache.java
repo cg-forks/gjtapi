@@ -38,10 +38,12 @@ import java.util.*;
  * <P>Concreate subclasses define which type of references are used.
  * Creation date: (2000-06-08 12:16:14)
  * @author: Richard Deadman
+ * @param <K>
+ * @param <V>
  */
-public abstract class Cache implements Map {
+public abstract class Cache<K, V> implements Map<K, V> {
 		// The map that does the actual storage
-	private HashMap backingStore = new HashMap();
+	private HashMap<K, Reference<V>> backingStore = new HashMap<K, Reference<V>>();
 /**
  * Clear myself of entries
  */
@@ -59,30 +61,39 @@ public boolean containsKey(Object key) {
  * <P><B>Note that this may not work if two WeakReferences to the same object do not
  * test as equal.
  */
+@SuppressWarnings("unchecked")
 public boolean containsValue(Object value) {
-	return backingStore.containsValue(this.wrap(value));
+	try {
+		return backingStore.containsValue(this.wrap((V)value));
+	} catch (ClassCastException cce) {
+		return false;	// values must be of type V
+	}
 }
 /**
  * Return the set of all entries as instances of Map.Entry.
  */
-public Set entrySet() {
-	Set set = backingStore.entrySet();
+public Set<Map.Entry<K, V>> entrySet() {
+	Set<Entry<K, Reference<V>>> referenceSet = backingStore.entrySet();
+	Set<Entry<K, V>> set = new HashSet<Entry<K,V>>();
 	
 	// now dereference entry values -- we extend HashMap whose Map.Entry
 	// implementation implements setValue()
-	Iterator it = set.iterator();
+	Iterator<Entry<K, Reference<V>>> it = referenceSet.iterator();
 	while (it.hasNext()) {
-		Map.Entry entry = (Map.Entry)it.next();
-		entry.setValue(this.unWrap(entry.getValue()));
+		Map.Entry<K, Reference<V>> referenceEntry = it.next();
+		CacheEntry<K, V> entry = new CacheEntry<K, V>();
+		entry.setKey(referenceEntry.getKey());
+		entry.setValue(referenceEntry.getValue().get());
 	}
 	return set;
 }
+
 /**
  * Get the dereferenced value object, clearing the key if the value is garbage-collected.
  */
-public Object get(Object key) {
-	Reference ref = (Reference)backingStore.get(key);
-	Object o = null;
+public V get(Object key) {
+	Reference<V> ref = backingStore.get(key);
+	V o = null;
 	if (ref != null) {
 		o = ref.get();
 		if (o == null)
@@ -99,32 +110,39 @@ public boolean isEmpty() {
 /**
  * Return the keyset of this map
  */
-public Set keySet() {
+public Set<K> keySet() {
 	return backingStore.keySet();
 }
 /**
  * put method comment.
  */
-public Object put(Object key, Object value) {
-	return backingStore.put(key, this.wrap(value));
+public V put(K key, V value) {
+	Reference<V> oldValue =  backingStore.put(key, this.wrap(value));
+	return oldValue.get();
 }
 /**
  * putAll method comment.
  */
-public void putAll(Map t) {
-	Set set = t.entrySet();
+@SuppressWarnings("unchecked")
+public void putAll(Map<? extends K, ? extends V> m) {
+	Set<?> set = m.entrySet();
 	
-	Iterator it = set.iterator();
+	Iterator<?> it = set.iterator();
 	while (it.hasNext()) {
-		Map.Entry entry = (Map.Entry)it.next();
-		this.put(entry.getKey(), entry.getValue());
+		Object entry = it.next();
+		this.put(((Map.Entry<K, V>) entry).getKey(), ((Map.Entry<K, V>) entry).getValue());
 	}
 }
 /**
  * Remove an entry from the map.
  */
-public Object remove(Object key) {
-	return backingStore.remove(key);
+public V remove(Object key) {
+	Reference<V> oldValue = backingStore.remove(key);
+	if(oldValue != null) {
+		return oldValue.get();
+	} else {
+		return null;
+	}
 }
 /**
  * How many entries do I have
@@ -140,34 +158,22 @@ public String toString() {
 	return "A HashMap with reference values: " + backingStore.toString();
 }
 /**
- * If the value is a Refernece, return its referent, otherwise return it.
- */
-private Object unWrap(Object value) {
-	if (value instanceof Reference)
-		return ((Reference)value).get();
-	else
-		return value;
-}
-/**
  * values method comment.
  */
-public Collection values() {
-	Collection coll = backingStore.values();
-	Collection newColl = new HashSet();
+public Collection<V> values() {
+	Collection<Reference<V>> coll = backingStore.values();
+	Collection<V> newColl = new HashSet<V>();
 
 		// copy each item over while dereferencing all references
-	Iterator it = coll.iterator();
+	Iterator<Reference<V>> it = coll.iterator();
 	while (it.hasNext()) {
-		Object o = it.next();
-		if (o instanceof Reference)
-			newColl.add(((Reference)o).get());
-		else
-			newColl.add(o);	// shouldn't occur
+		newColl.add(it.next().get());
 	}
 	return newColl;
 }
 /**
  * If the value is not a SoftReference, wrap it in one.
  */
-protected abstract Reference wrap(Object value);
+protected abstract Reference<V> wrap(V value);
 }
+

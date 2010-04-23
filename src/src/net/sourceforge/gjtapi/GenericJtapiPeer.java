@@ -75,7 +75,7 @@ public class GenericJtapiPeer implements JtapiPeer, ResourceFinder {
 	private final static String RESOURCE_DIR = "net.sourceforge.gjtapi.resourceDir";
 
 	private Properties properties = null;
-	private final Hashtable providers = new Hashtable();
+	private final Hashtable<String, Object> providers = new Hashtable<String, Object>();
 	
 	/** Should we disconnect the Connection when the MediaService releases (JTAPI spec. says yes). */
 	private boolean disconnectMediaOnRelease = true;
@@ -155,6 +155,7 @@ private java.util.Properties getProperties() {
    * @exception ProviderUnavailableException Indicates a Provider corresponding
    * to the given string is unavailable.
    */
+@SuppressWarnings("unchecked")
 public Provider getProvider(String params) throws ProviderUnavailableException {
 	// parse the parameters
 	String[] parts = this.split(params);
@@ -253,7 +254,7 @@ public Provider getProvider(String params) throws ProviderUnavailableException {
  * @author: Richard Deadman
  * @return java.util.Hashtable
  */
-private java.util.Hashtable getProviders() {
+private Hashtable<String, Object> getProviders() {
 	return providers;
 }
 /**
@@ -282,13 +283,13 @@ private void loadResources() {
 	}
 
 	// now look for providers and move them to the providers dictionary
-	Hashtable provs = this.getProviders();
-	Enumeration e = props.keys();
+	Hashtable<String, Object> provs = this.getProviders();
+	Enumeration<Object> e = props.keys();
 	while (e.hasMoreElements()) {
 		String key = (String)e.nextElement();
 		if (key.startsWith(GenericJtapiPeer.PROV_PREFIX)) {
 			String name = key.substring(GenericJtapiPeer.PROV_PREFIX.length());
-			provs.put(name, props.get(key));
+			provs.put(name, (String)props.get(key));
 		}
 
 			// now see if we should change the MediaService.release() behaviour
@@ -312,8 +313,8 @@ private void loadResources() {
  * @param index The array element to start parsing at
  * @return A dictionary with the parse values
  **/
-private Map parse(String[] parts, int index) {
-	Hashtable tab = new Hashtable();
+private Map<String, String> parse(String[] parts, int index) {
+	Hashtable<String, String> tab = new Hashtable<String, String>();
 	for (int i = index; i < parts.length; i++) {
 		StringTokenizer tok = new StringTokenizer(parts[i], "=");
 		if (tok.countTokens() > 1) {
@@ -407,11 +408,11 @@ public InputStream findResource(String resourceName) {
  * Find providers in the resource directories based on the naming suffix
  * @param providers The name-class lookup table
  */
-private void findAutoProviders(Hashtable providers) {
+private void findAutoProviders(Hashtable<String, Object> providers) {
 	// load all resource files ending in .gjtapi on the resource or user directory
 	
 	// first we see if we should check for a resource directory
-	HashSet directories = new HashSet();
+	HashSet<File> directories = new HashSet<File>();
 	String resourceDir = System.getProperty(RESOURCE_DIR);
 	if (resourceDir != null) {
 		File resourceDirectory = new File(resourceDir);
@@ -426,7 +427,7 @@ private void findAutoProviders(Hashtable providers) {
 		directories.add(userDirectory);
 	}
 	
-	Iterator it = directories.iterator();
+	Iterator<File> it = directories.iterator();
 	while(it.hasNext()) {
 		File resourceDirectory = (File)it.next();
 		// find all the auto-load files
@@ -453,7 +454,7 @@ private void findAutoProviders(Hashtable providers) {
 
 	// Now look for provider.gjtapi classes on the classpath
 	try {
-		Enumeration cpResources = ClassLoader.getSystemResources(PROV_AUTOPROPERTY);
+		Enumeration<URL> cpResources = ClassLoader.getSystemResources(PROV_AUTOPROPERTY);
 		while(cpResources.hasMoreElements()) {
 			URL cpResource = (URL)cpResources.nextElement();
 			// find the name as the jar part of the resource

@@ -530,9 +530,9 @@ public void mediaPlayPause(final String terminal, final int index, final int off
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof PlayerListener)
 							((PlayerListener)l).onPause(ev);
 					}
@@ -564,9 +564,9 @@ public void mediaPlayResume(final String terminal, final javax.telephony.media.S
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof PlayerListener)
 							((PlayerListener)l).onResume(ev);
 					}
@@ -598,9 +598,9 @@ public void mediaRecorderPause(final String terminal, final int duration, final 
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof RecorderListener)
 							((RecorderListener)l).onPause(ev);
 					}
@@ -632,9 +632,9 @@ public void mediaRecorderResume(final String terminal, final javax.telephony.med
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof RecorderListener)
 							((RecorderListener)l).onResume(ev);
 					}
@@ -666,9 +666,9 @@ public void mediaSignalDetectorDetected(final String terminal, final Symbol[] si
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof SignalDetectorListener)
 							((SignalDetectorListener)l).onSignalDetected(ev);
 					}
@@ -700,9 +700,9 @@ public void mediaSignalDetectorOverflow(final String terminal, final Symbol[] si
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = lms.getListeners();
+					Iterator<MediaListener> it = lms.getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof SignalDetectorListener)
 							((SignalDetectorListener)l).onOverflow(ev);
 					}
@@ -735,9 +735,9 @@ public void mediaSignalDetectorPatternMatched(final String terminal, final Symbo
 			// create a block to send these events out to the MediaService's listeners
 			getDispatchPool().put(new EventHandler() {
 				public void process(Object o) {	// ignore o -- will be null
-					Iterator it = ((GenericMediaService)ev.getMediaService()).getListeners();
+					Iterator<MediaListener> it = ((GenericMediaService)ev.getMediaService()).getListeners();
 					while (it.hasNext()) {
-						Object l = it.next();
+						MediaListener l = it.next();
 						if (l instanceof SignalDetectorListener)
 							((SignalDetectorListener)l).onPatternMatched(ev);
 					}

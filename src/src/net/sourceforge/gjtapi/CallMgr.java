@@ -50,12 +50,12 @@ import net.sourceforge.gjtapi.util.*;
 class CallMgr {
 	private boolean dynamic = false;
 			// map of CallId -> Call that may have weak referents if throttling is supported
-	private Map callSet = null;
+	private Map<CallId, FreeCall> callSet = null;
 			// hard holder for Calls to make sure observered Calls are not GC'd
-	private HashSet observedCalls = null;
+	private HashSet<FreeCall> observedCalls = null;
 			// weak map of Calls to themselves.  This is a staging area for new Calls
 			// that have not yet been registered with a CallId (i.e. Provider.createCall())
-	private WeakHashMap idleCalls = new WeakHashMap();
+	private WeakHashMap<FreeCall,Object> idleCalls = new WeakHashMap<FreeCall,Object>();
 	private GenericProvider provider = null;
 	private TelephonyProvider raw = null;		// shortcut for provider->getRaw()
 /**
@@ -72,10 +72,10 @@ CallMgr(GenericProvider prov, boolean isDynamic) {
 	this.setRaw(prov.getRaw());		// cache raw handle
 	this.setDynamic(isDynamic);
 	if (isDynamic) {
-		this.setCallSet(new WeakMap());
+		this.setCallSet(new WeakMap<CallId, FreeCall>());
 		this.setObserved();
 	} else {
-		this.setCallSet(new HashMap());
+		this.setCallSet(new HashMap<CallId, FreeCall>());
 	}
 }
 /**
@@ -87,7 +87,7 @@ CallMgr(GenericProvider prov, boolean isDynamic) {
  * @param id The raw wrapper call object
  */
 FreeCall getCachedCall(CallId id) {
-	return (FreeCall)this.getCallSet().get(id);
+	return this.getCallSet().get(id);
 }
 /**
  * Find a cached connection for the raw call handle and address.
@@ -130,7 +130,7 @@ FreeTerminalConnection getCachedTermConn(CallId id, String address, String termi
  * @author: Richard Deadman
  * @return A map of CallId to Call objects.
  */
-private Map getCallSet() {
+private Map<CallId, FreeCall> getCallSet() {
 	return callSet;
 }
 /**
@@ -198,7 +198,7 @@ FreeTerminalConnection getFaultedTermConn(CallId id, String address, String term
  * @author: Richard Deadman
  * @return A map of Idle calls to themselves.
  */
-private java.util.WeakHashMap getIdleCalls() {
+private WeakHashMap<FreeCall, Object> getIdleCalls() {
 	return idleCalls;
 }
 /**
@@ -341,7 +341,7 @@ void preRegister(FreeCall call) {
  */
 void protect(FreeCall call) {
 	// check that we are using a WeakMap
-	HashSet observed = this.observedCalls;
+	HashSet<FreeCall> observed = this.observedCalls;
 	if (observed != null) {
 		observed.add(call);
 	}
@@ -387,7 +387,7 @@ boolean removeCall(FreeCall call) {
  * @author: Richard Deadman
  * @param newCallSet The new Map to store CallId to Call mappings in.
  */
-private void setCallSet(java.util.Map newCallSet) {
+private void setCallSet(Map<CallId, FreeCall> newCallSet) {
 	callSet = newCallSet;
 }
 /**
@@ -408,7 +408,7 @@ private void setDynamic(boolean newDynamic) {
  */
 private synchronized void setObserved() {
 	if (this.observedCalls == null)
-		this.observedCalls = new HashSet();
+		this.observedCalls = new HashSet<FreeCall>();
 }
 /**
  * Insert the method's description here.
@@ -435,9 +435,9 @@ private void setRaw(TelephonyProvider newRaw) {
  * @return A Collection of currently known Call objects.
  */
 FreeCall[] toArray() {
-	Collection vs = this.getCallSet().values();	// the active calls
+	Collection<FreeCall> vs = this.getCallSet().values();	// the active calls
 	vs.addAll(this.getIdleCalls().keySet());	// the idle calls
-	return (FreeCall[])vs.toArray(new FreeCall[vs.size()]);
+	return vs.toArray(new FreeCall[vs.size()]);
 }
 /**
  * Describe myself
@@ -462,7 +462,7 @@ public String toString() {
  */
 void unProtect(FreeCall call) {
 	// check that we are using a WeakMap
-	HashSet observed = this.observedCalls;
+	HashSet<FreeCall> observed = this.observedCalls;
 	if (observed != null) {
 		observed.remove(call);
 	}

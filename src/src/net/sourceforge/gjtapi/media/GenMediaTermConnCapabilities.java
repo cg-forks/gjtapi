@@ -40,6 +40,7 @@ import javax.telephony.media.capabilities.*;
  * Creation date: (2000-05-15 15:02:03)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 public class GenMediaTermConnCapabilities extends GenTermConnCapabilities implements MediaTerminalConnectionCapabilities {
 	private boolean avail = true;	// is media currently available, when this is used on an instance?
 /**

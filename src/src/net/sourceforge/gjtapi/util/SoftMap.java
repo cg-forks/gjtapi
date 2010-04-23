@@ -38,14 +38,11 @@ import java.lang.ref.SoftReference;
  * Creation date: (2000-06-08 12:16:14)
  * @author: Richard Deadman
  */
-public class SoftMap extends Cache {
+public class SoftMap<K, V> extends Cache<K, V> {
 /**
  * If the value is not a SoftReference, wrap it in one.
  */
-protected Reference wrap(Object value) {
-	if (value instanceof SoftReference)
-		return (Reference)value;
-	else
-		return new SoftReference(value);
+protected Reference<V> wrap(V value) {
+	return new SoftReference<V>(value);
 }
 }

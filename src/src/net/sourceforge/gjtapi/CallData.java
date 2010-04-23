@@ -71,13 +71,13 @@ public CallData() {
  * @return java.lang.String[]
  */
 private String[] getAddresses(boolean isLocal) {
-	java.util.Set set = new java.util.HashSet();
+	java.util.Set<String> set = new java.util.HashSet<String>();
 	for (int i = 0; i < this.connections.length; i++) {
 		ConnectionData cd = this.connections[i];
 		if (cd.isLocal == isLocal)
 			set.add(cd.address);
 	}
-	return (String[])set.toArray(new String[set.size()]);
+	return set.toArray(new String[set.size()]);
 }
 /**
  * Return the array of local addresses

@@ -44,7 +44,7 @@ public interface MediaServiceHolder {
  * @author: Richard Deadman
  * @return javax.telephony.media.MediaListener[]
  */
-java.util.Iterator getListeners();
+java.util.Iterator<MediaListener> getListeners();
 /**
  * Get's the true MediaService associated with the listener, or null
  * Creation date: (2000-05-10 16:27:41)

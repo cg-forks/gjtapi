@@ -1,6 +1,7 @@
 package net.sourceforge.gjtapi;
 
 import java.util.Map;
+import java.util.Properties;
 
 import javax.telephony.ProviderUnavailableException;
 
@@ -11,7 +12,7 @@ import net.sourceforge.gjtapi.raw.CoreTpi;
  * configuration needs.
  * <p>
  * When the provider is initialized, and the provider implements this interface,
- * the method {@link #initializeResources(Map, ResourceFinder)} is called after
+ * the method {@link #initializeResources(Properties, ResourceFinder)} is called after
  * the call of {@link CoreTpi#initialize(Map)} to perform an extended
  * configuration.
  * </p>
@@ -28,7 +29,7 @@ public interface ResourceConfigurable {
      * @param props The name value properties map
      * @param resourceFinder the resource finder to load additional resource
      */
-    void initializeResources(Map props, ResourceFinder resourceFinder)
+    void initializeResources(Properties props, ResourceFinder resourceFinder)
         throws ProviderUnavailableException;
 
 }

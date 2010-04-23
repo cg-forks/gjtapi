@@ -49,12 +49,12 @@ public class FreeTerminal implements Terminal, PrivateData {
 	  Object [] mkObserverArray(int i) { return new TerminalObserver[i];}
 	  void notifyObserver(Object o, Ev [] e) { ((TerminalObserver)o).terminalChangedEvent((TermEv[])e);}
   };
-  private Vector callObservers = new Vector();
-  private transient Vector terminalListeners;
-  private transient Vector callListeners = new Vector();
+  private Vector<CallObserver> callObservers = new Vector<CallObserver>();
+  private transient Vector<TerminalListener> terminalListeners;
+  private transient Vector<CallListener> callListeners = new Vector<CallListener>();
 
-  private HashSet addresses = null;		// lazily fetched address names -- null means not fetched
-  private transient HashSet terminalConnections = new HashSet(2);	// TCHolder set
+  private HashSet<String> addresses = null;		// lazily fetched address names -- null means not fetched
+  private transient HashSet<TCHolder> terminalConnections = new HashSet<TCHolder>(2);	// TCHolder set
 
   private boolean reporting;	// Have I asked the raw provider to send events?
 
@@ -65,7 +65,7 @@ public class FreeTerminal implements Terminal, PrivateData {
 	  private CallId callId;
 	  private String address;
 	  private String terminal;
-	  WeakReference tcRef = null;
+	  WeakReference<TerminalConnection> tcRef = null;
 
 	  TCHolder(CallId id, String addr, String term) {
 		  callId = id;
@@ -78,7 +78,7 @@ public class FreeTerminal implements Terminal, PrivateData {
 		  callId = ((FreeCall)conn.getCall()).getCallID();
 		  address = conn.getAddress().getName();
 		  terminal = termConn.getTerminal().getName();
-		  tcRef = new WeakReference(termConn);
+		  tcRef = new WeakReference<TerminalConnection>(termConn);
 	  }
 
 	  CallId getCallId() {
@@ -97,7 +97,7 @@ public class FreeTerminal implements Terminal, PrivateData {
 	   * Return the current referrent or null
 	   **/
 	  private FreeTerminalConnection getReferent() {
-		  WeakReference wr = this.tcRef;
+		  WeakReference<TerminalConnection> wr = this.tcRef;
 		  FreeTerminalConnection tc = null;
 		  if (wr != null)
 			  tc = (FreeTerminalConnection)wr.get();
@@ -116,13 +116,14 @@ public class FreeTerminal implements Terminal, PrivateData {
 			  TCHolder ch = (TCHolder)o;
 			  CallId myCallId = this.getCallId();
 			  CallId otherCallId = ch.getCallId();
-			  // callIds are sometimes null. FOr equality both or neither must be null
+			  // callIds are sometimes null. For equality both or neither must be null
 			  if (((myCallId == null && otherCallId == null) ||
-					  ((myCallId == null && otherCallId == null) &&
+					  ((myCallId != null && otherCallId != null) &&
 							  otherCallId.equals(myCallId))) &&
 				  ch.getAddress().equals(this.getAddress()) &&
-				  ch.getTerminal().equals(this.getTerminal()))
+				  ch.getTerminal().equals(this.getTerminal())) {
 			  	  return true;
+			  }
 		  }
 		  return false;
 	  }
@@ -151,8 +152,9 @@ protected FreeTerminal(String n,Provider p) {
 	setName(n);
 	setProvider(p);
 }
-  public synchronized void addCallListener(CallListener l) throws MethodNotSupportedException, ResourceUnavailableException {
-	Vector v = (Vector) callListeners.clone();
+  @SuppressWarnings("unchecked")
+public synchronized void addCallListener(CallListener l) throws MethodNotSupportedException, ResourceUnavailableException {
+	Vector<CallListener> v = (Vector<CallListener>) callListeners.clone();
 	if (!v.contains(l)) {
 	  v.addElement(l);
 	  callListeners = v;
@@ -229,8 +231,9 @@ void addTerminalConnection(FreeTerminalConnection ftc) {
  * If this is the first observer or listener on the Terminal and soft Terminal caching is supported,
  * then protect this from garbage collection.
  */
+@SuppressWarnings("unchecked")
 public synchronized void addTerminalListener(TerminalListener l) {
-	Vector v = terminalListeners == null ? new Vector(2) : (Vector) terminalListeners.clone();
+	Vector<TerminalListener> v = terminalListeners == null ? new Vector<TerminalListener>(2) : (Vector<TerminalListener>) terminalListeners.clone();
 	// check if we will need protection
 	if (l != null)
 		this.protect();
@@ -241,7 +244,7 @@ public synchronized void addTerminalListener(TerminalListener l) {
 }
   protected void fireTerminalListenerEnded(TerminalEvent e) {
 	if (terminalListeners != null) {
-	  Vector listeners = terminalListeners;
+	  Vector<TerminalListener> listeners = terminalListeners;
 	  int count = listeners.size();
 	  for (int i = 0; i < count; i++)
 		((TerminalListener) listeners.elementAt(i)).terminalListenerEnded(e);
@@ -268,7 +271,7 @@ public Address[] getAddresses() {
 		synchronized (this) {
 			// now double check
 			if (this.addresses == null) {
-				this.addresses = new HashSet(1);
+				this.addresses = new HashSet<String>(1);
 				try {
 				String[] addrNames = ((GenericProvider) this.getProvider()).getRaw().getAddresses(this.getName());
 				if (addrNames != null) {
@@ -284,17 +287,17 @@ public Address[] getAddresses() {
 			}
 		}
 	}
-		// transforn collection of Terminal names to array of terminals
+		// transform collection of Terminal names to array of terminals
 	synchronized (addresses) {
 		Address[] ret = null;
 		if (this.addresses.isEmpty())
 			throw new PlatformException("Terminal " + this.getName() + " has no Addresses.");
 
 		ret = new Address[addresses.size()];
-		Iterator it = addresses.iterator();
+		Iterator<String> it = addresses.iterator();
 		int i = 0;
 		while (it.hasNext()) {
-			String addrName = (String)it.next();
+			String addrName = it.next();
 			ret[i] = ((GenericProvider) this.getProvider()).getDomainMgr().getLocalAddress(addrName);
 			i++;
 		}
@@ -375,10 +378,10 @@ public TerminalConnection[] getTerminalConnections() {
             if (ret.length == 0) {
                 return null;
             }
-            Iterator it = terminalConnections.iterator();
+            Iterator<TCHolder> it = terminalConnections.iterator();
             int i = 0;
             while (it.hasNext()) {
-                ret[i] = ((TCHolder) it.next()).getTerminalConnection();
+                ret[i] = it.next().getTerminalConnection();
                 i++;
             }
 	}
@@ -412,9 +415,10 @@ private void protect() {
 		((GenericProvider)this.getProvider()).getDomainMgr().protect(this);
 	}
 }      
+@SuppressWarnings("unchecked")
 public synchronized void removeCallListener(CallListener l) {
 	if (callListeners.contains(l)) {
-		Vector v = (Vector) callListeners.clone();
+		Vector<CallListener> v = (Vector<CallListener>) callListeners.clone();
 		v.removeElement(l);
 		callListeners = v;
 	}
@@ -445,9 +449,10 @@ public void removeObserver(TerminalObserver observer) {
  * If this is the last observer or listener on the Terminal and soft Terminal caching is supported,
  * then unprotect this from garbage collection.
  */
+@SuppressWarnings("unchecked")
 public synchronized void removeTerminalListener(TerminalListener l) {
 	if (terminalListeners != null && terminalListeners.contains(l)) {
-		Vector v = (Vector) terminalListeners.clone();
+		Vector<TerminalListener> v = (Vector<TerminalListener>) terminalListeners.clone();
 		v.removeElement(l);
 		terminalListeners = v;
 		fireTermListenerEnded(l);
@@ -467,9 +472,9 @@ public void send(FreeTerminalEvent ev) {
 
 	// send to listeners
 	if (this.terminalListeners != null) {
-		Iterator it = this.terminalListeners.iterator();
+		Iterator<TerminalListener> it = this.terminalListeners.iterator();
 		while (it.hasNext()) {
-			TerminalListener tl = (TerminalListener) it.next();
+			TerminalListener tl = it.next();
 			switch (ev.getID()) {
 				case TerminalEvent.TERMINAL_EVENT_TRANSMISSION_ENDED :
 					{
@@ -482,7 +487,7 @@ public void send(FreeTerminalEvent ev) {
 /**
  * Send PrivateData to my low-level object for processing.
  */
-public java.lang.Object sendPrivateData(java.lang.Object data) {
+public Object sendPrivateData(java.lang.Object data) {
 	return ((GenericProvider)this.getProvider()).getRaw().sendPrivateData(null, null, this.getName(), data);
 }
   /**
@@ -515,7 +520,7 @@ void sendToObservers(FreeTerminalEvent ev) {
  * @param names A set of names for the associated Addresses.
  */
 void setAddressNames(String[] names) {
-	HashSet addr = this.addresses = new HashSet();
+	HashSet<String> addr = this.addresses = new HashSet<String>();
 
 	if (names != null) {
 		int size = names.length;

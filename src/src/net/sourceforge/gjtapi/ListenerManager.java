@@ -59,8 +59,8 @@ class ListenerManager implements TerminalConnectionListener {
      */
     private class ListenerStatus {
         boolean explicit = false;
-        Set terminals = new HashSet();
-        Set addresses = new HashSet();
+        Set<Terminal> terminals = new HashSet<Terminal>();
+        Set<Address> addresses = new HashSet<Address>();
 
         /**
          * Constructor for an explicit Listener
@@ -138,50 +138,49 @@ class ListenerManager implements TerminalConnectionListener {
      * Internal HashMap wrapper that catches put and remove calls to turn on
      * throttling
      */
-    private class ListenerMap extends ConcurrentHashMap {
+	private class ListenerMap extends ConcurrentHashMap<CallListener, ListenerStatus> {
         static final long serialVersionUID = 0L; // never serialized
 
-        public Object put(CallListener list, ListenerStatus status) {
-            Object res = super.put(list, status);
+        public ListenerStatus put(CallListener list, ListenerStatus status) {
+        	ListenerStatus res = super.put(list, status);
 
             // send a snapshot back to the key
             getCall().sendSnapShot(list);
 
             return res;
         }
+    }
+    
+	private class ObserverMap extends ConcurrentHashMap<CallObserver, ListenerStatus> {
+        static final long serialVersionUID = 0L; // never serialized
 
-        public Object put(CallObserver obs, ListenerStatus status) {
-            Object res = super.put(obs, status);
+        public ListenerStatus put(CallObserver obs, ListenerStatus status) {
+        	ListenerStatus res = super.put(obs, status);
 
             // send a snapshot back to the key
             getCall().sendSnapShot(obs);
 
             return res;
         }
-
-        public Object remove(Object key) {
-            Object res = super.remove(key);
-
-            return res;
-        }
     }
+    
 
     /**
      * A map of CallObservers to their ListenerStatus object that track who
      * applied the observer to the call.
      */
-    private Map obsMap = new ListenerMap();
-    private Set ccObservers = new HashSet(); // the subset of observers that
+    private ObserverMap obsMap = new ObserverMap();
+    private Set<CallObserver> ccObservers = new HashSet<CallObserver>(); // the subset of observers that
                                                 // listen for callcontrol events
     /**
      * A map of Listeners to their ListenerStatus objects that track who applied
      * the Listener
      */
-    private Map listMap = new ListenerMap(); // all listeners, with their
+    private ListenerMap listMap = new ListenerMap(); // all listeners, with their
                                                 // status holder
-    private Set connLists = new HashSet(); // subset of listMap.keySet() that
+    private Set<CallListener> connLists = new HashSet<CallListener>(); // subset of listMap.keySet() that
                                             // also receives Connection events
-    private Set tcLists = new HashSet(); // subset of connSet that also
+    private Set<CallListener> tcLists = new HashSet<CallListener>(); // subset of connSet that also
                                             // receives TerminalConnection
                                             // events
     // The call that these Listeners are registered against
@@ -204,7 +203,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                The new or updated listener
      */
     synchronized void add(CallListener l) {
-        Map lists = this.getCallListMap();
+    	ListenerMap lists = this.getCallListMap();
         ListenerStatus status = (ListenerStatus) lists.get(l);
         if (status == null) {
             status = new ListenerStatus();
@@ -230,7 +229,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallListeners.
      */
     synchronized void add(CallListener l, Address addr) {
-        Map map = this.getCallListMap();
+    	ListenerMap map = this.getCallListMap();
         ListenerStatus status = (ListenerStatus) map.get(l);
         if (status == null) {
             status = new ListenerStatus(addr);
@@ -256,7 +255,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallListeners.
      */
     synchronized void add(CallListener l, Terminal term) {
-        Map map = this.getCallListMap();
+    	ListenerMap map = this.getCallListMap();
         ListenerStatus status = (ListenerStatus) map.get(l);
         if (status == null) {
             status = new ListenerStatus(term);
@@ -280,7 +279,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                The new or updated observer
      */
     synchronized void add(CallObserver o) {
-        Map obs = this.getObsMap();
+    	ObserverMap obs = this.getObsMap();
         synchronized (obs) {
             ListenerStatus status = (ListenerStatus) obs.get(o);
             if (status == null) {
@@ -308,7 +307,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallObservers.
      */
     synchronized void add(CallObserver o, Address addr) {
-        Map map = this.getObsMap();
+    	ObserverMap map = this.getObsMap();
         synchronized (map) {
             ListenerStatus status = (ListenerStatus) map.get(o);
             if (status == null) {
@@ -336,7 +335,7 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallObservers.
      */
     synchronized void add(CallObserver o, Terminal term) {
-        Map map = this.getObsMap();
+        ObserverMap map = this.getObsMap();
         synchronized (map) {
             ListenerStatus status = (ListenerStatus) map.get(o);
             if (status == null) {
@@ -379,9 +378,9 @@ class ListenerManager implements TerminalConnectionListener {
      * callActive method comment.
      */
     public void callActive(javax.telephony.CallEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).callActive(event);
+            it.next().callActive(event);
         }
     }
 
@@ -389,9 +388,9 @@ class ListenerManager implements TerminalConnectionListener {
      * callEventTransmissionEnded method comment.
      */
     public void callEventTransmissionEnded(javax.telephony.CallEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).callEventTransmissionEnded(event);
+            it.next().callEventTransmissionEnded(event);
         }
     }
 
@@ -399,9 +398,9 @@ class ListenerManager implements TerminalConnectionListener {
      * callInvalid method comment.
      */
     public void callInvalid(javax.telephony.CallEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).callInvalid(event);
+            it.next().callInvalid(event);
         }
     }
 
@@ -409,9 +408,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionAlerting method comment.
      */
     public void connectionAlerting(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionAlerting(event);
         }
@@ -421,9 +420,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionConnected method comment.
      */
     public void connectionConnected(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionConnected(event);
         }
@@ -433,9 +432,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionCreated method comment.
      */
     public void connectionCreated(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionCreated(event);
         }
@@ -445,9 +444,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionDisconnected method comment.
      */
     public void connectionDisconnected(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionDisconnected(event);
         }
@@ -457,9 +456,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionFailed method comment.
      */
     public void connectionFailed(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionFailed(event);
         }
@@ -469,9 +468,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionInProgress method comment.
      */
     public void connectionInProgress(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionInProgress(event);
         }
@@ -481,9 +480,9 @@ class ListenerManager implements TerminalConnectionListener {
      * connectionUnknown method comment.
      */
     public void connectionUnknown(javax.telephony.ConnectionEvent event) {
-        Iterator it = this.getConnListeners();
+        Iterator<CallListener> it = this.getConnListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+        	CallListener o = it.next();
             if (o instanceof ConnectionListener)
                 ((ConnectionListener) o).connectionUnknown(event);
         }
@@ -504,7 +503,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return An Iterator over all registered callListeners.
      */
-    private Iterator getCallListenerIterator() {
+    private Iterator<CallListener> getCallListenerIterator() {
         return this.getCallListMap().keySet().iterator();
     }
 
@@ -514,7 +513,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return The set of managed call listeners.
      */
-    Set getCallListeners() {
+    Set<CallListener> getCallListeners() {
         return this.getCallListMap().keySet();
     }
 
@@ -525,7 +524,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return The Map of CallListeners to CallListener status holders.
      */
-    private Map getCallListMap() {
+    private ListenerMap getCallListMap() {
         return this.listMap;
     }
 
@@ -535,7 +534,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return The set of managed call observers.
      */
-    Set getCallObservers() {
+    Set<CallObserver> getCallObservers() {
         return this.getObsMap().keySet();
     }
 
@@ -546,7 +545,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return The set of CXallControlCallObservers.
      */
-    private Set getCcObservers() {
+    private Set<CallObserver> getCcObservers() {
         return this.ccObservers;
     }
 
@@ -557,7 +556,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return An Iterator over all registered ConnectionListeners.
      */
-    private Iterator getConnListeners() {
+    private Iterator<CallListener> getConnListeners() {
         return this.getConnLists().iterator();
     }
 
@@ -568,7 +567,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return A set of ConnectionListeners for Connection and Call events.
      */
-    private Set getConnLists() {
+    private Set<CallListener> getConnLists() {
         return connLists;
     }
 
@@ -579,7 +578,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return The Map of CallObservers to status holders.
      */
-    private Map getObsMap() {
+    private ObserverMap getObsMap() {
         return this.obsMap;
     }
 
@@ -590,7 +589,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      * @return An Iterator over all registered TerminalConnectionListeners.
      */
-    private Iterator getTcListeners() {
+    private Iterator<CallListener> getTcListeners() {
         return this.getTcLists().iterator();
     }
 
@@ -602,7 +601,7 @@ class ListenerManager implements TerminalConnectionListener {
      * @return A set of TerminalConnectionListeners for TerminalConnection,
      *         Connection and Call events.
      */
-    private Set getTcLists() {
+    private Set<CallListener> getTcLists() {
         return tcLists;
     }
 
@@ -621,9 +620,9 @@ class ListenerManager implements TerminalConnectionListener {
      * multiCallMetaMergeEnded method comment.
      */
     public void multiCallMetaMergeEnded(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).multiCallMetaMergeEnded(event);
+            it.next().multiCallMetaMergeEnded(event);
         }
     }
 
@@ -631,9 +630,9 @@ class ListenerManager implements TerminalConnectionListener {
      * multiCallMetaMergeStarted method comment.
      */
     public void multiCallMetaMergeStarted(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).multiCallMetaMergeStarted(event);
+            it.next().multiCallMetaMergeStarted(event);
         }
     }
 
@@ -641,9 +640,9 @@ class ListenerManager implements TerminalConnectionListener {
      * multiCallMetaTransferEnded method comment.
      */
     public void multiCallMetaTransferEnded(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).multiCallMetaTransferEnded(event);
+            it.next().multiCallMetaTransferEnded(event);
         }
     }
 
@@ -651,9 +650,9 @@ class ListenerManager implements TerminalConnectionListener {
      * multiCallMetaTransferStarted method comment.
      */
     public void multiCallMetaTransferStarted(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).multiCallMetaTransferStarted(event);
+            it.next().multiCallMetaTransferStarted(event);
         }
     }
 
@@ -682,12 +681,12 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallListeners.
      */
     synchronized void remove(Address addr) {
-        Map lists = this.getCallListMap();
+        ListenerMap lists = this.getCallListMap();
         LinkedList<CallListener> itemsToRemove = new LinkedList<CallListener>();
-        Iterator it = lists.keySet().iterator();
+        Iterator<CallListener> it = lists.keySet().iterator();
         while (it.hasNext()) {
-            CallListener cl = (CallListener) it.next();
-            ListenerStatus status = (ListenerStatus) lists.get(cl);
+            CallListener cl = it.next();
+            ListenerStatus status = lists.get(cl);
             if (status != null) {
                 if (status.remove(addr)) {
                     // the address was the last listener handle -- remove the
@@ -706,12 +705,12 @@ class ListenerManager implements TerminalConnectionListener {
         }
 
         // now remove any registered observers
-        lists = this.getObsMap();
+        ObserverMap obs = this.getObsMap();
         LinkedList<CallObserver> observersToRemove = new LinkedList<CallObserver>();
-        it = lists.keySet().iterator();
-        while (it.hasNext()) {
-            CallObserver co = (CallObserver) it.next();
-            ListenerStatus status = (ListenerStatus) lists.get(co);
+        Iterator<CallObserver> observerIterator = obs.keySet().iterator();
+        while (observerIterator.hasNext()) {
+            CallObserver co = observerIterator.next();
+            ListenerStatus status = obs.get(co);
             if (status != null) {
                 if (status.remove(addr)) {
                     // the address was the last listener handle -- remove the
@@ -802,12 +801,12 @@ class ListenerManager implements TerminalConnectionListener {
      *                one of its CallListeners.
      */
     synchronized void remove(Terminal term) {
-        Map lists = this.getCallListMap();
+        ListenerMap lists = this.getCallListMap();
         LinkedList<CallListener> itemsToRemove = new LinkedList<CallListener>();
-        Iterator it = lists.keySet().iterator();
+        Iterator<CallListener> it = lists.keySet().iterator();
         while (it.hasNext()) {
-            CallListener cl = (CallListener) it.next();
-            ListenerStatus status = (ListenerStatus) lists.get(cl);
+            CallListener cl = it.next();
+            ListenerStatus status = lists.get(cl);
             if (status != null) {
                 if (status.remove(term)) {
                     // the address was the last listener handle -- remove the
@@ -826,12 +825,12 @@ class ListenerManager implements TerminalConnectionListener {
         }
 
         // now remove any registered observers
-        lists = this.getObsMap();
+        ObserverMap obs = this.getObsMap();
         LinkedList<CallObserver> observersToRemove = new LinkedList<CallObserver>();
-        it = lists.keySet().iterator();
-        while (it.hasNext()) {
-            CallObserver co = (CallObserver) it.next();
-            ListenerStatus status = (ListenerStatus) lists.get(co);
+        Iterator<CallObserver> observerIterator= obs.keySet().iterator();
+        while (observerIterator.hasNext()) {
+            CallObserver co = observerIterator.next();
+            ListenerStatus status = obs.get(co);
             if (status != null) {
                 if (status.remove(term)) {
                     // the address was the last listener handle -- remove the
@@ -858,14 +857,14 @@ class ListenerManager implements TerminalConnectionListener {
      * @author: Richard Deadman
      */
     synchronized void removeAll() {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            this.remove((CallListener) it.next());
+            this.remove(it.next());
         }
 
-        it = this.getObsMap().keySet().iterator();
-        while (it.hasNext()) {
-            this.remove((CallObserver) it.next());
+        Iterator<CallObserver> observerIterator = this.getObsMap().keySet().iterator();
+        while (observerIterator.hasNext()) {
+            this.remove(observerIterator.next());
         }
     }
 
@@ -901,13 +900,13 @@ class ListenerManager implements TerminalConnectionListener {
      *                CallEv array of events.
      */
     void sendEvents(FreeCallEvent[] evs) {
-        Iterator it = this.getCallObservers().iterator();
+        Iterator<CallObserver> it = this.getCallObservers().iterator();
         while (it.hasNext()) {
-            ((CallObserver) it.next()).callChangedEvent(evs);
+            it.next().callChangedEvent(evs);
         }
 
         // now see if we have any CallControlObservers
-        Set cco = this.getCcObservers();
+        Set<CallObserver> cco = this.getCcObservers();
         if (cco.size() > 0) {
             // Morph the CallEvs to CallCtlEvs
             CCCallEv[] ccevs = CCCallEv.toCcEvents(evs);
@@ -926,9 +925,9 @@ class ListenerManager implements TerminalConnectionListener {
      * singleCallMetaProgressEnded method comment.
      */
     public void singleCallMetaProgressEnded(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).singleCallMetaProgressEnded(event);
+            it.next().singleCallMetaProgressEnded(event);
         }
     }
 
@@ -936,9 +935,9 @@ class ListenerManager implements TerminalConnectionListener {
      * singleCallMetaProgressStarted method comment.
      */
     public void singleCallMetaProgressStarted(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).singleCallMetaProgressStarted(event);
+            it.next().singleCallMetaProgressStarted(event);
         }
     }
 
@@ -946,9 +945,9 @@ class ListenerManager implements TerminalConnectionListener {
      * singleCallMetaSnapshotEnded method comment.
      */
     public void singleCallMetaSnapshotEnded(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).singleCallMetaSnapshotEnded(event);
+            it.next().singleCallMetaSnapshotEnded(event);
         }
     }
 
@@ -956,9 +955,9 @@ class ListenerManager implements TerminalConnectionListener {
      * singleCallMetaSnapshotStarted method comment.
      */
     public void singleCallMetaSnapshotStarted(javax.telephony.MetaEvent event) {
-        Iterator it = this.getCallListenerIterator();
+        Iterator<CallListener> it = this.getCallListenerIterator();
         while (it.hasNext()) {
-            ((CallListener) it.next()).singleCallMetaSnapshotStarted(event);
+            it.next().singleCallMetaSnapshotStarted(event);
         }
     }
 
@@ -967,9 +966,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionActive(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionActive(event);
@@ -981,9 +980,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionCreated(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionCreated(event);
@@ -995,9 +994,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionDropped(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionDropped(event);
@@ -1009,9 +1008,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionPassive(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionPassive(event);
@@ -1023,9 +1022,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionRinging(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionRinging(event);
@@ -1037,9 +1036,9 @@ class ListenerManager implements TerminalConnectionListener {
      */
     public void terminalConnectionUnknown(
             javax.telephony.TerminalConnectionEvent event) {
-        Iterator it = this.getTcListeners();
+        Iterator<CallListener> it = this.getTcListeners();
         while (it.hasNext()) {
-            Object o = it.next();
+            CallListener o = it.next();
             if (o instanceof TerminalConnectionListener)
                 ((TerminalConnectionListener) o)
                         .terminalConnectionUnknown(event);

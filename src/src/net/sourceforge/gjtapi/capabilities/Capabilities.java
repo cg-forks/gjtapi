@@ -194,7 +194,7 @@ public static boolean resolve(Object val) {
 public void setCapabilities(Properties props) {
 	if (props != null) {
 		// handle them all here
-		Iterator it = props.keySet().iterator();
+		Iterator<Object> it = props.keySet().iterator();
 		while (it.hasNext()) {
 			Object okey = it.next();
 			if (okey instanceof String) {

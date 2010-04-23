@@ -41,6 +41,7 @@ import javax.telephony.Connection;
 import javax.telephony.Terminal;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.lang.ref.WeakReference;
@@ -57,6 +58,7 @@ public class Provider implements JccProvider, JcatProvider {
 	 * <P>We have to make this a double-weak map so that the values (which hold handles
 	 * to the keys) don't keep the keys from being garbage-collected.
 	 **/
+	@SuppressWarnings("unchecked")
 	private class DoubleWeakMap extends WeakHashMap {
 		public Object put(Object key, Object value) {
 			WeakReference wValue = (value instanceof WeakReference) ?
@@ -78,8 +80,8 @@ public class Provider implements JccProvider, JcatProvider {
 		}
 	}
 	private GenericProvider genProv = null;
-	private Map callListeners = new HashMap();	// JcpCallListener -> CallListenerAdapter
-	private Map loadListeners = new HashMap();	//  CallLoadControlListener -> CallLoadControlEventFilter
+	private Map<JccCallListener, CallListenerAdapter> callListeners = new HashMap<JccCallListener, CallListenerAdapter>();	// JccCallListener -> CallListenerAdapter
+	private Map<CallLoadControlListener, EventFilter> loadListeners = new HashMap<CallLoadControlListener, EventFilter>();	//  CallLoadControlListener -> EventFilter
 	private DoubleWeakMap addrMap = new DoubleWeakMap();
 	private DoubleWeakMap callMap = new DoubleWeakMap();
 	private DoubleWeakMap connMap = new DoubleWeakMap();
@@ -124,7 +126,7 @@ public Provider(GenericProvider prov) {
  * addCallListener method comment.
  */
 public void addCallListener(JccCallListener cl) throws javax.csapi.cc.jcc.MethodNotSupportedException, javax.csapi.cc.jcc.ResourceUnavailableException {
-	Map listMap = this.getCallListeners();
+	Map<JccCallListener, CallListenerAdapter> listMap = this.getCallListeners();
 	
 		// first see if we already have the listener registered.
 	CallListenerAdapter cla = (CallListenerAdapter)listMap.get(cl);
@@ -180,7 +182,7 @@ public void addCallLoadControlListener(CallLoadControlListener clcl) throws java
  * addConnectionListener method comment.
  */
 public void addConnectionListener(JccConnectionListener cl, EventFilter filter) {
-	Map listMap = this.getCallListeners();
+	Map<JccCallListener, CallListenerAdapter> listMap = this.getCallListeners();
 	
 		// first see if we already have the listener registered.
 	CallListenerAdapter cla = (CallListenerAdapter)listMap.get(cl);
@@ -222,11 +224,11 @@ public void addProviderListener(JccProviderListener pl) throws javax.csapi.cc.jc
 public void callOverloadCeased(FreeAddress addr) {
 	GenAddress ga = this.findAddress(addr);
 	if (ga != null) {
-		Iterator it = this.getLoadListeners().entrySet().iterator();
+		Iterator<Entry<CallLoadControlListener, EventFilter>> it = this.getLoadListeners().entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry)it.next();
-			CallLoadControlListener listener = (CallLoadControlListener)entry.getKey();
-			EventFilter filter = (EventFilter)entry.getValue();
+			Entry<CallLoadControlListener, EventFilter> entry = it.next();
+			CallLoadControlListener listener = entry.getKey();
+			EventFilter filter = entry.getValue();
 			CallLoadControlEvent event = new CallOverloadEvent(this.findAddress(addr),
 						CallLoadControlEvent.PROVIDER_CALL_OVERLOAD_CEASED);
 			if ((filter == null) || (filter.getEventDisposition(event) != EventFilter.EVENT_DISCARD))
@@ -242,11 +244,11 @@ public void callOverloadCeased(FreeAddress addr) {
 public void callOverloadEncountered(FreeAddress addr) {
 	GenAddress ga = this.findAddress(addr);
 	if (ga != null) {
-		Iterator it = this.getLoadListeners().entrySet().iterator();
+		Iterator<Entry<CallLoadControlListener, EventFilter>> it = this.getLoadListeners().entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry)it.next();
-			CallLoadControlListener listener = (CallLoadControlListener)entry.getKey();
-			EventFilter filter = (EventFilter)entry.getValue();
+			Entry<CallLoadControlListener, EventFilter> entry = it.next();
+			CallLoadControlListener listener = entry.getKey();
+			EventFilter filter = entry.getValue();
 			CallLoadControlEvent event = new CallOverloadEvent(this.findAddress(addr),
 						CallLoadControlEvent.PROVIDER_CALL_OVERLOAD_ENCOUNTERED);
 			if ((filter == null) || (filter.getEventDisposition(event) != EventFilter.EVENT_DISCARD))
@@ -275,13 +277,13 @@ public JccCall createCall() throws javax.csapi.cc.jcc.InvalidStateException, jav
 	}
 
 		// now add any listeners
-	Map callListeners = this.getCallListeners();
+	Map<JccCallListener, CallListenerAdapter> callListeners = this.getCallListeners();
 	int size = callListeners.size();
 	if (size > 0) {
 		FreeCall fCall = call.getFrameCall();
-		Iterator it = callListeners.values().iterator();
+		Iterator<CallListenerAdapter> it = callListeners.values().iterator();
 		while (it.hasNext()) {
-			CallListenerAdapter cl = (CallListenerAdapter)it.next();
+			CallListenerAdapter cl = it.next();
 			cl.callCreated(new CreatedCallEvent(call));
 			fCall.addCallListener(cl);
 		}
@@ -515,7 +517,7 @@ private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getTermConnMap() {
  * Creation date: (2000-11-09 16:15:38)
  * @return java.util.Map
  */
-private Map getCallListeners() {
+private Map<JccCallListener, CallListenerAdapter> getCallListeners() {
 	return callListeners;
 }
 /**
@@ -523,7 +525,7 @@ private Map getCallListeners() {
  * Creation date: (2000-10-31 15:15:21)
  * @return net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap
  */
-private net.sourceforge.gjtapi.jcc.Provider.DoubleWeakMap getCallMap() {
+private DoubleWeakMap getCallMap() {
 	return callMap;
 }
 /**
@@ -547,7 +549,7 @@ net.sourceforge.gjtapi.GenericProvider getGenProv() {
  * Creation date: (2000-11-10 12:18:07)
  * @return java.util.Set
  */
-private Map getLoadListeners() {
+private Map<CallLoadControlListener, EventFilter> getLoadListeners() {
 	return loadListeners;
 }
 /**
@@ -579,10 +581,11 @@ public int getState() {
 /**
  * removeCallListener method comment.
  */
+@SuppressWarnings("unchecked")
 public void removeCallListener(JccCallListener cl) {
 		// see if it is registered
-	Map clMap = this.getCallListeners();
-	CallListenerAdapter cla = (CallListenerAdapter)clMap.remove(cl);
+	Map<JccCallListener, CallListenerAdapter> clMap = this.getCallListeners();
+	CallListenerAdapter cla = clMap.remove(cl);
 	if (cla == null)
 		return;
 	else {
@@ -743,9 +746,9 @@ public String toString() {
  */
 	public void registerCallListeners(FreeCall gjtapiCall) {
 		// now add the JccCallListeners that I have queued up, by adding their adapters to the real call.
-		Iterator it = this.getCallListeners().values().iterator();
+		Iterator<CallListenerAdapter> it = this.getCallListeners().values().iterator();
 		while (it.hasNext()) {
-			gjtapiCall.addCallListener((CallListener)it.next());
+			gjtapiCall.addCallListener(it.next());
 		}
 	}
 	/**
@@ -775,9 +778,9 @@ public String toString() {
      * 
 	 * @see javax.jcat.JcatProvider#getCalls(javax.jcat.JcatAddress)
 	 */
-	public Set getCalls(JcatAddress address) {
+	public Set<GenCall> getCalls(JcatAddress address) {
 		String addrName = address.getName();
-		Set results = new HashSet();
+		Set<GenCall> results = new HashSet<GenCall>();
 		// get all the calls on the GJTAPI provider
 		try {
 			Call[] calls = this.getGenProv().getCalls();
@@ -810,8 +813,8 @@ public String toString() {
 	 * when trying to get all Terminals for matching, but we cannot. For now we log and eat the exception.
 	 * @see javax.jcat.JcatProvider#getTerminals(java.lang.String)
 	 */
-	public Set getTerminals(String nameRegex) {
-		Set results = new HashSet();
+	public Set<GenTerminal> getTerminals(String nameRegex) {
+		Set<GenTerminal> results = new HashSet<GenTerminal>();
 		try {
 			Terminal[] terms = this.getGenProv().getTerminals();
 			if ((terms == null) || (terms.length == 0))

@@ -58,7 +58,7 @@ public class GenericProvider implements MediaProvider, javax.telephony.privateda
 	private TelephonyProvider rawProvider;
 	private CallMgr callMgr = null;
 	private DomainMgr domainMgr = null;
-	private transient Vector providerListeners;
+	private transient Vector<ProviderListener> providerListeners;
 	private net.sourceforge.gjtapi.media.MediaMgr mediaMgr = new net.sourceforge.gjtapi.media.MediaMgr();
 	private net.sourceforge.gjtapi.capabilities.Capabilities capabilities = null;
 	private RawEventHandler eventHandler = null;
@@ -84,7 +84,7 @@ public class GenericProvider implements MediaProvider, javax.telephony.privateda
 /**
  * Create a Generic constructor and hook it up to the raw provider
  **/
-GenericProvider(String name, TelephonyProvider raw, Map props) {
+GenericProvider(String name, TelephonyProvider raw, Properties props) {
 	super();
 
 	// set things up and hook up the raw provider
@@ -111,8 +111,9 @@ public void addObserver(ProviderObserver observer) throws MethodNotSupportedExce
  * Add a ProviderListener to my set
  */
  // This uses some synchonization tricks from WestHawk
+@SuppressWarnings("unchecked")
 public synchronized void addProviderListener(ProviderListener listener) throws MethodNotSupportedException, ResourceUnavailableException {
-	Vector v = providerListeners == null ? new Vector(2) : (Vector) providerListeners.clone();
+	Vector<ProviderListener> v = providerListeners == null ? new Vector<ProviderListener>(2) : (Vector<ProviderListener>) providerListeners.clone();
 	if (!v.contains(listener)) {
 	  v.addElement(listener);
 	  providerListeners = v;
@@ -181,9 +182,9 @@ public Address[] getAddresses() throws ResourceUnavailableException {
 public MediaTerminal getAvailableMediaTerminal() {
 	MediaTerminal mt = null;
 	DomainMgr mgr = this.getDomainMgr();
-	Iterator it = mgr.mediaTerminals();
+	Iterator<String> it = mgr.mediaTerminals();
 	while (it.hasNext()) {
-		String termName = (String)it.next();
+		String termName = it.next();
 		FreeMediaTerminal maybe = (FreeMediaTerminal)mgr.getLazyTerminal(termName, true);
 		TerminalConnection[] tcs = maybe.getTerminalConnections();
 		if (tcs == null || tcs.length == 0) {
@@ -405,7 +406,7 @@ public void hookupJainCallback(net.sourceforge.gjtapi.jcc.Provider prov) {
  * Creation date: (2000-02-11 11:04:54)
  * @author: Richard Deadman
  */
-private void initialize(Map props) {
+private void initialize(Properties props) {
 
 	// handle the properties I care about
 
@@ -433,9 +434,10 @@ public void removeObserver(ProviderObserver observer) {
  * Remove one of my listeners.
  * @param l The ProviderListener to remove
  */
+@SuppressWarnings("unchecked")
 public synchronized void removeProviderListener(ProviderListener l) {
 	if (providerListeners != null && providerListeners.contains(l)) {
-	  Vector v = (Vector) providerListeners.clone();
+	  Vector<ProviderListener> v = (Vector<ProviderListener>) providerListeners.clone();
 	  v.removeElement(l);
 	  providerListeners = v;
 	}

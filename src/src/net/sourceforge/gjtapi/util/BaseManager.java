@@ -40,7 +40,7 @@ import java.util.*;
  * @author: Richard Deadman
  */
 public abstract class BaseManager {
-	private LinkedList events = new LinkedList(); // events waiting to be processed
+	private LinkedList<EventHandler> events = new LinkedList<EventHandler>(); // events waiting to be processed
 	protected BaseManager self = this;
 /**
  * Returns the current number of objects in the queue.
@@ -57,7 +57,7 @@ public int available() {
  * @author: Richard
  * @return The returned object.
  */
-protected Object get() throws InterruptedException {
+protected EventHandler get() throws InterruptedException {
 	synchronized(events) {
 		if (events.size() == 0)
 			events.wait();
@@ -70,7 +70,7 @@ protected Object get() throws InterruptedException {
  * @author: Richard Deadman
  * @param o The object to add
  */
-protected void put(Object o) {
+protected void put(EventHandler o) {
 	synchronized(events) {
 		events.add(o);
 		events.notify();

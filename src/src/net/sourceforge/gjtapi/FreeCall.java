@@ -45,7 +45,7 @@ import java.util.*;
 public class FreeCall implements CallControlCall, PrivateData {
 	private int state = Call.IDLE;
 	private GenericProvider provider = null;
-	private HashMap connections = new HashMap();	// Address name -> connections
+	private HashMap<String, FreeConnection> connections = new HashMap<String, FreeConnection>();	// Address name -> connections
 	private ListenerManager listMgr = null;
 	private CallId callID;
 	private boolean stoppedReporting = false;		// ensure we do it only once.
@@ -496,7 +496,7 @@ private FreeTerminalConnection findCommonTC(Call otherCall) {
    * @return The currently cached Connection, or null.
    **/
 public FreeConnection getCachedConnection(String addrName) {
-	return (FreeConnection)this.connections.get(addrName);
+	return this.connections.get(addrName);
 }          
   public CallCapabilities getCallCapabilities(Terminal term, Address addr) throws javax.telephony.InvalidArgumentException, javax.telephony.PlatformException {
 	return this.getCapabilities(term, addr);
@@ -577,7 +577,7 @@ protected void setCallingTerminal(Terminal theCallingTerminal, boolean knownTerm
  * @return An array of the registered CallListeners for this call.
  **/
 public CallListener[] getCallListeners() {
-	Set cls = this.getListenerMgr().getCallListeners();
+	Set<CallListener> cls = this.getListenerMgr().getCallListeners();
 	CallListener[] ret = new CallListener[cls.size()];
 	return (CallListener[])cls.toArray(ret);
 }
@@ -818,7 +818,7 @@ public java.lang.Object sendPrivateData(java.lang.Object data) {
    * If we had a true state machine, we could ask each state to generate the appropriate event.
    */
   protected void sendSnapShot(CallObserver o){
-	Set evs = new HashSet();
+	Set<FreeCallEvent> evs = new HashSet<FreeCallEvent>();
 
 	// note the call state
 	switch (this.getState()) {
@@ -1071,11 +1071,12 @@ void toActive(int cause) {
  * Creation date: (2000-05-04 23:58:34)
  * @author: Richard Deadman
  */
+@SuppressWarnings("unchecked")
 void toInvalid(int cause) {
 	// unHook any connections
-	Iterator conns = ((HashMap)this.connections.clone()).values().iterator();
+	Iterator<FreeConnection> conns = ((HashMap<String, FreeConnection>)this.connections.clone()).values().iterator();
 	while (conns.hasNext()) {
-		((FreeConnection)conns.next()).toDisconnected(cause);
+		conns.next().toDisconnected(cause);
 	}
 
 	// set state

@@ -39,6 +39,7 @@ import javax.telephony.media.events.MediaEv;
  * @author: Richard Deadman
  **/
 
+@SuppressWarnings("deprecation")
 abstract class BaseMediaEv extends FreeTerminalConnectionEvent {
 	BaseMediaEv(FreeMediaTerminalConnection tc) {
 		super(Ev.CAUSE_NORMAL, tc);

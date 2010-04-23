@@ -33,6 +33,8 @@ package net.sourceforge.gjtapi.jcc;
 import java.util.Set;
 import java.util.Iterator;
 import javax.csapi.cc.jcc.*;
+
+import net.sourceforge.gjtapi.jcc.GenCall.Supervisor;
 /**
  * This is a simple call listener that listens for idle -> active transitions on a call
  * and installs any supervisors pending for the call.
@@ -50,9 +52,9 @@ public SuperviseInstaller() {
  * Pop off any waiting supervisors for the call and start them.
  */
 public void callActive(JccCallEvent event) {
-	Set sups = ((GenCall)event.getCall()).getWaitingSupervisors();
+	Set<Supervisor> sups = ((GenCall)event.getCall()).getWaitingSupervisors();
 	synchronized (sups) {
-		Iterator it = sups.iterator();
+		Iterator<Supervisor> it = sups.iterator();
 		while (it.hasNext()) {
 			new Thread((Runnable)it.next()).start();
 			it.remove();

@@ -132,8 +132,8 @@ public class GenCall implements JccCall, JcatCall {
 	}
 	private Provider provider;
 	private FreeCall frameCall;
-	private Set pendingConns = new HashSet();
-	private Set waitingSupervisors = new HashSet();
+	private Set<GenConnection> pendingConns = new HashSet<GenConnection>();
+	private Set<Supervisor> waitingSupervisors = new HashSet<Supervisor>();
 /**
  * GenCall constructor comment.
  */
@@ -318,7 +318,7 @@ public synchronized JccConnection[] getConnections() {
 	}
 
 	// Now see if we have any pending connections to add (not yet routed to the fabric)
-	Set pending = this.getPendingConns();
+	Set<GenConnection> pending = this.getPendingConns();
 	int pendSize = pending.size();
 	if (pendSize > 0) {
 		GenConnection[] routed = conns;
@@ -327,9 +327,9 @@ public synchronized JccConnection[] getConnections() {
 		for (; i < routedSize; i++) {
 			conns[i] = routed[i];
 		}
-		Iterator it = pending.iterator();
+		Iterator<GenConnection> it = pending.iterator();
 		while (it.hasNext()) {
-			conns[i] = (GenConnection)it.next();
+			conns[i] = it.next();
 			i++;
 		}
 	}
@@ -348,7 +348,7 @@ net.sourceforge.gjtapi.FreeCall getFrameCall() {
  * Creation date: (2000-11-10 10:31:16)
  * @return java.util.Set
  */
-private java.util.Set getPendingConns() {
+private Set<GenConnection> getPendingConns() {
 	return pendingConns;
 }
 /**
@@ -387,7 +387,7 @@ public int getState() {
  * Creation date: (2000-11-10 14:37:52)
  * @return java.util.Set
  */
-java.util.Set getWaitingSupervisors() {
+Set<Supervisor> getWaitingSupervisors() {
 	return waitingSupervisors;
 }
 /**
@@ -522,7 +522,7 @@ public void superviseCall(JccCallListener cl, double time, int treatment, double
 	}
 
 	Supervisor supervisor = new Supervisor(this, cl, time, treatment);
-	Set sups = this.getWaitingSupervisors();
+	Set<Supervisor> sups = this.getWaitingSupervisors();
 		// ensure we don't have a race condition with any installed SuperviseInstallers
 	synchronized(sups) {
 		int initialSize = sups.size();

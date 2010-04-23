@@ -40,6 +40,7 @@ import net.sourceforge.gjtapi.*;
  * Creation date: (2000-04-26 14:28:12)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 public class FreeMediaTerminalConnection extends FreeTerminalConnection implements MediaTerminalConnection {
 	public final static String MICROPHONE = "<Microphone>";	// The microphone play streamId.
 	public final static String SPEAKER = "<Speaker>";		// The speaker record streamId.

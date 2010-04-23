@@ -37,6 +37,11 @@ import javax.telephony.media.*;
  * @author: Richard Deadman
  */
 public abstract class GenericResourceEvent extends GenericMediaEvent implements ResourceEvent {
+	/**
+	 * Serializable ID since we are serializable
+	 */
+	private static final long serialVersionUID = -8204246953834586181L;
+	
 	private SymbolHolder err = null;
 	private SymbolHolder qualifier = null;
 	private SymbolHolder trigger = null;
