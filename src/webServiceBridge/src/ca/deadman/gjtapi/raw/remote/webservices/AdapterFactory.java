@@ -76,14 +76,14 @@ public class AdapterFactory {
 				o = con.newInstance(propSet);
 			} catch (NoSuchMethodException nsme) {
 				cause = nsme;
-				// fall throught to null test
+				// fall through to null test
 			} catch (InvocationTargetException ite) {
-				cause = ite.getTargetException();
+				cause = ite.getCause();
 				// fall through to null test
 			}
 			if (o == null) {
 				// try empty constructor
-				o = constructor.newInstance();
+				//o = constructor.newInstance();
 			}
 		} catch (ClassNotFoundException cnfe) {
 			cause = cnfe;

@@ -1,0 +1,14 @@
+ProviderClass = ca.deadman.gjtapi.raw.remote.wsservices.WebProvider
+
+# This file contains configuration information for the GJTAPI WebProvider. These values may be overridden
+# by a client using "key=value;" pairs in the GjtapiPeer.getProvider(String) method.
+#
+# Unless the server has been installed with different parameters, the only entry that generally needs to
+# be changed is "url"
+
+# The name of the server
+url = http://localhost:8080/gjtapi-jaxws-1.10-rc1/gjtapi_service
+
+# The service name
+#qNameUri = http://webservices.remote.raw.gjtapi.deadman.ca/
+#qNameLocal = GjtapiJaxWsService

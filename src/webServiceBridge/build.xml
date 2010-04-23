@@ -117,18 +117,19 @@
   </target>
 
   <target name="generate-server" depends="compile-server">
+<echo message="${toString:compile.classpath}"/>
     <wscompile
          keep="true"
          server="true"
          base="${build}/classes/server"
          xPrintStackTrace="true"
-         verbose="false"
-         classpath="${compile.classpath}"
-         config="config.xml">
+         config="config.xml"
+    	 fork="true" > <!-- deal with bug -->
          <classpath>
             <path refid="compile.classpath"/>
+            <path refid="jtapi.files"/>
             <pathelement location="${build}/classes/server"/>
-			<path refid="jtapi.files"/>
+         	<pathelement location="${javahome}/lib/tools.jar"/> <!-- deal with bug -->
          </classpath>
     </wscompile>
   </target>
@@ -136,8 +137,10 @@
   <target name="compile-server" depends="prepare" description="compile the server source" >
     <!-- Compile the java code from ${src} into ${build} -->
     <javac srcdir="${src}" destdir="${build}/classes/server" excludes="ca/deadman/gjtapi/raw/remote/webservices/WebProvider.java">
-	<classpath refid="compile.classpath"/>
-	<classpath refid="jtapi.files"/>
+	<classpath>
+	    <path refid="jtapi.files"/>
+	    <path refid="compile.classpath"/>
+	</classpath>
     </javac>
 
   </target>
@@ -164,7 +167,7 @@
          keep="true"
          inWarFile="${build}/${appname}-raw.war"
          outWarFile="${build}/${appname}.war"
-         verbose="true">
+		 fork="true" > <!-- deal with bug -->
          <classpath refid="compile.classpath"/>
 		<classpath refid="jtapi.files"/>
      </wsdeploy>
@@ -184,9 +187,9 @@
          define="true"
          base="${build}/classes/client"
          xPrintStackTrace="true"
-         verbose="false"
          classpath="${compile.classpath}"
-         config="config.xml">
+         config="config.xml"
+		 fork="true" > <!-- deal with bug -->
          <classpath>
             <path refid="compile.classpath"/>
             <pathelement location="${build}/classes/server"/>

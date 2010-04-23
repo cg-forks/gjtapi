@@ -2,6 +2,8 @@ package ca.deadman.gjtapi.raw.remote.webservices;
 
 import javax.telephony.media.*;
 
+import ca.deadman.gjtapi.raw.remote.MovableEventIds;
+
 import net.sourceforge.gjtapi.media.*;
 
 /*

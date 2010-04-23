@@ -27,12 +27,14 @@
 	
 	
 	<!-- version -->
-	<property name="baseVersion" value="1.9"/>
-	<property name="releaseCandidate" value="-rc2"/>
+	<property name="baseVersion" value="1.10"/>
+	<property name="releaseCandidate" value="-rc1"/>
 	<property name="version" value="${baseVersion}${releaseCandidate}"/>
 	<!-- licence file -->
 	<property name="licenceFile" value="license.txt"/>
 	<property name="releaseNotes" value="GJTAPI_${baseVersion}_Release_Notes.html"/>
+	
+	<property name="compile.debug" value="true" />
 
   <!-- Edit this with your jtapi and jcc jar locations... -->
   <path id="classpath">	
@@ -42,7 +44,7 @@
       <include name="jcat-0.3.1.jar"/>
       <include name="JainSipApi1.1.jar"/>
       <include name="Stun4J.jar"/>
-      <include name="log4j-1.2.15.jar"/>
+      <include name="log4j-1.2.16.jar"/>
       <include name="nist-sdp-1.0.jar"/>
       <include name="nist-sip-1.2.jar"/>
       <include name="asterisk-java-0.2-rc1.jar"/>
@@ -57,7 +59,7 @@
     	<include name="sip.jar"/>
     	<include name="ua.jar"/>
 <!-- njIAX support Get it from: http://code.google.com/p/njiax/ -->
-    	<include name="njiax.jar"/>
+		<include name="njiax.jar"/>
     </fileset>
   </path>
 
@@ -69,6 +71,16 @@
 		</fileset>
 		<pathelement location="${java.home}/../lib/tools.jar"/>			
 	</path>
+	
+  <taskdef name="apt" classname="com.sun.tools.ws.ant.Apt" classpathref="jaxws.classpath">
+  </taskdef>
+
+  <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="jaxws.classpath">
+  </taskdef>
+
+  <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="jaxws.classpath">
+  </taskdef>
+	
 	
   <target name="init">
     <!-- Create the time stamp -->
@@ -82,10 +94,10 @@
   <target name="compile" depends="init, njiaxCompile"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac destdir="${build}" source="1.5" debug="true">
-        <src path="${src}"/>
-        <src path="${media1.3Overridesrc}"/>
-        <classpath refid="classpath"/>
+    <javac encoding="ISO-8859-1" destdir="${build}" source="1.5" debug="${compile.debug}">
+		<src path="${src}"/>
+		<src path="${media1.3Overridesrc}"/>
+			<classpath refid="classpath"/>
     </javac>
 
   </target>
@@ -139,8 +151,8 @@
 	        <include name="*.props"/>
 	        <include name="*.gjtapi"/>
 			<include name="*.idl"/>
-		    <include name="ua1" />
-            <include name="ua2" />
+			<include name="ua1" />
+			<include name="ua2" />
 			<include name="listProviders.*"/>
 			<include name="${releaseNotes}"/>
 		</fileset>
@@ -164,7 +176,7 @@
   			<exclude name="iax/**"/>
   			<exclude name="org/**"/>
   			<exclude name="classes/**"/>
-            <exclude name="javax/**"/>
+			<exclude name="javax/**"/>
   			<exclude name="Asterisk.gjtapi"/>
   			<exclude name="Corba.gjtapi"/>
   			<exclude name="CorbaProvider.idl"/>
@@ -184,11 +196,11 @@
 		</fileset>
     </jar>
 
-    <jar jarfile="${staging}/media1.3override.jar">
-        <fileset dir="${build}">
-            <include name="javax/telephony/**"/>
-        </fileset>
-    </jar>
+  	<jar jarfile="${staging}/media1.3override.jar">
+		<fileset dir="${build}">
+			<include name="javax/telephony/**"/>
+		</fileset>
+	</jar>
 
   	<!-- Simple test jar for a provider specified in a jar file -->
   	<jar jarfile="${staging}/gjtapi-testProvider-${version}.jar">
@@ -497,42 +509,101 @@
 	<target name="jaxWsServerCompile" depends="init, compile"
         description="compile the JaxWs Bridge server source" >
     <!-- Compile the java code from ${webService} into ${build} -->
-	    <javac srcdir="webServiceBridge/src" destdir="${build}">
+		<mkdir dir="${build}-preServer"/>
+	    <javac srcdir="webServiceBridge/src" destdir="${build}-preServer" debug="${compile.debug}">
 	    	<classpath refid="classpath"/>
-		<classpath>
-			<pathelement path="${build}"/>
-		</classpath>
+			<classpath>
+				<pathelement path="${build}"/>
+			</classpath>
 	    </javac>
     </target>
 
 	<target name="jaxWsGen" depends="jaxWsServerCompile">
-		  <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="jaxws.classpath">
-		  </taskdef>
-
 		<mkdir dir="./webServiceBridge/wsgen"/>
+		<mkdir dir="./webServiceBridge/wsgen/src"/>
+		<mkdir dir="./webServiceBridge/wsgen/bin"/>
 		<wsgen
-		sei="ca.deadman.gjtapi.raw.remote.webservices.GJtapiWebServiceImpl"
-		sourcedestdir="./webServiceBridge/wsgen"
-		destdir="${build}"
-		genwsdl="true">
-		<classpath refid="classpath"/>
-		<classpath>
-			<pathelement path="${build}"/>
-		</classpath>
+		sei="ca.deadman.gjtapi.raw.remote.webservices.GjtapiJaxWs"
+		keep="false"
+		destdir="./webServiceBridge/wsgen/bin"
+		sourcedestdir="./webServiceBridge/wsgen/src"
+		resourcedestdir="./webServiceBridge/wsgen"
+		genwsdl="true" >
+			<classpath>
+				<pathelement path="${build}"/>
+				<pathelement path="${build}-preServer"/>
+			</classpath>
+			<classpath refid="classpath"/>
 		</wsgen>
 	</target>
 
 	<target name="jaxWsStub" depends="jaxWsGen">
-		  <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="jaxws.classpath">
-		  </taskdef>
-
 		<mkdir dir="./webServiceBridge/wsimport"/>
 		<wsimport
-		wsdl=""
-		sourcedestdir="./webServiceBridge/wsimport"/>
+			wsdl="./webServiceBridge/wsgen/GjtapiJaxWsService.wsdl"
+			destdir="./webServiceBridge/wsimport" />
 	</target>
 	
-	<target name="allDists" depends="SourceDist, coreDist, remoteDist, modemDist, sipDist, tapi3Dist, asteriskDist, dialogicDist, xtapiDist, webServiceDist"/>
+	<!-- Package up the JaxWS server war -->
+	<target name="JaxWsServer" depends="jaxWsGen, Staging">
+	    <war warfile="${staging}/gjtapi-jaxws-${version}.war"
+	         webxml="./webServiceBridge/jaxws-web.xml">
+	        <webinf dir="./webServiceBridge" includes="sun-jaxws.xml"/>
+	        <webinf dir="./webServiceBridge/wsgen" includes="*.wsdl"/>
+		<lib dir="redistrib">
+			<include name="jtapi-1.3.1.jar"/>
+			<include name="jtapi-1.3.1-mediaImpl.jar"/>
+		</lib>
+		<lib dir="${staging}">
+			<include name="gjtapi-${version}.jar"/>
+			<include name="gjtapi-remote-${version}.jar"/>
+		</lib>
+	        <classes dir="./webServiceBridge/wsgen/bin" includes="**/*.class" defaultexcludes="no"/>
+	        <classes dir="${build}-preServer" includes="**/*.class" defaultexcludes="no"/>
+	        <classes dir="./webServiceBridge/src" includes="**/server.props" defaultexcludes="yes"/>
+	    </war>
+	</target>
+	
+	<!-- create a JaxWs client -->
+	<target name="JaxWsClient" depends="jaxWsStub" description="compile the Jax-WS client webProvider">
+		<mkdir dir="${build}-wsclient"/>
+		<javac srcdir="./webServiceBridge/wsClient"
+		   destdir="${build}-wsclient"
+		   debug="${compile.debug}" >
+			<classpath>
+				<path refid="classpath"/>
+				<pathelement location="./webServiceBridge/wsimport"/>
+				<pathelement location="${build}"/>
+				<pathelement location="./webServiceBridge/build/classes/server"/>	<!-- MovableEventIds -->
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- package up JAX-WS client as jar -->
+	<target name="JaxWsClientStaging" description="Build the client jar file" depends="JaxWsClient">
+		<copy file="./webServiceBridge/build/classes/server/ca/deadman/gjtapi/raw/remote/MovableEventIds.class" todir="${build}-wsclient/ca/deadman/gjtapi/raw/remote"/>
+		<jar destfile="${staging}/gjtapi-jaxws-client-${version}.jar"
+			basedir="${build}-wsclient" >
+			<fileset dir="./webServiceBridge/wsimport" includes="**"/>
+		</jar>
+	</target>
+
+	<!-- both client and server in Dist -->
+	<target name="JaxWsDist" depends="JaxWsServer,JaxWsClientStaging">
+		<!-- Package up the remote jar file, property files, readme and licence into the gjtapi-njiax-${version}.zip file -->
+		<zip zipfile="${dist}/gjtapi-jaxws-${version}.zip">
+			<fileset dir="${staging}">
+			    <include name="gjtapi-jaxws-${version}.war"/>
+				<include name="gjtapi-jaxws-client-${version}.jar"/>
+			    <include name="${licenceFile}"/>
+				<include name="${releaseNotes}"/>
+				<include name="JaxWsClient.gjtapi"/>
+			</fileset>
+		</zip>
+	</target>
+	
+
+	<target name="allDists" depends="SourceDist, coreDist, remoteDist, modemDist, sipDist, tapi3Dist, asteriskDist, dialogicDist, xtapiDist, webServiceDist, JaxWsDist"/>
   	
 	<target name="SourceDist">
 		<!-- Put all the source files into one zip file -->
@@ -544,7 +615,9 @@
 				<exclude name="**/CVS"/>
 			</fileset>
 		    <fileset dir="." >
-			  <include name="webServiceBridge/**"/>
+			  <include name="webServiceBridge/src/**"/>
+		      <include name="webServiceBridge/testClient/**"/>
+		      <include name="webServiceBridge/wsClient/**"/>
 		      <exclude name="**/CVS"/>
 			</fileset>
 		</zip>
@@ -561,5 +634,8 @@
   	<delete dir="${staging}"/>
     <delete dir="${xtapi-build}"/>
     <delete dir="${dist}"/>
+  	<delete dir="webServiceBridge/build"/>
+  	<delete dir="webServiceBridge/wsgen"/>
+  	<delete dir="webServiceBridge/wsimport"/>
   </target>
 </project>

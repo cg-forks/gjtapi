@@ -47,6 +47,8 @@ import javax.telephony.media.MediaResourceException;
 import javax.telephony.media.RTC;
 import javax.telephony.media.Symbol;
 
+import ca.deadman.gjtapi.raw.remote.MovableEventIds;
+
 import net.sourceforge.gjtapi.CallData;
 import net.sourceforge.gjtapi.CallId;
 import net.sourceforge.gjtapi.RawSigDetectEvent;
@@ -495,7 +497,7 @@ public class GJtapiWebServiceAdapter implements GJtapiWebServiceIF {
 	}
 
 	/**
-	 * Constructor used by the JAXRPCServlet during web service loading.
+	 * Constructor used by the JAXRPCServlet and JAXWS servlet during web service loading.
 	 */
 	public GJtapiWebServiceAdapter(Properties properties) {
 		super();

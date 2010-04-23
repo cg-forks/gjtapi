@@ -1,4 +1,4 @@
-package ca.deadman.gjtapi.raw.remote.webservices;
+package ca.deadman.gjtapi.raw.remote;
 
 /*
 	Copyright (c) 2003 Richard Deadman, Deadman Consulting (www.deadman.ca)
