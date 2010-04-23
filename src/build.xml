@@ -87,6 +87,7 @@
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
     <mkdir dir="${build}"/>
+  	<mkdir dir="${dist}"/>
   	<mkdir dir="${staging}"/>
     <mkdir dir="${xtapi-build}"/>
   </target>
@@ -603,9 +604,9 @@
 	</target>
 	
 
-	<target name="allDists" depends="SourceDist, coreDist, remoteDist, modemDist, sipDist, tapi3Dist, asteriskDist, dialogicDist, xtapiDist, webServiceDist, JaxWsDist"/>
+	<target name="allDists" depends="SourceDist, coreDist, remoteDist, modemDist, sipDist, tapi3Dist, asteriskDist, dialogicDist, xtapiDist, webServiceDist, JaxWsDist, JavasoundDist, MjSipDist, NjIaxDist"/>
   	
-	<target name="SourceDist">
+	<target name="SourceDist" depends="init">
 		<!-- Put all the source files into one zip file -->
 		<zip zipfile="${dist}/gjtapi-src-${version}.zip">
 			<fileset dir="${src}">
