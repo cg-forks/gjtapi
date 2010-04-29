@@ -235,11 +235,12 @@ void addTerminalConnection(FreeTerminalConnection ftc) {
 public synchronized void addTerminalListener(TerminalListener l) {
 	Vector<TerminalListener> v = terminalListeners == null ? new Vector<TerminalListener>(2) : (Vector<TerminalListener>) terminalListeners.clone();
 	// check if we will need protection
-	if (l != null)
+	if (l != null) {
 		this.protect();
-	if (!v.contains(l)) {
-		v.addElement(l);
-		terminalListeners = v;
+		if (!v.contains(l)) {
+			v.addElement(l);
+			terminalListeners = v;
+		}
 	}
 }
   protected void fireTerminalListenerEnded(TerminalEvent e) {
@@ -323,10 +324,14 @@ public CallListener[] getCallListeners() {
 	return ret;
 }
 /**
- * getCallObservers method comment.
+ * Get the list of Call Observers. If none, return null.
  */
 public CallObserver[] getCallObservers() {
-	return (CallObserver[]) callObservers.toArray(new CallObserver[0]);
+	Vector<CallObserver> observers = this.callObservers;
+	if(observers.size() == 0) {
+		return null;
+	}
+	return observers.toArray(new CallObserver[observers.size()]);
 }
 /**
  * getCapabilities method comment.
@@ -338,10 +343,14 @@ public TerminalCapabilities getCapabilities() {
 	return name;
   }        
 /**
- * getObservers method comment.
+ * Get the list of Terminal Observers. If none, return null.
  */
-public javax.telephony.TerminalObserver[] getObservers() {
-	return (TerminalObserver[]) observers.getObjects();
+public TerminalObserver[] getObservers() {
+	ObservableHelper termObservers = this.observers;
+	if(termObservers.size() == 0) {
+		return null;
+	}
+	return (TerminalObserver[]) termObservers.getObjects();
 }
 /**
  * Get any PrivateData associated with my low-level object.
@@ -392,7 +401,11 @@ public TerminalConnection[] getTerminalConnections() {
  * @return javax.telephony.TerminalListener[]
  */
 public TerminalListener[] getTerminalListeners() {
-	return null;
+	Vector<TerminalListener> listeners = this.terminalListeners;
+	if((listeners == null) || (listeners.size() == 0)) {
+		return null;
+	}
+	return listeners.toArray(new TerminalListener[listeners.size()]);
 }
   /**
    * Determine if I have any current Observers or Listeners.

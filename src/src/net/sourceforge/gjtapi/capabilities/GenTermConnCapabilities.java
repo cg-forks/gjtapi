@@ -148,7 +148,7 @@ void setHoldCapability(boolean val) {
  * @param val The capability value - true is leave can be invoked.
  */
 void setLeaveCapability(boolean val) {
-	this.leave = val;
+	//this.leave = val;
 }
 /**
  * Describe myself

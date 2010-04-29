@@ -54,7 +54,7 @@ public boolean canAddToAddress() {
  * canDisconnect method comment.
  */
 public boolean canDisconnect() {
-	return false;
+	return true;
 }
 /**
  * canPark method comment.

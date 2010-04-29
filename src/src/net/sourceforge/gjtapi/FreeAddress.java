@@ -236,31 +236,33 @@ public void addObserver(AddressObserver observer) throws javax.telephony.Resourc
 	return getCapabilities();
   }        
   public AddressListener[] getAddressListeners() {
-	AddressListener[] ret = new AddressListener[addressListeners.size()];
-	addressListeners.copyInto(ret);
-	return ret;
+	  Vector<AddressListener> listeners = this.addressListeners;
+	  if((listeners == null) || (listeners.size() == 0)) {
+		  return null;
+	  }
+	  return listeners.toArray(new AddressListener[listeners.size()]);
   }        
 
   public CallListener[] getCallListeners() {
-      CallListener[] ret = null;
-      if (callListeners != null) {
-          synchronized (callListeners) {
-              ret = new CallListener[callListeners.size()];
-              callListeners.copyInto(ret);
-          }
+	  Vector<CallListener> listeners = this.callListeners;
+	  if((listeners == null) || (listeners.size() == 0)) {
+		  return null;
+	  }
+	  
+      synchronized (listeners) {
+    	  return listeners.toArray(new CallListener[listeners.size()]);
       }
-      return ret;
   }
 
   public CallObserver[] getCallObservers() {
-      CallObserver[] ret = null;
-      if (callObservers != null) {
-              synchronized (callObservers) {
-                              ret = new CallObserver[callObservers.size()];
-                              callObservers.copyInto(ret);
-              }
+	  Vector<CallObserver> listeners = this.callObservers;
+	  if((listeners == null) || (listeners.size() == 0)) {
+		  return null;
+	  }
+	  
+      synchronized (listeners) {
+    	  return listeners.toArray(new CallObserver[listeners.size()]);
       }
-      return ret;
   }
 
   /**

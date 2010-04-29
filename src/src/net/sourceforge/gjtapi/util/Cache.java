@@ -118,7 +118,11 @@ public Set<K> keySet() {
  */
 public V put(K key, V value) {
 	Reference<V> oldValue =  backingStore.put(key, this.wrap(value));
-	return oldValue.get();
+	if(oldValue != null) {
+		return oldValue.get();
+	} else {
+		return null;
+	}
 }
 /**
  * putAll method comment.

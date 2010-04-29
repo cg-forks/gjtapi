@@ -260,9 +260,9 @@ public javax.telephony.Connection addParty(java.lang.String newParty) throws jav
  * 
  * See CallControlCall for pre and post conditions.
  */
-public void conference(javax.telephony.Call otherCall) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException, InvalidArgumentException {
+public void conference(Call otherCall) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException, InvalidArgumentException {
 	// first check if conference is enabled
-	if (this.getConferenceEnable() == false) {
+	if ((!this.getConferenceEnable()) || !(((CallControlCall)otherCall).getConferenceEnable())) {
 		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "ConferenceEnabled is set to false");
 	}
 	
@@ -281,16 +281,57 @@ public void conference(javax.telephony.Call otherCall) throws InvalidStateExcept
  */
 private void privateConference(javax.telephony.Call otherCall) throws InvalidStateException, MethodNotSupportedException, PrivilegeViolationException, ResourceUnavailableException, InvalidArgumentException {
 	TerminalConnection tc = this.getConferenceController();
-	if (tc == null) {
-		if ((tc = this.findCommonTC(otherCall)) == null) {
-			throw new InvalidArgumentException("No Conference controller set of available");
-		}
-	}
+	tc = getOrVerifyController(tc, otherCall);
 	((GenericProvider)this.getProvider()).getRaw().join(this.getCallID(),
 		((FreeCall)otherCall).getCallID(),
 		tc.getConnection().getAddress().getName(),
 		tc.getTerminal().getName());
 }
+
+private TerminalConnection getOrVerifyController(TerminalConnection tc, Call otherCall) throws InvalidArgumentException {
+	if (tc == null) {
+		if ((tc = this.findCommonTC(otherCall)) == null) {
+			throw new InvalidArgumentException("No Conference controller set of available");
+		}
+	} else {
+		// check that the conference controller is on my call
+		boolean tcValid = false;
+		for(Connection c : this.getConnections()) {
+			for(TerminalConnection callTc : c.getTerminalConnections()) {
+				if(callTc.equals(tc)) {
+					tcValid = true;
+					break;
+				}
+			}
+			if(tcValid) {
+				break;
+			}
+		}
+		if(!tcValid) {
+			throw new InvalidArgumentException("Conference controller not part of call");
+		}
+		
+		// now see if it shares a terminal with the other call
+		Terminal term = tc.getTerminal();
+		tcValid = false;
+		for(Connection c : otherCall.getConnections()) {
+			for(TerminalConnection callTc : c.getTerminalConnections()) {
+				if(term.equals(callTc.getTerminal())) {
+					tcValid = true;
+					break;
+				}
+			}
+			if(tcValid) {
+				break;
+			}
+		}
+		if(!tcValid) {
+			throw new InvalidArgumentException("Conference controller terminal not part of other call");
+		}
+	}
+	return tc;
+}
+
 /**
  * connect an idle call from a terminal/address pair to anothter address
  *
@@ -578,8 +619,10 @@ protected void setCallingTerminal(Terminal theCallingTerminal, boolean knownTerm
  **/
 public CallListener[] getCallListeners() {
 	Set<CallListener> cls = this.getListenerMgr().getCallListeners();
-	CallListener[] ret = new CallListener[cls.size()];
-	return (CallListener[])cls.toArray(ret);
+	if((cls == null) || (cls.size() == 0)) {
+		return null;
+	}
+	return cls.toArray(new CallListener[cls.size()]);
 }
  /**
   * Returns the dynamic capabilities for the instance of the Call object. Dynamic capabilities tell the application which actions are
@@ -653,7 +696,11 @@ private ListenerManager getListenerMgr() {
 	return listMgr;
 }
   public CallObserver[] getObservers() {
-	return (CallObserver[]) this.getListenerMgr().getCallObservers().toArray(new CallObserver[0]);
+	  Set<CallObserver> observers = this.getListenerMgr().getCallObservers();
+	  if((observers == null) || (observers.size() == 0)) {
+		  return null;
+	  }
+	  return observers.toArray(new CallObserver[observers.size()]);
   }          
 /**
  * Get any PrivateData associated with my low-level object.
@@ -1164,12 +1211,8 @@ public Connection transfer(String address) throws MethodNotSupportedException, R
  */
 public void transfer(Call otherCall) throws MethodNotSupportedException, ResourceUnavailableException, InvalidArgumentException, InvalidPartyException, InvalidStateException, PrivilegeViolationException {
 	// see if we can find a common terminal
-	FreeTerminalConnection tc = (FreeTerminalConnection)this.getTransferController();
-	if (tc == null) {	// look for the first shared TC
-		tc = this.findCommonTC(otherCall);
-	}
-	if (tc == null)
-		throw new InvalidArgumentException("Controlling TerminalConnection not found");
+	TerminalConnection tc = this.getTransferController();
+	tc = getOrVerifyController(tc, otherCall);
 
 	transfer(tc, otherCall);
 }
@@ -1179,7 +1222,7 @@ public void transfer(Call otherCall) throws MethodNotSupportedException, Resourc
  */
 private void transfer(TerminalConnection tc, Call otherCall) throws MethodNotSupportedException, ResourceUnavailableException, InvalidArgumentException, InvalidPartyException, InvalidStateException, PrivilegeViolationException {
 	// first check if transfer is enabled
-	if (this.getTransferEnable() == false) {
+	if ((!this.getTransferEnable()) || (!((CallControlCall)otherCall).getTransferEnable())) {
 		throw new InvalidStateException(this, InvalidStateException.CALL_OBJECT, this.getState(), "TransferEnabled is set to false");
 	}
 	

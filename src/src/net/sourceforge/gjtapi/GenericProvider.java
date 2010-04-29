@@ -332,7 +332,11 @@ public ProviderCapabilities getProviderCapabilities(Terminal terminal) throws Pl
  * @return An array of my listeners
  */
 public ProviderListener[] getProviderListeners() {
-	return (ProviderListener[])providerListeners.toArray(new ProviderListener[0]);
+	Vector<ProviderListener> listeners = this.providerListeners;
+	if((listeners == null) || (listeners.size() == 0)) {
+		return null;
+	}
+	return listeners.toArray(new ProviderListener[listeners.size()]);
 }
 /**
  * Return the plugged-in raw provider
@@ -396,7 +400,7 @@ public Terminal[] getTerminals() throws ResourceUnavailableException {
 /**
  * Insert the method's description here.
  * Creation date: (2000-11-14 15:43:10)
- * @param prov com.uforce.jain.generic.Provider
+ * @param prov net.sourceforge.gjtapi.jcc.Provider
  */
 public void hookupJainCallback(net.sourceforge.gjtapi.jcc.Provider prov) {
 	this.jainProv = prov;

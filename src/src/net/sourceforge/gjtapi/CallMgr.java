@@ -31,6 +31,7 @@ package net.sourceforge.gjtapi;
 	of the copyright holder.
 */
 import javax.telephony.Call;
+
 import java.util.*;
 import net.sourceforge.gjtapi.util.*;
 /**
@@ -435,7 +436,8 @@ private void setRaw(TelephonyProvider newRaw) {
  * @return A Collection of currently known Call objects.
  */
 FreeCall[] toArray() {
-	Collection<FreeCall> vs = this.getCallSet().values();	// the active calls
+	Collection<FreeCall> vs = new LinkedList<FreeCall>();
+	vs.addAll(this.getCallSet().values());	// the active calls
 	vs.addAll(this.getIdleCalls().keySet());	// the idle calls
 	return vs.toArray(new FreeCall[vs.size()]);
 }
