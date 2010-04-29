@@ -30,8 +30,6 @@
  */
 package net.sourceforge.gjtapi;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
 import javax.telephony.Address;
