@@ -701,7 +701,7 @@ class ListenerManager implements TerminalConnectionListener {
         
         // Now remove any found items
         for(CallListener cl : itemsToRemove) {
-        	lists.remove(cl);
+        	this.remove(cl);
         }
 
         // now remove any registered observers
@@ -725,7 +725,7 @@ class ListenerManager implements TerminalConnectionListener {
 
         // Now remove any found items
         for(CallObserver co : observersToRemove) {
-        	lists.remove(co);
+        	this.remove(co);
         }
 
     }
@@ -821,7 +821,7 @@ class ListenerManager implements TerminalConnectionListener {
         
         // Now remove any found items
         for(CallListener cl : itemsToRemove) {
-        	lists.remove(cl);
+        	this.remove(cl);
         }
 
         // now remove any registered observers
@@ -845,7 +845,7 @@ class ListenerManager implements TerminalConnectionListener {
 
         // Now remove any found items
         for(CallObserver co : observersToRemove) {
-        	lists.remove(co);
+        	this.remove(co);
         }
 
     }
