@@ -34,9 +34,13 @@ import javax.telephony.AddressEvent;
 import javax.telephony.AddressListener;
 import javax.telephony.CallEvent;
 import javax.telephony.CallListener;
+import javax.telephony.ConnectionEvent;
+import javax.telephony.ConnectionListener;
 import javax.telephony.MetaEvent;
 import javax.telephony.ProviderEvent;
 import javax.telephony.ProviderListener;
+import javax.telephony.TerminalConnectionEvent;
+import javax.telephony.TerminalConnectionListener;
 import javax.telephony.TerminalEvent;
 import javax.telephony.TerminalListener;
 
@@ -45,13 +49,38 @@ import javax.telephony.TerminalListener;
  * @author Richard Deadman
  *
  */
-public class UnitTestListener implements CallListener, TerminalListener, AddressListener, ProviderListener {
+public class UnitTestListener implements CallListener, TerminalListener, AddressListener, ProviderListener, ConnectionListener, TerminalConnectionListener {
+	
+	private int eventCount = 0;
+	private int transmissionEndedCount = 0;
+	int invalidCount = 0;
+	int connAlerting = 0;
+	int connConnected = 0;
+	int connCreated = 0;
+	int connDisconnected = 0;
+	int connFailed = 0;
+	int connInProgress = 0;
+	int connUnknown = 0;
+	int termConnActive = 0;
+	int termConnCreated = 0;
+	int termConnRinging = 0;
+	int termConnDropped = 0;
+	int termConnPassive = 0;
+	int termConnUnknown = 0;
+	int metaProgressStarted = 0;
+	int metaProgressEnded = 0;
+	int metaSnapshotStarted = 0;
+	int metaSnapshotEnded = 0;
+	int multiMergeStarted = 0;
+	int multiMergeEnded = 0;
+	int multiTransferStarted = 0;
+	int multiTransferEnded = 0;
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#callActive(javax.telephony.CallEvent)
 	 */
 	public void callActive(CallEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 
 	}
 
@@ -59,15 +88,16 @@ public class UnitTestListener implements CallListener, TerminalListener, Address
 	 * @see javax.telephony.CallListener#callEventTransmissionEnded(javax.telephony.CallEvent)
 	 */
 	public void callEventTransmissionEnded(CallEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.transmissionEndedCount++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#callInvalid(javax.telephony.CallEvent)
 	 */
 	public void callInvalid(CallEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
+		this.invalidCount++;
 
 	}
 
@@ -75,94 +105,171 @@ public class UnitTestListener implements CallListener, TerminalListener, Address
 	 * @see javax.telephony.CallListener#multiCallMetaMergeEnded(javax.telephony.MetaEvent)
 	 */
 	public void multiCallMetaMergeEnded(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.multiMergeEnded++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#multiCallMetaMergeStarted(javax.telephony.MetaEvent)
 	 */
 	public void multiCallMetaMergeStarted(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.multiMergeStarted++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#multiCallMetaTransferEnded(javax.telephony.MetaEvent)
 	 */
 	public void multiCallMetaTransferEnded(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.multiTransferEnded++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#multiCallMetaTransferStarted(javax.telephony.MetaEvent)
 	 */
 	public void multiCallMetaTransferStarted(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.multiTransferStarted++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#singleCallMetaProgressEnded(javax.telephony.MetaEvent)
 	 */
 	public void singleCallMetaProgressEnded(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.metaProgressEnded++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#singleCallMetaProgressStarted(javax.telephony.MetaEvent)
 	 */
 	public void singleCallMetaProgressStarted(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.metaProgressStarted++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#singleCallMetaSnapshotEnded(javax.telephony.MetaEvent)
 	 */
 	public void singleCallMetaSnapshotEnded(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.metaSnapshotEnded++;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallListener#singleCallMetaSnapshotStarted(javax.telephony.MetaEvent)
 	 */
 	public void singleCallMetaSnapshotStarted(MetaEvent arg0) {
-		// TODO Auto-generated method stub
-
+		this.eventCount++;
+		this.metaSnapshotStarted++;
 	}
 
 	public void terminalListenerEnded(TerminalEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
 	}
 
 	public void addressListenerEnded(AddressEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
 	}
 
 	public void providerEventTransmissionEnded(ProviderEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
 	}
 
 	public void providerInService(ProviderEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
 	}
 
 	public void providerOutOfService(ProviderEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
 	}
 
 	public void providerShutdown(ProviderEvent arg0) {
-		// TODO Auto-generated method stub
+		this.eventCount++;
 		
+	}
+
+	void setEventCount(int eventCount) {
+		this.eventCount = eventCount;
+	}
+
+	int getEventCount() {
+		return eventCount;
+	}
+
+	int getTransmissionEndedCount() {
+		return this.transmissionEndedCount;
+	}
+
+	public void connectionAlerting(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connAlerting++;
+	}
+
+	public void connectionConnected(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connConnected++;
+	}
+
+	public void connectionCreated(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connCreated++;
+	}
+
+	public void connectionDisconnected(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connDisconnected++;
+	}
+
+	public void connectionFailed(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connFailed++;
+	}
+
+	public void connectionInProgress(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connInProgress++;
+	}
+
+	public void connectionUnknown(ConnectionEvent arg0) {
+		this.eventCount++;
+		this.connUnknown++;
+	}
+
+	public void terminalConnectionActive(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnActive++;
+	}
+
+	public void terminalConnectionCreated(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnCreated++;
+	}
+
+	public void terminalConnectionDropped(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnDropped++;
+	}
+
+	public void terminalConnectionPassive(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnPassive++;
+	}
+
+	public void terminalConnectionRinging(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnRinging++;
+	}
+
+	public void terminalConnectionUnknown(TerminalConnectionEvent arg0) {
+		this.eventCount++;
+		this.termConnUnknown++;
 	}
 
 }

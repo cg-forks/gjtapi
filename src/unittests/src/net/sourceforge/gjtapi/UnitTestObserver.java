@@ -36,6 +36,7 @@ import javax.telephony.ProviderObserver;
 import javax.telephony.TerminalObserver;
 import javax.telephony.events.AddrEv;
 import javax.telephony.events.CallEv;
+import javax.telephony.events.CallObservationEndedEv;
 import javax.telephony.events.ProvEv;
 import javax.telephony.events.TermEv;
 
@@ -46,27 +47,62 @@ import javax.telephony.events.TermEv;
  */
 public class UnitTestObserver implements CallObserver, TerminalObserver, AddressObserver, ProviderObserver {
 
+	private int eventCount = 0;
+	private int terminationEventCount = 0;
+
 	/* (non-Javadoc)
 	 * @see javax.telephony.CallObserver#callChangedEvent(javax.telephony.events.CallEv[])
 	 */
 	public void callChangedEvent(CallEv[] arg0) {
-		// TODO Auto-generated method stub
+		for(CallEv ev : arg0) {
+			this.eventCount++;
+			if(ev instanceof CallObservationEndedEv) {
+				this.terminationEventCount++;
+			}
+		}
 
 	}
 
 	public void terminalChangedEvent(TermEv[] arg0) {
-		// TODO Auto-generated method stub
+		for(@SuppressWarnings("unused") TermEv ev: arg0) {
+			this.eventCount++;
+		}
 		
 	}
 
 	public void addressChangedEvent(AddrEv[] arg0) {
-		// TODO Auto-generated method stub
+		for(@SuppressWarnings("unused") AddrEv ev: arg0) {
+			this.eventCount++;
+		}
 		
 	}
 
 	public void providerChangedEvent(ProvEv[] arg0) {
-		// TODO Auto-generated method stub
+		for(@SuppressWarnings("unused") ProvEv ev: arg0) {
+			this.eventCount++;
+		}
 		
+	}
+
+	/**
+	 * @param eventCount the eventCount to set
+	 */
+	void setEventCount(int eventCount) {
+		this.eventCount = eventCount;
+	}
+
+	/**
+	 * @return the eventCount
+	 */
+	int getEventCount() {
+		return eventCount;
+	}
+
+	/**
+	 * @return the terminationEventCount
+	 */
+	int getTerminationEventCount() {
+		return this.terminationEventCount;
 	}
 
 }
