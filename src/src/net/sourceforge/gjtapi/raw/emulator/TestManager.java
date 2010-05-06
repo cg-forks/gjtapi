@@ -81,11 +81,11 @@ private void initialize() {
 		canvas.setSize(500, 560);
 
 		// Now we add each phone to the grid bag layout
-		Hashtable phones = this.getPhones();
+		Hashtable<String, TestPhone> phones = this.getPhones();
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		Enumeration e = phones.elements();
+		Enumeration<TestPhone> e = phones.elements();
 		while (e.hasMoreElements()) {
 			canvas.add((TestPhone)e.nextElement(), gbc);
 			// update the grid location for the next placement

@@ -40,7 +40,7 @@ import java.util.*;
 import net.sourceforge.gjtapi.*;
 
 public class PhoneManager {
-	private Hashtable phones = new Hashtable();	// map addresses to phones 1:1
+	private Hashtable<String, TestPhone> phones = new Hashtable<String, TestPhone>();	// map addresses to phones 1:1
 	private TelephonyListener listener;	// shared listener
 /**
  * Create a Phone Manager for a set of addresses.
@@ -52,7 +52,7 @@ public class PhoneManager {
  */
 public PhoneManager(String[] addresses, TelephonyListener listener) {
 	super();
-	Hashtable p = this.getPhones();
+	Hashtable<String, TestPhone> p = this.getPhones();
 	for (int i = 0; i < addresses.length; i++) {
 		p.put(addresses[i], new TestPhone(addresses[i], this));
 	}
@@ -127,7 +127,7 @@ RawPhone getPhone(String address) {
  * @author: Richard Deadman
  * @return a Hashtable
  */
-Hashtable getPhones() {
+Hashtable<String, TestPhone> getPhones() {
 	return phones;
 }
 /**

@@ -30,8 +30,9 @@ package net.sourceforge.gjtapi.raw.emulator;
 	or other dealings in this Software without prior written authorization 
 	of the copyright holder.
 */
+import java.util.Vector;
+
 import net.sourceforge.gjtapi.*;
-import net.sourceforge.gjtapi.CallId;
 import javax.telephony.Event;
 /**
  * This represents the state of a Phone.
@@ -229,7 +230,7 @@ public java.lang.String getAddress() {
  * Return an array of Calls associated with me.
  */
 public RawCall[] getCalls() {
-	java.util.Vector calls = new java.util.Vector();
+	Vector<RawCall> calls = new Vector<RawCall>();
 	int size = 0;
 	Leg l = null;
 	if ((l = this.getActiveLeg()) != null) {

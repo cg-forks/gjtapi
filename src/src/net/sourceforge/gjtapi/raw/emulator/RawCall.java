@@ -45,7 +45,7 @@ public class RawCall implements CallId {
 	public final static int CONNECTED = 1;
 	public final static int DEAD = 2;
 	
-	private java.util.HashSet legs = new HashSet();
+	private HashSet<Leg> legs = new HashSet<Leg>();
 	private PhoneManager manager = null;
 	private int state;
 /**
@@ -80,8 +80,8 @@ public void addLeg(Leg leg) {
  * @author: 
  */
 public void connected() {
-	Set legs = this.getLegs();
-	Iterator it = legs.iterator();
+	Set<Leg> legs = this.getLegs();
+	Iterator<Leg> it = legs.iterator();
 	while(it.hasNext()) {
 		Leg l = (Leg)it.next();
 		if (l.getState() == Leg.INPROGRESS)
@@ -130,11 +130,11 @@ public void dial(RawPhone from, String digits) throws javax.telephony.InvalidPar
  * @return A dat holder that holds a snapshot of myself.
  */
 CallData getCallData() {
-	HashSet legs = this.getLegs();
+	HashSet<Leg> legs = this.getLegs();
 	int size = legs.size();
 	ConnectionData[] conns = new ConnectionData[size];
 	int i = 0;
-	Iterator it = legs.iterator();
+	Iterator<Leg> it = legs.iterator();
 	while (it.hasNext()) {
 		Leg l = (Leg)it.next();
 		TCData[] tcd = new TCData[1];
@@ -179,7 +179,7 @@ Leg getLeg(RawPhone ph) {
 	if (ph instanceof TestPhone)
 		ph = ((TestPhone)ph).getModel();
 		
-	Iterator it = this.getLegs().iterator();
+	Iterator<Leg> it = this.getLegs().iterator();
 	while (it.hasNext()) {
 		Leg l = (Leg)it.next();
 		if (l.getPhone().equals(ph)) {
@@ -194,7 +194,7 @@ Leg getLeg(RawPhone ph) {
  * @author: Richard Deadman
  * @return HashSet
  */
-private HashSet getLegs() {
+private HashSet<Leg> getLegs() {
 	return legs;
 }
 /**
@@ -223,7 +223,7 @@ public int getState() {
  */
 public void join(RawCall other) {
 	// Now tell each other Phone it is in a new call
-	Iterator it = other.getLegs().iterator();
+	Iterator<Leg> it = other.getLegs().iterator();
 	while (it.hasNext()) {
 		Leg leg = (Leg)it.next();
 		leg.getPhone().swap(this, leg, this.getManager().getListener());
@@ -235,7 +235,7 @@ public void join(RawCall other) {
  * @author: Richard Deadman
  */
 public void removeAll() {
-	Iterator it = this.getLegs().iterator();
+	Iterator<Leg> it = this.getLegs().iterator();
 	while (it.hasNext()) {
 		Leg l = (Leg)it.next();
 		RawPhone ph = l.getPhone();
@@ -252,7 +252,7 @@ public void removeAll() {
  */
 public void removeLeg(Leg leg) {
 	// first remove the phone
-	Set ls = this.getLegs();
+	Set<Leg> ls = this.getLegs();
 	ls.remove(leg);	// assume equals works for Legs
 
 	int size = ls.size();
@@ -277,7 +277,7 @@ public void removeLeg(Leg leg) {
  * @param digits The digits to be recieved.
  */
 public void sendDTMF(String digits) {
-	Iterator it = this.getLegs().iterator();
+	Iterator<Leg> it = this.getLegs().iterator();
 	while (it.hasNext()){
 		RawPhone phone = ((Leg)it.next()).getPhone();
 		phone.receiveDTMF(digits);
@@ -319,7 +319,7 @@ private void setState(int newState) {
  */
 public String toString() {
 	StringBuffer sb = new StringBuffer("A Call with phones: ");
-	Iterator it = this.getLegs().iterator();
+	Iterator<Leg> it = this.getLegs().iterator();
 	while (it.hasNext()) {
 		sb.append(((Leg)it.next()).getPhone().getAddress());
 		sb.append(" ");

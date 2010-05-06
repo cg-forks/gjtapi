@@ -50,7 +50,7 @@ public class EmProvider implements FullJtapiTpi {
 	
 	private final static String RESOURCE_NAME = "Emulator.props";
 	private final static String ADDRESS_PREFIX = "Address";
-	private static Set universe = new HashSet();	// globally accessible set of emulators
+	private static Set<EmProvider> universe = new HashSet<EmProvider>();	// globally accessible set of emulators
 	private TestManager mgr;
 	private Properties provProps;
 /**
@@ -73,7 +73,8 @@ public void addListener(TelephonyListener rl) {
 /**
  * We don't have any real resources to manage, but we do have to see if we send detected DTMF
  */
-public boolean allocateMedia(java.lang.String terminal, int type, java.util.Dictionary resourceArgs) {
+@SuppressWarnings("unchecked")
+public boolean allocateMedia(java.lang.String terminal, int type, Dictionary resourceArgs) {
 	if (resourceArgs == null)
 		return true;	// we don't have any events to send
 		
@@ -138,7 +139,7 @@ static EmProvider findProvider(String address) {
 		// iterating over universe caused a StackOverflowError -- VisualAge class library bug
 	try {
 	int provSize = universe.size();
-	EmProvider[] provs = (EmProvider[])universe.toArray(new EmProvider[provSize]);
+	EmProvider[] provs = universe.toArray(new EmProvider[provSize]);
 
 	for (int i = 0; i < provSize; i++) {
 		try {
@@ -163,7 +164,7 @@ public boolean freeMedia(java.lang.String terminal, int type) {
  * Return all the addresses managed by the provider
  */
 public String[] getAddresses() {
-	return (String[])this.getMgr().getPhones().keySet().toArray(new String[0]);
+	return this.getMgr().getPhones().keySet().toArray(new String[0]);
 }
 /**
  * Return the Address names associated with the Terminal name.
@@ -284,6 +285,7 @@ public void hold(CallId call, String address, String term) throws RawStateExcept
 /**
  * Provide application specific initialization
  */
+@SuppressWarnings("unchecked")
 public void initialize(Map props) throws ProviderUnavailableException {
 	Map m = null;
 	Object value = null;
@@ -303,17 +305,17 @@ public void initialize(Map props) throws ProviderUnavailableException {
 	}
 
 	// now look for all addresses
-	Vector adds = new Vector();
+	Vector<String> adds = new Vector<String>();
 	Iterator it = m.keySet().iterator();
 	while (it.hasNext()) {
 		String key = (String)it.next();
 		if (key.startsWith(EmProvider.ADDRESS_PREFIX)) {
-			adds.add(m.get(key));
+			adds.add((String)m.get(key));
 		}
 	}
 
 	// Now create an instance of the manager
-	this.setMgr(new TestManager((String[])adds.toArray(new String[0])));
+	this.setMgr(new TestManager(adds.toArray(new String[adds.size()])));
 
 	// determine if a view is required
 	value = m.get(DISPLAY);
@@ -366,6 +368,7 @@ private Properties loadResources(String resName) {
 /**
  * Since I don't have any real playing resources, I just pause and then report success.
  */
+@SuppressWarnings("unchecked")
 public void play(String terminal, String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	TestPhone phone = (TestPhone)this.getPhone(terminal);
 	PhoneModel pm = phone.getModel();
@@ -399,6 +402,7 @@ public void play(String terminal, String[] streamIds, int offset, javax.telephon
  *
  * Updates to the HTTP and URLConnection output code from Mario Dorion, May 10, 2000
  */
+@SuppressWarnings("unchecked")
 public void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs)
 	throws MediaResourceException {
 		// pause for two seconds
@@ -497,6 +501,7 @@ public net.sourceforge.gjtapi.CallId reserveCallId(String address) throws Invali
  * @param optArgs Optional signal detector arguments.
  * @return An event factory that holds the detected signals and any reasons.
  */
+@SuppressWarnings("unchecked")
 public RawSigDetectEvent retrieveSignals(String terminal, int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs)
 		throws MediaResourceException {
 	//---------------------------------------------------------------------------
@@ -563,6 +568,7 @@ public Object sendPrivateData(CallId call, String address, String terminal, Obje
 /**
  * Send the DTMF signals on to the appropriate phone.
  */
+@SuppressWarnings("unchecked")
 public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
 	RawPhone rp = this.getMgr().getPhone(terminal);
 	if (rp != null) {
