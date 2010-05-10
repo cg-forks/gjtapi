@@ -38,6 +38,7 @@ import javax.telephony.media.events.*;
  * Creation date: (2000-06-07 12:16:20)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 public class OldMediaListener implements MediaCallObserver {
 	OldMediaProvider prov = null;
 /**

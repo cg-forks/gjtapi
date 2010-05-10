@@ -39,6 +39,7 @@ import java.util.*;
  * Creation date: (2000-06-06 23:27:24)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 public class OldMediaProvider extends InverterProvider {
 
 	/**
@@ -182,7 +183,7 @@ public class OldMediaProvider extends InverterProvider {
 		}
 	}
 	// map of terminal names to active request sets
-	private Map activeRequests = new HashMap();
+	private Map<String, RequestManager> activeRequests = new HashMap<String, RequestManager>();
 /**
  * OldMediaProvider constructor comment.
  */
@@ -192,6 +193,7 @@ public OldMediaProvider() {
 /**
  * This may safely be ignored.
  */
+@SuppressWarnings("unchecked")
 public boolean allocateMedia(String terminal, int type, java.util.Dictionary resourceArgs) {
 	return true;
 }
@@ -207,7 +209,7 @@ public boolean freeMedia(String terminal, int type) {
  * @author: Richard Deadman
  * @return java.util.Map
  */
-private java.util.Map getActiveRequests() {
+private Map<String, RequestManager> getActiveRequests() {
 	return activeRequests;
 }
 /**
@@ -252,7 +254,7 @@ private MediaTerminalConnection getMTC(String termName) {
  * @author: Richard Deadman
  */
 private RequestManager getRequestManager(String term) {
-	Map activeRms = this.getActiveRequests();
+	Map<String, RequestManager> activeRms = this.getActiveRequests();
 	RequestManager rm = (RequestManager)activeRms.get(term);
 	if (rm == null) {
 		rm = new RequestManager(term);
@@ -266,6 +268,7 @@ private RequestManager getRequestManager(String term) {
  * In future we would need a way of turning a collection of streamIds into one URL, possibly
  * through an external media source manager.
  */
+@SuppressWarnings("unchecked")
 public void play(String terminal, java.lang.String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaTerminalConnection mtc = this.getMTC(terminal);
 	if (mtc != null) {
@@ -288,6 +291,7 @@ public void play(String terminal, java.lang.String[] streamIds, int offset, java
  * Record to a url build from the stream id.
  * The 1.2 media ignores RTCs and optional arguments.
  */
+@SuppressWarnings("unchecked")
 public void record(String terminal, String streamId, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaTerminalConnection mtc = this.getMTC(terminal);
 	if (mtc != null) {
@@ -310,6 +314,7 @@ public void record(String terminal, String streamId, javax.telephony.media.RTC[]
  * Waits on the collection of num DTMF signals and then returns them.
  * 1.2 media does not support patterns, RTCs or optional arguments, so these are ignored.
  */
+@SuppressWarnings("unchecked")
 public net.sourceforge.gjtapi.RawSigDetectEvent retrieveSignals(String terminal, int num, javax.telephony.media.Symbol[] patterns, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaTerminalConnection mtc = this.getMTC(terminal);
 	if (mtc != null) {
@@ -327,6 +332,7 @@ public net.sourceforge.gjtapi.RawSigDetectEvent retrieveSignals(String terminal,
  * Send the signals out.
  * For now we ignore the RTCs and optional arguments.
  */
+@SuppressWarnings("unchecked")
 public void sendSignals(String terminal, javax.telephony.media.Symbol[] syms, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaTerminalConnection mtc = this.getMTC(terminal);
 	

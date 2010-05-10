@@ -44,7 +44,7 @@ import net.sourceforge.gjtapi.TelephonyProvider;
 public class NewMediaProvider extends InverterProvider {
 	private static int BIND_TIMEOUT = 500;	// bind timeout in milliseconds
 	
-	private Map serviceMap = new HashMap();
+	private Map<String, MediaService> serviceMap = new HashMap<String, MediaService>();
 /**
  * NewMediaGenProvider constructor comment.
  */
@@ -54,6 +54,7 @@ public NewMediaProvider() {
 /**
  * allocateMedia method comment.
  */
+@SuppressWarnings("unchecked")
 public boolean allocateMedia(String terminal, int type, java.util.Dictionary resourceArgs) {
 	// first see if it is already allocated.
 	MediaService ms = this.getService(terminal);
@@ -136,12 +137,13 @@ private MediaService getService(String terminal) {
  * @author: Richard Deadman
  * @return A Map of terminal names to MediaServices.
  */
-private Map getServiceMap() {
+private Map<String, MediaService> getServiceMap() {
 	return this.serviceMap;
 }
 /**
  * play method comment.
  */
+@SuppressWarnings("unchecked")
 public void play(String terminal, java.lang.String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaService ms = this.getService(terminal);
 	if (ms != null && ms instanceof Player) {
@@ -153,6 +155,7 @@ public void play(String terminal, java.lang.String[] streamIds, int offset, java
 /**
  * record method comment.
  */
+@SuppressWarnings("unchecked")
 public void record(String terminal, String streamId, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws MediaResourceException {
 	MediaService ms = this.getService(terminal);
 	if (ms != null && ms instanceof Recorder) {
@@ -164,6 +167,7 @@ public void record(String terminal, String streamId, javax.telephony.media.RTC[]
 /**
  * retrieveSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public RawSigDetectEvent retrieveSignals(String terminal, int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
 	MediaService ms = this.getService(terminal);
 	if (ms != null && ms instanceof SignalDetector) {
@@ -175,6 +179,7 @@ public RawSigDetectEvent retrieveSignals(String terminal, int num, Symbol[] patt
 /**
  * sendSignals method comment.
  */
+@SuppressWarnings("unchecked")
 public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
 	MediaService ms = this.getService(terminal);
 	if (ms != null && ms instanceof SignalGenerator) {

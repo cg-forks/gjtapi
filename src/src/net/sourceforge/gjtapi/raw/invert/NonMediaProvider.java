@@ -47,6 +47,7 @@ public NonMediaProvider() {
 /**
  * Should never be called.
  */
+@SuppressWarnings("unchecked")
 public boolean allocateMedia(String terminal, int type, java.util.Dictionary resourceArgs) {
 	throw new javax.telephony.PlatformException("Media not supported");
 }
@@ -73,24 +74,28 @@ public boolean isMediaTerminal(String terminal) {
 /**
  * Should never be called since media is not supported.
  */
+@SuppressWarnings("unchecked")
 public void play(String terminal, java.lang.String[] streamIds, int offset, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	throw new javax.telephony.PlatformException("Media not supported");
 }
 /**
  * Should never be called since media is not supported.
  */
+@SuppressWarnings("unchecked")
 public void record(String terminal, String streamId, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	throw new javax.telephony.PlatformException("Media not supported");
 }
 /**
  * Should never be called since media is not supported.
  */
+@SuppressWarnings("unchecked")
 public net.sourceforge.gjtapi.RawSigDetectEvent retrieveSignals(String terminal, int num, javax.telephony.media.Symbol[] patterns, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	throw new javax.telephony.PlatformException("Media not supported");
 }
 /**
  * Should never be called since media is not supported.
  */
+@SuppressWarnings("unchecked")
 public void sendSignals(String terminal, javax.telephony.media.Symbol[] syms, javax.telephony.media.RTC[] rtcs, java.util.Dictionary optArgs) throws javax.telephony.media.MediaResourceException {
 	throw new javax.telephony.PlatformException("Media not supported");
 }

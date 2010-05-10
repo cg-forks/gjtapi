@@ -41,11 +41,11 @@ import java.util.*;
  */
 public class IdMapper {
 		// map provider CallIds to SerializableCallId
-	private Map idToCallMap = new HashMap();
+	private Map<CallId, Call> idToCallMap = new HashMap<CallId, Call>();
 		// map serializable call ids to providers
-	private Map callToIdMap = new HashMap();
+	private Map<Call, CallId> callToIdMap = new HashMap<Call, CallId>();
 	private long nextId = 0L;
-	private java.util.LinkedList freeRefs = new LinkedList();
+	private LinkedList<CallId> freeRefs = new LinkedList<CallId>();
 /**
  * Free a CallId from both maps
  * Creation date: (2000-02-17 23:51:15)
@@ -55,7 +55,7 @@ public class IdMapper {
  */
 public synchronized Call freeId(CallId id) {
 	Call call = null;
-	Map idToCall = this.getIdToCallMap();
+	Map<CallId, Call> idToCall = this.getIdToCallMap();
 
 	if (idToCall.containsKey(id)) {
 		call = (Call)idToCall.remove(id);
@@ -75,7 +75,7 @@ public synchronized Call freeId(CallId id) {
  * @author: Richard Deadman
  * @return A map
  */
-private Map getCallToIdMap() {
+private Map<Call, CallId> getCallToIdMap() {
 	return callToIdMap;
 }
 /**
@@ -84,14 +84,14 @@ private Map getCallToIdMap() {
  * @author: 
  * @return java.util.LinkedList
  */
-private java.util.LinkedList getFreeRefs() {
+private LinkedList<CallId> getFreeRefs() {
 	return freeRefs;
 }
 /**
  * Look up a raw Call Id for a JTAPI Call object.
  */
 public synchronized CallId getId(Call call) {
-	Map refs = this.getCallToIdMap();
+	Map<Call, CallId> refs = this.getCallToIdMap();
 	
 	// look for a Serialized CallId
 	CallId ci = (CallId)refs.get(call);
@@ -118,7 +118,7 @@ public synchronized CallId getId(Call call) {
  * @author: Richard Deadman
  * @return A map
  */
-private Map getIdToCallMap() {
+private Map<CallId, Call> getIdToCallMap() {
 	return idToCallMap;
 }
 /**

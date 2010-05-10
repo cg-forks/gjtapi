@@ -51,7 +51,7 @@ import java.io.OutputStream;
  *
  * <p>Company: INESC-ID</p>
  *
- * @author Dário Marcelino
+ * @author Dï¿½rio Marcelino
  * @version 1.0
  */
 public class JavaSoundProvider implements MediaTpi {
@@ -72,7 +72,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public void initialize(Map props) throws
+    @SuppressWarnings("unchecked")
+	public void initialize(Map props) throws
             ProviderUnavailableException {
 
         HashMap<String, Mixer> playbackMixers = new HashMap<String, Mixer>();
@@ -362,7 +363,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public boolean allocateMedia(String terminal, int type,
+    @SuppressWarnings("unchecked")
+	public boolean allocateMedia(String terminal, int type,
                                  Dictionary resourceArgs) {
         return true;
     }
@@ -384,7 +386,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public void play(String terminal, String[] streamIds, int offset,
+    @SuppressWarnings("unchecked")
+	public void play(String terminal, String[] streamIds, int offset,
                      RTC[] rtcs, Dictionary optArgs) throws
             MediaResourceException {
 
@@ -446,7 +449,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public void record(String terminal, String streamId, RTC[] rtcs,
+    @SuppressWarnings("unchecked")
+	public void record(String terminal, String streamId, RTC[] rtcs,
                        Dictionary optArgs) throws MediaResourceException {
 
         int dur = javax.telephony.media.ResourceConstants.v_Forever;
@@ -537,7 +541,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public RawSigDetectEvent retrieveSignals(String terminal, int num,
+    @SuppressWarnings("unchecked")
+	public RawSigDetectEvent retrieveSignals(String terminal, int num,
                                              Symbol[] patterns, RTC[] rtcs,
                                              Dictionary optArgs) throws
             MediaResourceException {
@@ -548,7 +553,8 @@ public class JavaSoundProvider implements MediaTpi {
     /**
      * {@inheritDoc}
      */
-    public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs,
+    @SuppressWarnings("unchecked")
+	public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs,
                             Dictionary optArgs) throws MediaResourceException {
         // TODO Auto-generated method stub
     }

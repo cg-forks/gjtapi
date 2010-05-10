@@ -52,7 +52,7 @@ public abstract class InverterProvider implements net.sourceforge.gjtapi.raw.Ful
 	private final static String MEDIA_FREE_RELEASE = "mediaFreeRelease";
 	
 	private javax.telephony.Provider jtapiProv;
-	private Map provProps;					// temporary map holder
+	private Properties provProps;					// temporary map holder
 	private InverterListener listener = null;	// an adapter to delegate JTAPI events to TelephonyEvents
 	private IdMapper callMap = new IdMapper();	// CallId <-> Call map.
 	
@@ -215,7 +215,7 @@ public CallData[] getCallsOnAddress(String number) {
 		// fall though
 	}
 	if (addr != null) {
-		HashSet calls = new HashSet();
+		HashSet<CallData> calls = new HashSet<CallData>();
 		Connection[] conns = addr.getConnections();
 		if (conns != null) {
 			int connSize = conns.length;
@@ -255,7 +255,7 @@ public CallData[] getCallsOnTerminal(String name) {
 		// fall though
 	}
 	if (term != null) {
-		HashSet calls = new HashSet();
+		HashSet<CallData> calls = new HashSet<CallData>();
 		TerminalConnection[] tcs = term.getTerminalConnections();
 		if (tcs != null) {
 			int tcsSize = tcs.length;
@@ -340,7 +340,7 @@ public Object getPrivateData(CallId call, String address, String terminal) {
  * @author: Richard Deadman
  * @return The map that lists the provider properties
  */
-private Map getProvProps() {
+private Properties getProvProps() {
 	return provProps;
 }
 /**
@@ -438,7 +438,8 @@ public void hold(CallId call, String address, String terminal) throws MethodNotS
  * If "replace" is a map property, then the passed in map replaces instead of augmenting the default
  * properties map.
  */
-public void initialize(java.util.Map props) throws ProviderUnavailableException {
+@SuppressWarnings("unchecked")
+public void initialize(Map props) throws ProviderUnavailableException {
 	Map m = null;
 	Object value = null;
 	
@@ -452,9 +453,9 @@ public void initialize(java.util.Map props) throws ProviderUnavailableException 
 				replace = true;
 		}
 	}
-	if (replace)
+	if (replace) {
 		m = props;
-	else {
+	} else {
 		m = this.getProvProps();
 		m.putAll(props);
 	}
@@ -826,7 +827,7 @@ public void setPrivateData(CallId call, String address, String terminal, Object 
  * @author: Richard Deadman
  * @param newProvProps A new set of properties
  */
-private void setProvProps(Map newProvProps) {
+private void setProvProps(Properties newProvProps) {
 	provProps = newProvProps;
 }
 /**
