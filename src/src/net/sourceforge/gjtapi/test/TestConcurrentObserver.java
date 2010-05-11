@@ -70,11 +70,12 @@ of the copyright holder.
  * @author richard
  *
  */
+@SuppressWarnings("deprecation")
 class TestConcurrentObserver implements CallObserver {
 
 	private FreeTerminal term;
 	private String name;
-	private String _otherTerm;	
+	//private String _otherTerm;	
 	
     public TestConcurrentObserver(Terminal terminal) throws MethodNotSupportedException, ResourceUnavailableException {
         term = (FreeTerminal) terminal;
@@ -83,7 +84,6 @@ class TestConcurrentObserver implements CallObserver {
     }
 
 
-	@SuppressWarnings("deprecation")
 	public void callChangedEvent(CallEv[] eventList) {
         for (int i = 0; i < eventList.length; i++) {
             CallEv ce = eventList[i];
@@ -185,7 +185,7 @@ class TestConcurrentObserver implements CallObserver {
                         Terminal t = mts[k];
                         System.out.println("\t terminal= " + t.getName());
                         if (!t.getName().equals(name)) {
-                            _otherTerm = t.getName();
+                            //_otherTerm = t.getName();
                         }
                     }
                 }

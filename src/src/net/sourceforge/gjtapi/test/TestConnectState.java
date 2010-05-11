@@ -39,6 +39,8 @@ import javax.telephony.*;
  * @author: Richard Deadman
  */
 public class TestConnectState {
+	private static boolean shouldPrompt = true;
+	
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -58,7 +60,7 @@ public static void main(java.lang.String[] args) {
  * @author: Richard Deadman
  */
 protected static void prompt() throws IOException {
-	if (true)
+	if (!shouldPrompt)
 		return;
 	InputStream in = System.in;
 

@@ -208,16 +208,16 @@ public class TestConcurrentHandling {
 	        c.connect(ts[0], addr, toAddr);
 	
 	        // Notify progress
-	        System.out.println("Call created. Number of calls in provider: " + prov.getCalls().length);
+	        out.println("Call created. Number of calls in provider: " + prov.getCalls().length);
 	        Connection[] cons = c.getConnections();
 	        if(cons != null && cons.length > 0 ) {
 	        	cons[0].disconnect();
 	        }
 	        //Thread.sleep(1000);
 	        try {
-	        	System.out.println("Call ending. Number of calls in provider: " + prov.getCalls().length);
+	        	out.println("Call ending. Number of calls in provider: " + prov.getCalls().length);
 	        } catch (NullPointerException npe) {
-	        	System.out.println("Call ending. Number of calls in provider: " + 0);
+	        	out.println("Call ending. Number of calls in provider: " + 0);
 	        }
 		} catch (PrivilegeViolationException pve) {
 			pve.printStackTrace();

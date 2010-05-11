@@ -39,6 +39,7 @@ import javax.telephony.media.events.*;
  * Creation date: (2000-03-31 16:03:44)
  * @author: Richard Deadman
  */
+@SuppressWarnings("deprecation")
 public class TestOldMediaCall extends TestMakeCall implements CallObserver {
 /**
  * Print out the events I receive
