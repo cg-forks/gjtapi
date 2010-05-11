@@ -41,6 +41,11 @@ import java.io.Serializable;
  */
 public class PrivateDialCommand implements Serializable {
 
+	/**
+	 * Generated Serial ID. Re-calculate if structure changes.
+	 */
+	private static final long serialVersionUID = 7252757623830744565L;
+	
 	// Variables
 	private String numberToDial;
 	

@@ -42,7 +42,8 @@ public interface Tapi3Native {
      * @param props The name value properties map
      * @return Array of addresses or null on error
      */
-    public String[] tapi3Init(Map props);
+    @SuppressWarnings("unchecked")
+	public String[] tapi3Init(Map props);
     
     /**
      * Shut down the TAPI session

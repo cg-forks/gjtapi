@@ -244,7 +244,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Configure the logger
      * @param props The name value properties map used to configure the logger 
      */
-    private void configureLogger(Map props) {
+    @SuppressWarnings("unchecked")
+	private void configureLogger(Map props) {
         String tapi3LogOut = (String)props.get("tapi3.log.out");
         if(tapi3LogOut != null) {
             if("console".equals(tapi3LogOut)) {
@@ -275,15 +276,16 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Configure a concrete implementation of the {@link Tapi3Native} interface
      * @param props The name value properties map used to configure the {@link Tapi3Native} implementation 
      */
-    private void configureNative(Map props) {
+    @SuppressWarnings("unchecked")
+	private void configureNative(Map props) {
         String tapi3ImplClass = (String)props.get("tapi3.impl.class");
         if(tapi3ImplClass == null) {
             tapi3ImplClass = "net.sourceforge.gjtapi.raw.tapi3.Tapi3NativeImpl";
         }
         logger.debug("Trying to instantiate " + tapi3ImplClass);
         try {
-            Class cls = Class.forName(tapi3ImplClass);
-            Class[] paramClasses = { String.class };
+            Class<?> cls = Class.forName(tapi3ImplClass);
+            Class<?>[] paramClasses = { String.class };
             Method m = cls.getMethod("getInstance", paramClasses);
             Object[] libraryNameArgs = { props.get("nativeLibraryPath") };
             tapi3Native = (Tapi3Native)m.invoke(null, libraryNameArgs);
@@ -352,10 +354,10 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         String methodName = getMethodName(methodID);
         logger.info("CALLBACK: " + methodID + " (" + methodName + ") on " + address +
                 ": callID=" + tapi3CallID.getCallID() + ", privateData: " + privateData);
-        Iterator it = listenerList.iterator();
+        Iterator<TelephonyListener> it = listenerList.iterator();
         boolean validCall = true;	// track if a call is made invalid, so we don't send private data
         while(it.hasNext()) {
-            TelephonyListener listener = (TelephonyListener)it.next();
+            TelephonyListener listener = it.next();
             switch(methodID) {
                 case METHOD_ADDRESS_PRIVATE_DATA:
                     listener.addressPrivateData(address, privateData, eventCause);
@@ -449,9 +451,9 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
                 char ch = (char)jniCause;
                 logger.debug("Character " + ch + " received on " + terminal);
                 synchronized(digitListenerList) {
-                    it = digitListenerList.iterator();
-                    while(it.hasNext()) {
-                        DigitListener listener = (DigitListener)it.next();
+                    Iterator<DigitListener> digitItD = digitListenerList.iterator();
+                    while(digitItD.hasNext()) {
+                        DigitListener listener = digitItD.next();
                         listener.receivedDigit(terminal, ch);
                     }
                 }
@@ -464,7 +466,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     /* (non-Javadoc)
      * @see net.sourceforge.gjtapi.raw.CoreTpi#initialize(java.util.Map)
      */
-    public void initialize(Map props) throws ProviderUnavailableException {
+    @SuppressWarnings("unchecked")
+	public void initialize(Map props) throws ProviderUnavailableException {
     	configureProperties(props);
 		  configureLogger(props);
       logger.debug("Tapi3 properties: " + props + " ...");
@@ -493,11 +496,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         {
           double bestFit = 0;
           int bestFitIndex[] = new int[]{0, 0};
-          ArrayList refNGram = _nGramSegmentation(addresses[i], nGramVal);
+          ArrayList<String> refNGram = _nGramSegmentation(addresses[i], nGramVal);
           for(Iterator j = termArr.iterator(); j.hasNext(); )
           {
             String next = (String)j.next();
-            ArrayList curNGram = _nGramSegmentation(next, nGramVal);
+            ArrayList<String> curNGram = _nGramSegmentation(next, nGramVal);
             double fit = _nGramRating(refNGram, curNGram);
             if(fit > bestFit)
             {
@@ -534,10 +537,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * Replace ${<i>propertyName</i>} occurences with the actual value of the system property identified by <i>propertyName</i>  
      * @param props The properties map whose values will be modified
      */
-    public void configureProperties(Map props) {
-    	Iterator it = props.entrySet().iterator();
+    @SuppressWarnings("unchecked")
+	public void configureProperties(Map props) {
+    	Iterator<Map.Entry<String, String>> it = (Iterator<Map.Entry<String, String>>)props.entrySet().iterator();
     	while(it.hasNext()) {
-        	Map.Entry entry = (Map.Entry) it.next();
+        	Map.Entry<String, String> entry = it.next();
 			StringBuffer sbufVal = new StringBuffer((String)entry.getValue());
         	while(true) {
         		int startPos = sbufVal.indexOf("${");
@@ -644,11 +648,11 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         if(termHack)
         {
           String found = null;
-          Set keySet = termAddrMap.keySet();
-          for(Iterator i = keySet.iterator(); i.hasNext(); )
+          Set<String> keySet = termAddrMap.keySet();
+          for(Iterator<String> i = keySet.iterator(); i.hasNext(); )
           {
             String key = (String)i.next();
-            if(((ArrayList)termAddrMap.get(key)).contains(address))
+            if((termAddrMap.get(key)).contains(address))
             {
               found = key;
               break ;
@@ -838,7 +842,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     }
 
     // *** MediaTpi ***    
-    public boolean allocateMedia(String terminal, int type, Dictionary resourceArgs) {
+    @SuppressWarnings("unchecked")
+	public boolean allocateMedia(String terminal, int type, Dictionary resourceArgs) {
         return false;
     }
     public boolean freeMedia(String terminal, int type) {
@@ -847,10 +852,12 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     public boolean isMediaTerminal(String terminal) {
         return true;
     }
-    public void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
+    @SuppressWarnings("unchecked")
+	public void play(String terminal, String[] streamIds, int offset, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         throw new MediaResourceException("Not implemented.");
     }
-    public void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
+    @SuppressWarnings("unchecked")
+	public void record(String terminal, String streamId, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         throw new MediaResourceException("Not implemented.");
     }
     public void stop(String terminal) {
@@ -860,7 +867,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     public void triggerRTC(String terminal, Symbol action) {
         throw new MediaRuntimeException("Not implemented.") {};
     }
-    public RawSigDetectEvent retrieveSignals(final String terminal, final int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
+    @SuppressWarnings("unchecked")
+	public RawSigDetectEvent retrieveSignals(final String terminal, final int num, Symbol[] patterns, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         logger.debug("retrieveSignals('" + terminal + "', " + num + ")");
         if(num <= 0) throw new MediaResourceException("Invalid number of signals: " + num);
         
@@ -902,7 +910,8 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
         logger.debug("retrieveSignals() done.");
         return event;
     }
-    public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
+    @SuppressWarnings("unchecked")
+	public void sendSignals(String terminal, Symbol[] syms, RTC[] rtcs, Dictionary optArgs) throws MediaResourceException {
         logger.debug("sendSignals(" + terminal + ", " + Arrays.asList(syms) + ")");
         int retCode = tapi3Native.tapi3SendSignals(terminal, getSymbolsAsString(syms));
         logger.debug("sendSignals() returned: 0x" + Integer.toHexString(retCode));
@@ -1046,7 +1055,7 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
      * @param n the value of the n-gram
      * @return the n-gram segmentated from the string
      */
-    private ArrayList _nGramSegmentation(String pStr, int n)
+    private ArrayList<String> _nGramSegmentation(String pStr, int n)
     {
 
       ArrayList<String> arr = new ArrayList<String>();
@@ -1068,25 +1077,27 @@ public class Tapi3Provider implements CCTpi, MediaTpi, PrivateDataTpi {
     * @param pToRate will be modified
     * @return a rating
     */
-    private double _nGramRating(ArrayList pRef, ArrayList pToRate)
+    //@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
+	private double _nGramRating(ArrayList<String> pRef, ArrayList<String> pToRate)
     {
-      ArrayList a;
-      ArrayList b;
+      ArrayList<String> a;
+      ArrayList<String> b;
       if(pToRate.size() > pRef.size())
       {
-        a = (ArrayList)pRef.clone();
+        a = (ArrayList<String>)pRef.clone();
         b = pToRate;
       }
       else
       {
         a = pToRate;
-        b = (ArrayList)pRef.clone();
+        b = (ArrayList<String>)pRef.clone();
       }
       int count = a.size() + b.size();
       int hits = 0;
-      for(Iterator i = a.iterator(); i.hasNext(); )
+      for(Iterator<String> i = a.iterator(); i.hasNext(); )
       {
-        Object next = i.next();
+        String next = i.next();
         if(b.contains(next))
         {
           b.remove(next);
