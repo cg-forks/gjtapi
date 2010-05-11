@@ -44,6 +44,7 @@ import javax.telephony.media.MediaTerminalConnection;
  *
  * Test sending DTMF on an active call
  */
+@SuppressWarnings("deprecation")
 public class DtmfSendTest {
 
 	/**
