@@ -418,14 +418,14 @@ FreeAddress toDisconnected(int cause) {
 		// Update the connection state
 		this.setState(Connection.DISCONNECTED);
 
+		// Dispatch any events
+		this.getGenProvider().dispatch(new FreeConnDisconnectedEv(cause, this));
+
 		// Tell all terminal connections still attached to disconnect
 		Iterator<TerminalConnection> it = ((HashMap<String, TerminalConnection>)this.terminalConnections.clone()).values().iterator();
 		while (it.hasNext()) {
 			((FreeTerminalConnection)it.next()).toDropped(cause);
 		}
-
-		// Dispatch any events
-		this.getGenProvider().dispatch(new FreeConnDisconnectedEv(cause, this));
 
 		// unhook from the call
 		// (We sent the event first to ensure proper delivery ordering and so the listeners aren't
