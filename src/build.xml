@@ -28,7 +28,7 @@
 	
 	<!-- version -->
 	<property name="baseVersion" value="1.9"/>
-	<property name="releaseCandidate" value="-rc3"/>
+	<property name="releaseCandidate" value="-rc4"/>
 	<property name="version" value="${baseVersion}${releaseCandidate}"/>
 	<!-- licence file -->
 	<property name="licenceFile" value="license.txt"/>
