@@ -34,10 +34,11 @@
 #include "Util.h"
 
 // constructor
-MSTapi3::MSTapi3() : tapi(NULL), tapi3EventNotification(NULL), currCallID(0), isDown(false) {
+MSTapi3::MSTapi3() : tapi(NULL), tapi3EventNotification(NULL), currCallID(0), isDown(false), isUp(false) {
 	logger = new Logger("MSTapi3");
 	swapOnHold = false;
     handoff = L"";
+	extensionPrefix = L"";
 }
 
 // destructor
@@ -109,7 +110,7 @@ HRESULT MSTapi3::InitializeTapi(CallbackNotification aCallback) {
 	logger->debug("RegisterTapiEventInterface() succeeded.");
 
     // Set the Event filter to only give us the events we process
-    tapi->put_EventFilter(TE_ADDRESS | TE_CALLNOTIFICATION | TE_CALLSTATE | TE_CALLHUB | TE_CALLINFOCHANGE | TE_DIGITEVENT | TE_GENERATEEVENT);
+    tapi->put_EventFilter(/*TE_ADDRESS | */ TE_CALLNOTIFICATION | TE_CALLSTATE | TE_CALLHUB | TE_CALLINFOCHANGE | TE_DIGITEVENT | TE_GENERATEEVENT);
 	// tapi->put_EventFilter(0x2FFFFFF);
 
     // find all address objects that we will use to listen for calls on
@@ -947,6 +948,16 @@ HRESULT MSTapi3::ListenOnAddresses()
 			continue;
 		}
 
+		// See if the address name bstrAddrName matches the allowed names
+		if(extensionPrefix.length() > 0) {
+			std::wstring addrName(bstrAddrName);
+			string::size_type location = addrName.find(extensionPrefix);
+			if(location != 0) {		// == string::npos) {
+				logger->debug("Address name %s did not match prefix %s", addrName, extensionPrefix);
+				continue;
+			}
+		}
+
         tempAddressMap[bstrAddrName].push_back(pAddress);
 
 		char addressName[256];
@@ -954,6 +965,10 @@ HRESULT MSTapi3::ListenOnAddresses()
 		logger->info("Address %s added.", addressName);
 		SysFreeString(bstrAddrName);
 
+		// Is this line on our list of lines to be listened to?
+		if(strstr(addressName, "EXT") != NULL) {
+			logger->info("We should listen on this address.");
+		}
         // does the address support audio?
         if (AddressSupportsMediaType(pAddress, TAPIMEDIATYPE_AUDIO)) {
             // If it does then we'll listen.
@@ -992,6 +1007,7 @@ HRESULT MSTapi3::ListenOnAddresses()
         }
 	}
 
+	isUp = true;	// Now okay to start handling address events
     return S_OK;
 }
 

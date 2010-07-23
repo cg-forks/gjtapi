@@ -47,6 +47,7 @@ private:
 	ULONG gulAdvise;
 	bool swapOnHold;
 	wstring handoff;
+	wstring extensionPrefix;
 
 	typedef map<wstring, ITAddress*> AddressMap;
 	AddressMap addresses;
@@ -55,6 +56,7 @@ private:
 	typedef map<int, ITBasicCallControl*> CallMap;
 	CallMap calls;
 	int currCallID;
+	bool isUp;	// delay event handling until all lines registered
 	bool isDown;
 
 	// callcontrol modi
@@ -92,6 +94,7 @@ public:
 	long SendLineDevSpecific(int callID, wstring& address, BYTE* bytes, DWORD bytesSize);
 	void setSwapOnHold(bool enabled) { swapOnHold = enabled; }
     void setHandoff(wstring& appName) { handoff = appName; }
+	void setExtPrefix(wstring& extPrefix) { extensionPrefix = extPrefix; }
 
     HRESULT getAddressName(ITAddress* pITAddress, wstring& strAddress);
 

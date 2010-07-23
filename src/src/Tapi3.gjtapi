@@ -14,3 +14,5 @@ tapi3.native.log.out = ${user.dir}\\tapi3dll.log
 tapi3.native.swapOnHold = false
 
 # tapi3.native.handoff = dialer.exe
+
+# tapi3.native.ext.prefix = EXT

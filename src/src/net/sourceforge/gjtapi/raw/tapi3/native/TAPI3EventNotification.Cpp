@@ -57,6 +57,10 @@ TAPI3EventNotification::~TAPI3EventNotification() {
 ///////////////////////////////////////////////////////////////////
 HRESULT STDMETHODCALLTYPE TAPI3EventNotification::Event(TAPI_EVENT tapiEvent, IDispatch* pEvent) {
 	try {
+		if(!pTapi3->isUp) {
+			logger->warn("TAPI3EventNotification: TAPI not fully initialized.");
+			return S_FALSE;
+		}
 		if(pTapi3->isDown) {
 			logger->warn("TAPI3EventNotification: TAPI already shut down.");
 			return S_FALSE;

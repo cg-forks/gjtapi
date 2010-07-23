@@ -62,6 +62,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
 	try {
 		if(DLL_PROCESS_DETACH == ul_reason_for_call) {
 			logger->debug("DllMain: Detaching...");
+			if(lpReserved == NULL) {
+				logger->debug("lpReserved is NULL (FreeLibrary or load failed)");
+			} else {
+				logger->debug("lpReserved is not NULL (terminating)");
+			}
 			if(g_msTapi3 != NULL) {
 				g_msTapi3->ShutdownTapi();
 				g_msTapi3 = NULL;
@@ -69,6 +74,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
 			CoUninitialize();
 			logger->debug("DllMain: DLL_PROCESS_DETACH");
 		}
+	} catch(exception& e) {
+		logger->fatal("DLL_PROCESS_DETACH failed with exception: %s", e.what());
+		return FALSE;
 	} catch(...) {
 		logger->fatal("DLL_PROCESS_DETACH failed");
 		return FALSE;
@@ -155,6 +163,17 @@ JNIEXPORT jobjectArray JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3Native
 			}
 		}
 
+		// Get the extension prefix property
+		string extensionPrefix;
+		if(getProperty(pEnv, objMap, "tapi3.native.ext.prefix", extensionPrefix)) {
+			if(extensionPrefix.length() > 0) {
+                wchar_t wExtPrefix[256];
+                mbstowcs(wExtPrefix, extensionPrefix.c_str(), extensionPrefix.length() + 1);
+                wstring wsExtPrefix = wExtPrefix;
+				g_msTapi3->setExtPrefix(wsExtPrefix);                
+				logger->debug("Setting extensionPrefix to %s", extensionPrefix.c_str());
+			}
+		}
 
 		return objAddresses;
 	} catch(...){
