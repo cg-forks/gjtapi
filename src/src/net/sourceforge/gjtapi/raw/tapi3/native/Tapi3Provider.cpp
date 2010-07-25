@@ -132,6 +132,20 @@ JNIEXPORT jobjectArray JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3Native
 
 		jobjectArray objAddresses = NULL;	// String array of address names
 
+		// Get the extension prefix property
+		string extensionPrefix;
+		if(getProperty(pEnv, objMap, "tapi3.native.ext.prefix", extensionPrefix)) {
+			if(extensionPrefix.length() > 0) {
+                wchar_t wExtPrefix[256];
+                mbstowcs(wExtPrefix, extensionPrefix.c_str(), extensionPrefix.length() + 1);
+                wstring wsExtPrefix = wExtPrefix;
+				g_msTapi3->setExtPrefix(wsExtPrefix);                
+				logger->debug("Setting extensionPrefix to %s", extensionPrefix.c_str());
+			} else {
+				logger->debug("No extensionPrefix found for line listener filtering");
+			}
+		}
+
 		HRESULT hr = g_msTapi3->InitializeTapi(callback);
 		if(SUCCEEDED(hr)) {
 			jclass oCls = pEnv->FindClass("java/lang/String");
@@ -160,18 +174,6 @@ JNIEXPORT jobjectArray JNICALL Java_net_sourceforge_gjtapi_raw_tapi3_Tapi3Native
                 wstring wsHandoff = wHandoff;
 				g_msTapi3->setHandoff(wsHandoff);                
 				logger->debug("Handoff activated.");
-			}
-		}
-
-		// Get the extension prefix property
-		string extensionPrefix;
-		if(getProperty(pEnv, objMap, "tapi3.native.ext.prefix", extensionPrefix)) {
-			if(extensionPrefix.length() > 0) {
-                wchar_t wExtPrefix[256];
-                mbstowcs(wExtPrefix, extensionPrefix.c_str(), extensionPrefix.length() + 1);
-                wstring wsExtPrefix = wExtPrefix;
-				g_msTapi3->setExtPrefix(wsExtPrefix);                
-				logger->debug("Setting extensionPrefix to %s", extensionPrefix.c_str());
 			}
 		}
 

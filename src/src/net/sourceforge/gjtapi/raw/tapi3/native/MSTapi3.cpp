@@ -945,15 +945,17 @@ HRESULT MSTapi3::ListenOnAddresses()
 		hr = pAddress->get_AddressName(&bstrAddrName);
 		if(FAILED(hr)) {
 			logger->error("Cannot retrieve address name: hr=%08X.", hr);
+			pAddress->Release();
 			continue;
 		}
 
 		// See if the address name bstrAddrName matches the allowed names
 		if(extensionPrefix.length() > 0) {
-			std::wstring addrName(bstrAddrName);
+			std::wstring addrName = (LPCWSTR)bstrAddrName;
 			string::size_type location = addrName.find(extensionPrefix);
 			if(location != 0) {		// == string::npos) {
-				logger->debug("Address name %s did not match prefix %s", addrName, extensionPrefix);
+				logger->debug("Address name %S did not match prefix %S. Will not listen on it.", addrName.c_str(), extensionPrefix.c_str());
+				pAddress->Release();
 				continue;
 			}
 		}
@@ -965,10 +967,6 @@ HRESULT MSTapi3::ListenOnAddresses()
 		logger->info("Address %s added.", addressName);
 		SysFreeString(bstrAddrName);
 
-		// Is this line on our list of lines to be listened to?
-		if(strstr(addressName, "EXT") != NULL) {
-			logger->info("We should listen on this address.");
-		}
         // does the address support audio?
         if (AddressSupportsMediaType(pAddress, TAPIMEDIATYPE_AUDIO)) {
             // If it does then we'll listen.
